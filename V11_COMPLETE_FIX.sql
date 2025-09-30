@@ -9,6 +9,10 @@ ADD COLUMN IF NOT EXISTS phone_primary VARCHAR(20),
 ADD COLUMN IF NOT EXISTS phone_secondary VARCHAR(20),
 ADD COLUMN IF NOT EXISTS phone_tertiary VARCHAR(20);
 
+-- Add session_token column to device_sessions for smart token-based validation
+ALTER TABLE device_sessions 
+ADD COLUMN IF NOT EXISTS session_token TEXT;
+
 -- Step 2: Create trigger functions to auto-populate business_id
 -- This function automatically sets business_id based on the authenticated user's profile
 
@@ -194,9 +198,10 @@ GRANT EXECUTE ON FUNCTION get_business_details() TO authenticated;
 
 -- Step 8: Enhanced device session management with automatic limit enforcement
 
--- Update register_device_session to enforce device limits automatically
+-- Smart token-based session management
 CREATE OR REPLACE FUNCTION register_device_session(
   p_device_id TEXT,
+  p_session_token TEXT,
   p_device_name TEXT DEFAULT NULL
 )
 RETURNS JSON AS $$
@@ -204,7 +209,7 @@ DECLARE
   v_business_id UUID;
   v_device_limit INT;
   v_current_count INT;
-  v_oldest_session_id UUID;
+  v_oldest_session_device_id TEXT;
 BEGIN
   -- Get business_id and device_limit for current user
   SELECT p.business_id, b.device_limit
@@ -220,32 +225,37 @@ BEGIN
     );
   END IF;
 
-  -- Count current active sessions (last 5 minutes)
+  -- Count current active sessions (excluding this device)
   SELECT COUNT(*)
   INTO v_current_count
   FROM device_sessions
   WHERE business_id = v_business_id
+    AND device_id != p_device_id
     AND last_active > NOW() - INTERVAL '5 minutes';
 
-  -- If limit is reached, remove the oldest session
+  -- If limit is reached, delete the oldest session
   IF v_current_count >= v_device_limit THEN
-    -- Get the oldest session ID
-    SELECT id INTO v_oldest_session_id
+    -- Get the oldest session device_id
+    SELECT device_id INTO v_oldest_session_device_id
     FROM device_sessions
     WHERE business_id = v_business_id
+      AND device_id != p_device_id
       AND last_active > NOW() - INTERVAL '5 minutes'
     ORDER BY last_active ASC
     LIMIT 1;
 
-    -- Delete the oldest session
-    DELETE FROM device_sessions WHERE id = v_oldest_session_id;
+    -- Delete the oldest session (this invalidates their token)
+    DELETE FROM device_sessions 
+    WHERE business_id = v_business_id 
+      AND device_id = v_oldest_session_device_id;
   END IF;
 
-  -- Insert or update this device's session
-  INSERT INTO device_sessions (business_id, device_id, device_name, last_active)
-  VALUES (v_business_id, p_device_id, p_device_name, NOW())
+  -- Insert or update this device's session with NEW token
+  INSERT INTO device_sessions (business_id, device_id, device_name, session_token, last_active)
+  VALUES (v_business_id, p_device_id, p_device_name, p_session_token, NOW())
   ON CONFLICT (business_id, device_id)
   DO UPDATE SET
+    session_token = EXCLUDED.session_token,
     last_active = NOW(),
     device_name = COALESCE(EXCLUDED.device_name, device_sessions.device_name);
 
@@ -253,17 +263,22 @@ BEGIN
     'success', true,
     'message', 'Device session registered successfully',
     'device_id', p_device_id,
+    'session_token', p_session_token,
     'business_id', v_business_id
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Function to check if current session is still valid
-CREATE OR REPLACE FUNCTION check_device_session(p_device_id TEXT)
+-- Function to check if current session token is still valid
+CREATE OR REPLACE FUNCTION check_device_session(
+  p_device_id TEXT,
+  p_session_token TEXT
+)
 RETURNS JSON AS $$
 DECLARE
   v_business_id UUID;
-  v_session_exists BOOLEAN;
+  v_stored_token TEXT;
+  v_token_matches BOOLEAN := false;
 BEGIN
   -- Get business_id for current user
   SELECT business_id INTO v_business_id
@@ -277,20 +292,22 @@ BEGIN
     );
   END IF;
 
-  -- Check if session exists and is recent
-  SELECT EXISTS(
-    SELECT 1
-    FROM device_sessions
-    WHERE business_id = v_business_id
-      AND device_id = p_device_id
-      AND last_active > NOW() - INTERVAL '5 minutes'
-  ) INTO v_session_exists;
+  -- Get the stored token for this device
+  SELECT session_token INTO v_stored_token
+  FROM device_sessions
+  WHERE business_id = v_business_id
+    AND device_id = p_device_id
+    AND last_active > NOW() - INTERVAL '5 minutes';
+
+  -- Check if tokens match
+  v_token_matches := (v_stored_token IS NOT NULL AND v_stored_token = p_session_token);
 
   RETURN json_build_object(
-    'valid', v_session_exists,
+    'valid', v_token_matches,
     'message', CASE 
-      WHEN v_session_exists THEN 'Session is valid'
-      ELSE 'Session expired or removed due to device limit'
+      WHEN v_token_matches THEN 'Session is valid'
+      WHEN v_stored_token IS NULL THEN 'Session expired or removed due to device limit'
+      ELSE 'Session token invalid - another device logged in with your account'
     END
   );
 END;
@@ -337,8 +354,8 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Grant permissions
-GRANT EXECUTE ON FUNCTION register_device_session(TEXT, TEXT) TO authenticated;
-GRANT EXECUTE ON FUNCTION check_device_session(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION register_device_session(TEXT, TEXT, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION check_device_session(TEXT, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION update_device_session(TEXT) TO authenticated;
 
 -- Verification queries (run these to check if everything is set up correctly)

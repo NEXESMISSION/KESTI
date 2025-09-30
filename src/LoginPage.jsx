@@ -12,6 +12,11 @@ function getDeviceId() {
   return deviceId;
 }
 
+// Generate a new session token
+function generateSessionToken() {
+  return 'token_' + Math.random().toString(36).substring(2) + Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
 function LoginPage({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,22 +37,28 @@ function LoginPage({ onLogin }) {
       if (error) throw error;
       
       if (data.user) {
-        // Register device session - this will automatically kick out oldest session if limit reached
+        // Generate NEW session token for this login
         const deviceId = getDeviceId();
-        const deviceName = navigator.userAgent.substring(0, 100); // Browser info
+        const sessionToken = generateSessionToken();
+        const deviceName = navigator.userAgent.substring(0, 100);
+        
+        // Store the session token in localStorage
+        localStorage.setItem('session_token', sessionToken);
         
         try {
+          // Register session with the new token
+          // If device limit reached, this will delete the oldest session (invalidating their token)
           await supabase.rpc('register_device_session', {
             p_device_id: deviceId,
+            p_session_token: sessionToken,
             p_device_name: deviceName
           });
         } catch (sessionError) {
-          // Log error but don't block login - session monitoring will handle it
           console.warn('Session registration warning:', sessionError);
         }
 
-        // Always proceed with login - the session was registered successfully
-        // If device limit was reached, the oldest session was automatically kicked out
+        // Always proceed with login
+        // Old sessions will discover their token is invalid when SessionMonitor checks
         onLogin();
       }
     } catch (error) {

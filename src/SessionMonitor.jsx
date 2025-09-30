@@ -8,6 +8,11 @@ function getDeviceId() {
   return localStorage.getItem('device_id') || '';
 }
 
+// Get session token from localStorage
+function getSessionToken() {
+  return localStorage.getItem('session_token') || '';
+}
+
 function SessionMonitor({ onSessionInvalid }) {
   useEffect(() => {
     const deviceId = getDeviceId();
@@ -23,9 +28,16 @@ function SessionMonitor({ onSessionInvalid }) {
           return;
         }
 
-        // Check if device session is still valid
+        const sessionToken = getSessionToken();
+        if (!sessionToken) {
+          // No session token, can't validate
+          return;
+        }
+
+        // Check if our session token is still valid
         const { data, error } = await supabase.rpc('check_device_session', {
-          p_device_id: deviceId
+          p_device_id: deviceId,
+          p_session_token: sessionToken
         });
 
         if (error) {
@@ -33,9 +45,10 @@ function SessionMonitor({ onSessionInvalid }) {
           return;
         }
 
-        // If session is invalid, log out
+        // If token doesn't match (someone else logged in), log out
         if (data && !data.valid) {
           console.log('Session invalidated:', data.message);
+          localStorage.removeItem('session_token'); // Clear invalid token
           await supabase.auth.signOut();
           if (onSessionInvalid) {
             onSessionInvalid(data.message);
