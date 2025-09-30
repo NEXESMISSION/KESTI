@@ -168,9 +168,159 @@ GRANT EXECUTE ON FUNCTION auto_set_business_id() TO authenticated;
 GRANT EXECUTE ON FUNCTION update_business_settings(TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_business_details() TO authenticated;
 
+-- Step 8: Enhanced device session management with automatic limit enforcement
+
+-- Update register_device_session to enforce device limits automatically
+CREATE OR REPLACE FUNCTION register_device_session(
+  p_device_id TEXT,
+  p_device_name TEXT DEFAULT NULL
+)
+RETURNS JSON AS $$
+DECLARE
+  v_business_id UUID;
+  v_device_limit INT;
+  v_current_count INT;
+  v_oldest_session_id UUID;
+BEGIN
+  -- Get business_id and device_limit for current user
+  SELECT p.business_id, b.device_limit
+  INTO v_business_id, v_device_limit
+  FROM profiles p
+  JOIN businesses b ON b.id = p.business_id
+  WHERE p.id = auth.uid();
+
+  IF v_business_id IS NULL THEN
+    RETURN json_build_object(
+      'success', false,
+      'message', 'No business associated with this user'
+    );
+  END IF;
+
+  -- Count current active sessions (last 5 minutes)
+  SELECT COUNT(*)
+  INTO v_current_count
+  FROM device_sessions
+  WHERE business_id = v_business_id
+    AND last_active > NOW() - INTERVAL '5 minutes';
+
+  -- If limit is reached, remove the oldest session
+  IF v_current_count >= v_device_limit THEN
+    -- Get the oldest session ID
+    SELECT id INTO v_oldest_session_id
+    FROM device_sessions
+    WHERE business_id = v_business_id
+      AND last_active > NOW() - INTERVAL '5 minutes'
+    ORDER BY last_active ASC
+    LIMIT 1;
+
+    -- Delete the oldest session
+    DELETE FROM device_sessions WHERE id = v_oldest_session_id;
+  END IF;
+
+  -- Insert or update this device's session
+  INSERT INTO device_sessions (business_id, device_id, device_name, last_active)
+  VALUES (v_business_id, p_device_id, p_device_name, NOW())
+  ON CONFLICT (business_id, device_id)
+  DO UPDATE SET
+    last_active = NOW(),
+    device_name = COALESCE(EXCLUDED.device_name, device_sessions.device_name);
+
+  RETURN json_build_object(
+    'success', true,
+    'message', 'Device session registered successfully',
+    'device_id', p_device_id,
+    'business_id', v_business_id
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to check if current session is still valid
+CREATE OR REPLACE FUNCTION check_device_session(p_device_id TEXT)
+RETURNS JSON AS $$
+DECLARE
+  v_business_id UUID;
+  v_session_exists BOOLEAN;
+BEGIN
+  -- Get business_id for current user
+  SELECT business_id INTO v_business_id
+  FROM profiles
+  WHERE id = auth.uid();
+
+  IF v_business_id IS NULL THEN
+    RETURN json_build_object(
+      'valid', false,
+      'message', 'No business associated with this user'
+    );
+  END IF;
+
+  -- Check if session exists and is recent
+  SELECT EXISTS(
+    SELECT 1
+    FROM device_sessions
+    WHERE business_id = v_business_id
+      AND device_id = p_device_id
+      AND last_active > NOW() - INTERVAL '5 minutes'
+  ) INTO v_session_exists;
+
+  RETURN json_build_object(
+    'valid', v_session_exists,
+    'message', CASE 
+      WHEN v_session_exists THEN 'Session is valid'
+      ELSE 'Session expired or removed due to device limit'
+    END
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to update session activity (heartbeat)
+CREATE OR REPLACE FUNCTION update_device_session(p_device_id TEXT)
+RETURNS JSON AS $$
+DECLARE
+  v_business_id UUID;
+  v_updated BOOLEAN := false;
+BEGIN
+  -- Get business_id for current user
+  SELECT business_id INTO v_business_id
+  FROM profiles
+  WHERE id = auth.uid();
+
+  IF v_business_id IS NULL THEN
+    RETURN json_build_object(
+      'success', false,
+      'message', 'No business associated with this user'
+    );
+  END IF;
+
+  -- Update last_active timestamp
+  UPDATE device_sessions
+  SET last_active = NOW()
+  WHERE business_id = v_business_id
+    AND device_id = p_device_id
+  RETURNING true INTO v_updated;
+
+  IF v_updated THEN
+    RETURN json_build_object(
+      'success', true,
+      'message', 'Session updated'
+    );
+  ELSE
+    RETURN json_build_object(
+      'success', false,
+      'message', 'Session not found - please login again'
+    );
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Grant permissions
+GRANT EXECUTE ON FUNCTION register_device_session(TEXT, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION check_device_session(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION update_device_session(TEXT) TO authenticated;
+
 -- Verification queries (run these to check if everything is set up correctly)
 -- SELECT * FROM businesses LIMIT 5;
 -- SELECT trigger_name, event_manipulation, event_object_table FROM information_schema.triggers WHERE trigger_name LIKE '%business_id%';
+-- SELECT * FROM device_sessions ORDER BY last_active DESC LIMIT 10;
 
 -- Migration Complete!
 -- Summary:
@@ -179,3 +329,8 @@ GRANT EXECUTE ON FUNCTION get_business_details() TO authenticated;
 -- 3. Added triggers to products, categories, expenses, and sales tables
 -- 4. Updated update_business_settings() to handle phone numbers
 -- 5. Updated get_business_details() to return phone numbers
+-- 6. Enhanced device session management with automatic enforcement:
+--    - register_device_session: Automatically removes oldest session when limit reached
+--    - check_device_session: Validates if current session is still active
+--    - update_device_session: Heartbeat to keep session alive
+-- 7. Device sessions expire after 5 minutes of inactivity

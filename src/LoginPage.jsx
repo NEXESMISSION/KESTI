@@ -1,6 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import './LoginPage.css';
+
+// Generate or retrieve device ID
+function getDeviceId() {
+  let deviceId = localStorage.getItem('device_id');
+  if (!deviceId) {
+    deviceId = 'device_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+    localStorage.setItem('device_id', deviceId);
+  }
+  return deviceId;
+}
 
 function LoginPage({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -22,6 +32,28 @@ function LoginPage({ onLogin }) {
       if (error) throw error;
       
       if (data.user) {
+        // Register device session
+        const deviceId = getDeviceId();
+        const deviceName = navigator.userAgent.substring(0, 100); // Browser info
+        
+        const { data: sessionData, error: sessionError } = await supabase
+          .rpc('register_device_session', {
+            p_device_id: deviceId,
+            p_device_name: deviceName
+          });
+
+        if (sessionError) {
+          console.error('Session registration error:', sessionError);
+        }
+
+        // If session was kicked out, show message
+        if (sessionData && !sessionData.success) {
+          setError(sessionData.message);
+          await supabase.auth.signOut();
+          setLoading(false);
+          return;
+        }
+
         onLogin();
       }
     } catch (error) {

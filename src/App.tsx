@@ -7,6 +7,8 @@ import LoginPage from './LoginPage'
 import DashboardPage from './DashboardPage'
 // @ts-ignore
 import ClientApp from './ClientApp'
+// @ts-ignore
+import SessionMonitor from './SessionMonitor'
 import './App.css'
 
 function App() {
@@ -95,9 +97,25 @@ function App() {
   // Render the correct dashboard based on the user's role (V7.0: Two-role system)
   switch (userRole) {
     case 'super_admin':
-      return <DashboardPage onLogout={handleLogout} />
+      return (
+        <>
+          <SessionMonitor onSessionInvalid={(message: string) => {
+            alert(message || 'Your session has been ended because the device limit was reached.');
+            handleLogout();
+          }} />
+          <DashboardPage onLogout={handleLogout} />
+        </>
+      )
     case 'business_admin':
-      return <ClientApp onLogout={handleLogout} />
+      return (
+        <>
+          <SessionMonitor onSessionInvalid={(message: string) => {
+            alert(message || 'Your session has been ended because the device limit was reached.');
+            handleLogout();
+          }} />
+          <ClientApp onLogout={handleLogout} />
+        </>
+      )
     default:
       return (
         <div style={{
