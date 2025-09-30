@@ -20,6 +20,7 @@ dist-ssr
 # Backup files and SQL
 backups/
 *.sql
+!V11_COMPLETE_FIX.sql
 *.bat
 *.md
 !README.md

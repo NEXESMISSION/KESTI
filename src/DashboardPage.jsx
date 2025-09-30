@@ -7,13 +7,17 @@ function DashboardPage({ onLogout }) {
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     subscriptionEndDate: '',
     deviceLimit: 5,
-    pinCode: ''
+    pinCode: '',
+    phonePrimary: '',
+    phoneSecondary: '',
+    phoneTertiary: ''
   });
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState('');
@@ -29,7 +33,7 @@ function DashboardPage({ onLogout }) {
       setLoading(true);
       const { data, error } = await supabase
         .from('businesses')
-        .select('id, name, subscription_end_date, device_limit, status, created_at')
+        .select('id, name, subscription_end_date, device_limit, status, created_at, phone_primary, phone_secondary, phone_tertiary')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -55,7 +59,10 @@ function DashboardPage({ onLogout }) {
           adminPassword: formData.password,
           subscriptionEndDate: formData.subscriptionEndDate,
           deviceLimit: parseInt(formData.deviceLimit),
-          pinCode: formData.pinCode
+          pinCode: formData.pinCode,
+          phonePrimary: formData.phonePrimary || null,
+          phoneSecondary: formData.phoneSecondary || null,
+          phoneTertiary: formData.phoneTertiary || null
         }
       });
 
@@ -69,7 +76,10 @@ function DashboardPage({ onLogout }) {
         password: '',
         subscriptionEndDate: '',
         deviceLimit: 5,
-        pinCode: ''
+        pinCode: '',
+        phonePrimary: '',
+        phoneSecondary: '',
+        phoneTertiary: ''
       });
       getBusinesses(); // Refresh the list
     } catch (error) {
@@ -188,37 +198,26 @@ function DashboardPage({ onLogout }) {
   }
 
   async function handleChangePassword(business) {
-    const newPassword = prompt(`Enter new password for "${business.name}" admin:`);
-    if (!newPassword) return;
+    const newPassword = prompt('Enter new password for business admin (min 6 characters):');
     
-    if (newPassword.length < 6) {
-      alert('Password must be at least 6 characters');
+    if (!newPassword || newPassword.length < 6) {
+      alert('Password must be at least 6 characters long.');
       return;
     }
 
     try {
-      // First, get the admin user ID for this business
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('business_id', business.id)
-        .eq('role', 'business_admin')
-        .single();
-
-      if (profileError || !profile) {
-        throw new Error('Could not find business admin user');
-      }
-
-      // Update password using Supabase admin API
-      const { error } = await supabase.auth.admin.updateUserById(
-        profile.id,
-        { password: newPassword }
-      );
+      // Call edge function to change password (requires service role key)
+      const { data, error } = await supabase.functions.invoke('update-business-password', {
+        body: {
+          businessId: business.id,
+          newPassword: newPassword
+        }
+      });
 
       if (error) throw error;
       alert('Password changed successfully!');
     } catch (error) {
-      alert('Error changing password: ' + error.message);
+      alert('Error changing password: ' + error.message + '\n\nNote: This feature requires the update-business-password edge function to be deployed.');
     }
   }
 
@@ -271,10 +270,20 @@ function DashboardPage({ onLogout }) {
 
       <main className="dashboard-main">
         <div className="dashboard-actions">
-          <h2>Businesses ({businesses.length})</h2>
+          <h2>Businesses ({businesses.filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase())).length})</h2>
           <button onClick={() => setShowModal(true)} className="btn-primary">
             + Add New Business
           </button>
+        </div>
+
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="🔍 Search businesses by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
         </div>
 
         {error && (
@@ -291,19 +300,24 @@ function DashboardPage({ onLogout }) {
           </div>
         ) : (
           <div className="table-container">
-            <table className="businesses-table">
-              <thead>
-                <tr>
-                  <th>Business Name</th>
-                  <th>Status</th>
-                  <th>Subscription End</th>
-                  <th>Days Remaining</th>
-                  <th>Device Limit</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {businesses.map((business) => (
+            {businesses.filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+              <div className="empty-state">
+                <p>No businesses found matching "{searchQuery}"</p>
+              </div>
+            ) : (
+              <table className="businesses-table">
+                <thead>
+                  <tr>
+                    <th>Business Name</th>
+                    <th>Status</th>
+                    <th>Subscription End</th>
+                    <th>Days Remaining</th>
+                    <th>Device Limit</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {businesses.filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase())).map((business) => (
                   <tr key={business.id}>
                     <td className="business-name">{business.name}</td>
                     <td>
@@ -396,12 +410,12 @@ function DashboardPage({ onLogout }) {
                     </td>
                   </tr>
                 ))}
-              </tbody>
+               </tbody>
             </table>
+            )}
           </div>
         )}
       </main>
-
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -498,6 +512,42 @@ function DashboardPage({ onLogout }) {
                   value={formData.pinCode}
                   onChange={(e) => setFormData({...formData, pinCode: e.target.value})}
                   required={!editingBusiness}
+                  disabled={creating}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="phonePrimary">Primary Phone Number</label>
+                <input
+                  id="phonePrimary"
+                  type="tel"
+                  placeholder="e.g., +216 12 345 678"
+                  value={formData.phonePrimary}
+                  onChange={(e) => setFormData({...formData, phonePrimary: e.target.value})}
+                  disabled={creating}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="phoneSecondary">Secondary Phone Number (Optional)</label>
+                <input
+                  id="phoneSecondary"
+                  type="tel"
+                  placeholder="e.g., +216 98 765 432"
+                  value={formData.phoneSecondary}
+                  onChange={(e) => setFormData({...formData, phoneSecondary: e.target.value})}
+                  disabled={creating}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="phoneTertiary">Tertiary Phone Number (Optional)</label>
+                <input
+                  id="phoneTertiary"
+                  type="tel"
+                  placeholder="e.g., +216 11 222 333"
+                  value={formData.phoneTertiary}
+                  onChange={(e) => setFormData({...formData, phoneTertiary: e.target.value})}
                   disabled={creating}
                 />
               </div>

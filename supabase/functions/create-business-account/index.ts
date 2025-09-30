@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { businessName, adminEmail, adminPassword, subscriptionEndDate, deviceLimit, pinCode } = await req.json()
+    const { businessName, adminEmail, adminPassword, subscriptionEndDate, deviceLimit, pinCode, phonePrimary, phoneSecondary, phoneTertiary } = await req.json()
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -38,7 +38,16 @@ Deno.serve(async (req) => {
     // Step 2: Create the Business
     const { data: businessData, error: businessError } = await supabaseAdmin
       .from('businesses')
-      .insert({ name: businessName, subscription_end_date: subscriptionEndDate, device_limit: deviceLimit, pin_code: pinCode, status: 'active' })
+      .insert({ 
+        name: businessName, 
+        subscription_end_date: subscriptionEndDate, 
+        device_limit: deviceLimit, 
+        pin_code: pinCode, 
+        phone_primary: phonePrimary || null,
+        phone_secondary: phoneSecondary || null,
+        phone_tertiary: phoneTertiary || null,
+        status: 'active' 
+      })
       .select()
       .single();
     if (businessError) {
