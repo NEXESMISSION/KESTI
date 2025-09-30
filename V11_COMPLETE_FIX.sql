@@ -29,11 +29,28 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Function to auto-populate sold_by_user_id for sales
+CREATE OR REPLACE FUNCTION auto_set_sold_by_user_id()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Set sold_by_user_id to the currently authenticated user
+  NEW.sold_by_user_id := auth.uid();
+  
+  -- If still null, raise an error
+  IF NEW.sold_by_user_id IS NULL THEN
+    RAISE EXCEPTION 'Could not determine user ID for sale';
+  END IF;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Step 3: Drop existing triggers if they exist
 DROP TRIGGER IF EXISTS trigger_auto_set_business_id_products ON products;
 DROP TRIGGER IF EXISTS trigger_auto_set_business_id_categories ON categories;
 DROP TRIGGER IF EXISTS trigger_auto_set_business_id_expenses ON expenses;
 DROP TRIGGER IF EXISTS trigger_auto_set_business_id_sales ON sales;
+DROP TRIGGER IF EXISTS trigger_auto_set_sold_by_user_id_sales ON sales;
 
 -- Step 4: Create triggers for all tables that need business_id
 CREATE TRIGGER trigger_auto_set_business_id_products
@@ -59,6 +76,12 @@ CREATE TRIGGER trigger_auto_set_business_id_sales
   FOR EACH ROW
   WHEN (NEW.business_id IS NULL)
   EXECUTE FUNCTION auto_set_business_id();
+
+CREATE TRIGGER trigger_auto_set_sold_by_user_id_sales
+  BEFORE INSERT ON sales
+  FOR EACH ROW
+  WHEN (NEW.sold_by_user_id IS NULL)
+  EXECUTE FUNCTION auto_set_sold_by_user_id();
 
 -- Step 5: Update the update_business_settings function to handle phone numbers
 CREATE OR REPLACE FUNCTION update_business_settings(
@@ -165,6 +188,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Step 7: Grant necessary permissions
 GRANT EXECUTE ON FUNCTION auto_set_business_id() TO authenticated;
+GRANT EXECUTE ON FUNCTION auto_set_sold_by_user_id() TO authenticated;
 GRANT EXECUTE ON FUNCTION update_business_settings(TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_business_details() TO authenticated;
 
@@ -322,15 +346,50 @@ GRANT EXECUTE ON FUNCTION update_device_session(TEXT) TO authenticated;
 -- SELECT trigger_name, event_manipulation, event_object_table FROM information_schema.triggers WHERE trigger_name LIKE '%business_id%';
 -- SELECT * FROM device_sessions ORDER BY last_active DESC LIMIT 10;
 
+-- Step 9: Storage Bucket Setup (MUST BE DONE MANUALLY IN SUPABASE DASHBOARD)
+-- Go to Storage → Create a new bucket named 'product_images'
+-- Set it to PUBLIC
+-- Add the following policies:
+
+-- IMPORTANT: After running this SQL, go to Supabase Dashboard → Storage
+-- 1. Create a new bucket called 'product_images'
+-- 2. Set it to PUBLIC access
+-- 3. Add these policies in the Storage Policies section:
+
+/*
+Policy Name: Allow authenticated users to upload
+Allowed operation: INSERT
+Policy definition:
+(bucket_id = 'product_images'::text) AND (auth.role() = 'authenticated'::text)
+
+Policy Name: Public read access  
+Allowed operation: SELECT
+Policy definition:
+(bucket_id = 'product_images'::text)
+
+Policy Name: Allow authenticated users to update
+Allowed operation: UPDATE
+Policy definition:
+(bucket_id = 'product_images'::text) AND (auth.role() = 'authenticated'::text)
+
+Policy Name: Allow authenticated users to delete
+Allowed operation: DELETE
+Policy definition:
+(bucket_id = 'product_images'::text) AND (auth.role() = 'authenticated'::text)
+*/
+
 -- Migration Complete!
 -- Summary:
 -- 1. Added phone number fields (primary, secondary, tertiary) to businesses table
 -- 2. Created auto_set_business_id() trigger function to automatically populate business_id
--- 3. Added triggers to products, categories, expenses, and sales tables
--- 4. Updated update_business_settings() to handle phone numbers
--- 5. Updated get_business_details() to return phone numbers
--- 6. Enhanced device session management with automatic enforcement:
+-- 3. Created auto_set_sold_by_user_id() trigger function to automatically populate sold_by_user_id
+-- 4. Added triggers to products, categories, expenses, and sales tables
+-- 5. Added sold_by_user_id trigger to sales table (fixes "sold_by_user_id null" error)
+-- 6. Updated update_business_settings() to handle phone numbers
+-- 7. Updated get_business_details() to return phone numbers
+-- 8. Enhanced device session management with automatic enforcement:
 --    - register_device_session: Automatically removes oldest session when limit reached
 --    - check_device_session: Validates if current session is still active
 --    - update_device_session: Heartbeat to keep session alive
--- 7. Device sessions expire after 5 minutes of inactivity
+-- 9. Device sessions expire after 5 minutes of inactivity
+-- 10. Storage bucket 'product_images' must be created manually (see instructions above)
