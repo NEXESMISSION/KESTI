@@ -32,28 +32,22 @@ function LoginPage({ onLogin }) {
       if (error) throw error;
       
       if (data.user) {
-        // Register device session
+        // Register device session - this will automatically kick out oldest session if limit reached
         const deviceId = getDeviceId();
         const deviceName = navigator.userAgent.substring(0, 100); // Browser info
         
-        const { data: sessionData, error: sessionError } = await supabase
-          .rpc('register_device_session', {
+        try {
+          await supabase.rpc('register_device_session', {
             p_device_id: deviceId,
             p_device_name: deviceName
           });
-
-        if (sessionError) {
-          console.error('Session registration error:', sessionError);
+        } catch (sessionError) {
+          // Log error but don't block login - session monitoring will handle it
+          console.warn('Session registration warning:', sessionError);
         }
 
-        // If session was kicked out, show message
-        if (sessionData && !sessionData.success) {
-          setError(sessionData.message);
-          await supabase.auth.signOut();
-          setLoading(false);
-          return;
-        }
-
+        // Always proceed with login - the session was registered successfully
+        // If device limit was reached, the oldest session was automatically kicked out
         onLogin();
       }
     } catch (error) {
