@@ -439,6 +439,7 @@ function DashboardPage({ onLogout }) {
                       placeholder="admin@business.com"
                       value={formData.email}
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      autoComplete="email"
                       required
                       disabled={creating}
                     />
@@ -452,6 +453,7 @@ function DashboardPage({ onLogout }) {
                       placeholder="Minimum 6 characters"
                       value={formData.password}
                       onChange={(e) => setFormData({...formData, password: e.target.value})}
+                      autoComplete="new-password"
                       required
                       minLength={6}
                       disabled={creating}
