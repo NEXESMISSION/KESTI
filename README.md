@@ -136,6 +136,44 @@ Current Version: **V10.1** - Production Ready
 
 Proprietary - All rights reserved
 
+## Troubleshooting
+
+### CORS Errors on Production
+
+If you encounter CORS errors when creating business accounts:
+
+1. **Ensure Edge Function is Deployed**:
+   ```bash
+   npx supabase link --project-ref your-project-ref
+   npx supabase functions deploy create-business-account
+   ```
+
+2. **Check Edge Function Status**:
+   - Go to Supabase Dashboard → Functions
+   - Verify `create-business-account` is deployed and active
+
+3. **Verify Environment Variables in Vercel**:
+   - Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+   - Ensure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set
+   - Redeploy after adding variables
+
+### Autocomplete Warnings
+
+All password and email inputs now have proper `autocomplete` attributes to prevent browser warnings.
+
+## Production Deployment Checklist
+
+- [ ] Push code to GitHub repository
+- [ ] Link Supabase project: `npx supabase link --project-ref YOUR_PROJECT_REF`
+- [ ] Deploy edge functions: `npx supabase functions deploy create-business-account`
+- [ ] Import project to Vercel from GitHub
+- [ ] Set environment variables in Vercel:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
+- [ ] Deploy on Vercel
+- [ ] Test creating a business account
+- [ ] Test login and POS functionality
+
 ## Support
 
 For support or questions, please contact the development team.
