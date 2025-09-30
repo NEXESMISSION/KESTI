@@ -25,6 +25,7 @@ backups/
 *.md
 !README.md
 !APPLY_V11_NOW.md
+!CRITICAL_READ_THIS.md
 
 # Editor directories and files
 .vscode/*

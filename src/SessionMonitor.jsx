@@ -18,8 +18,17 @@ function SessionMonitor({ onSessionInvalid }) {
     const deviceId = getDeviceId();
     if (!deviceId) return;
 
+    // Track when component mounted (login time)
+    const loginTime = Date.now();
+    const GRACE_PERIOD = 2 * 60 * 1000; // 2 minutes grace period after login
+
     // Check session validity every 30 seconds
     const checkSession = async () => {
+      // Skip check during grace period to allow session to be established
+      const timeSinceLogin = Date.now() - loginTime;
+      if (timeSinceLogin < GRACE_PERIOD) {
+        return; // Don't check yet, session is fresh
+      }
       try {
         const { data: user } = await supabase.auth.getUser();
         
