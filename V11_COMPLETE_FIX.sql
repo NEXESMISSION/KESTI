@@ -207,18 +207,42 @@ CREATE OR REPLACE FUNCTION register_device_session(
 RETURNS JSON AS $$
 DECLARE
   v_business_id UUID;
+  v_user_role TEXT;
   v_device_limit INT;
   v_current_count INT;
   v_oldest_session_device_id TEXT;
 BEGIN
-  -- Get business_id and device_limit for current user
-  SELECT p.business_id, b.device_limit
-  INTO v_business_id, v_device_limit
-  FROM profiles p
-  JOIN businesses b ON b.id = p.business_id
-  WHERE p.id = auth.uid();
+  -- Get user role and business_id
+  SELECT role, business_id
+  INTO v_user_role, v_business_id
+  FROM profiles
+  WHERE id = auth.uid();
 
-  IF v_business_id IS NULL THEN
+  -- Super admins bypass device limits entirely
+  IF v_user_role = 'super_admin' THEN
+    -- Just register session without any limit checks
+    INSERT INTO device_sessions (business_id, device_id, device_name, session_token, last_active)
+    VALUES (NULL, p_device_id, p_device_name, p_session_token, NOW())
+    ON CONFLICT (business_id, device_id)
+    DO UPDATE SET
+      session_token = EXCLUDED.session_token,
+      last_active = NOW(),
+      device_name = COALESCE(EXCLUDED.device_name, device_sessions.device_name);
+
+    RETURN json_build_object(
+      'success', true,
+      'message', 'Super admin session registered (no limits)',
+      'device_id', p_device_id,
+      'session_token', p_session_token
+    );
+  END IF;
+
+  -- For business users, get device limit
+  SELECT device_limit INTO v_device_limit
+  FROM businesses
+  WHERE id = v_business_id;
+
+  IF v_business_id IS NULL OR v_device_limit IS NULL THEN
     RETURN json_build_object(
       'success', false,
       'message', 'No business associated with this user'
@@ -277,26 +301,26 @@ CREATE OR REPLACE FUNCTION check_device_session(
 RETURNS JSON AS $$
 DECLARE
   v_business_id UUID;
+  v_user_role TEXT;
   v_stored_token TEXT;
   v_token_matches BOOLEAN := false;
 BEGIN
-  -- Get business_id for current user
-  SELECT business_id INTO v_business_id
+  -- Get user role and business_id
+  SELECT role, business_id
+  INTO v_user_role, v_business_id
   FROM profiles
   WHERE id = auth.uid();
 
-  IF v_business_id IS NULL THEN
-    RETURN json_build_object(
-      'valid', false,
-      'message', 'No business associated with this user'
-    );
-  END IF;
-
   -- Get the stored token for this device
+  -- For super_admin: business_id is NULL
+  -- For business_admin: business_id is their business
   SELECT session_token INTO v_stored_token
   FROM device_sessions
-  WHERE business_id = v_business_id
-    AND device_id = p_device_id
+  WHERE device_id = p_device_id
+    AND (
+      (v_user_role = 'super_admin' AND business_id IS NULL) OR
+      (v_user_role != 'super_admin' AND business_id = v_business_id)
+    )
     AND last_active > NOW() - INTERVAL '5 minutes';
 
   -- Check if tokens match
@@ -318,25 +342,25 @@ CREATE OR REPLACE FUNCTION update_device_session(p_device_id TEXT)
 RETURNS JSON AS $$
 DECLARE
   v_business_id UUID;
+  v_user_role TEXT;
   v_updated BOOLEAN := false;
 BEGIN
-  -- Get business_id for current user
-  SELECT business_id INTO v_business_id
+  -- Get user role and business_id
+  SELECT role, business_id
+  INTO v_user_role, v_business_id
   FROM profiles
   WHERE id = auth.uid();
 
-  IF v_business_id IS NULL THEN
-    RETURN json_build_object(
-      'success', false,
-      'message', 'No business associated with this user'
-    );
-  END IF;
-
   -- Update last_active timestamp
+  -- For super_admin: business_id is NULL
+  -- For business_admin: business_id is their business
   UPDATE device_sessions
   SET last_active = NOW()
-  WHERE business_id = v_business_id
-    AND device_id = p_device_id
+  WHERE device_id = p_device_id
+    AND (
+      (v_user_role = 'super_admin' AND business_id IS NULL) OR
+      (v_user_role != 'super_admin' AND business_id = v_business_id)
+    )
   RETURNING true INTO v_updated;
 
   IF v_updated THEN
