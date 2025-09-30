@@ -1,0 +1,257 @@
+.financial-summary {
+  padding: 20px;
+}
+
+.financial-summary .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.financial-summary .header h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1a202c;
+  margin: 0;
+}
+
+.date-filter {
+  display: flex;
+  gap: 8px;
+  background: white;
+  padding: 6px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.date-filter button {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: #4a5568;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.date-filter button:hover {
+  background-color: #edf2f7;
+}
+
+.date-filter button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.metric-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-left: 4px solid transparent;
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.metric-card.revenue {
+  border-left-color: #38a169;
+}
+
+.metric-card.cost {
+  border-left-color: #d69e2e;
+}
+
+.metric-card.expenses {
+  border-left-color: #e53e3e;
+}
+
+.metric-card.gross-profit {
+  border-left-color: #3182ce;
+}
+
+.metric-card.net-profit {
+  border-left-color: #38a169;
+}
+
+.metric-card.net-profit.negative {
+  border-left-color: #e53e3e;
+}
+
+.metric-card.margin {
+  border-left-color: #805ad5;
+}
+
+.metric-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.metric-content {
+  flex: 1;
+}
+
+.metric-label {
+  color: #718096;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1a202c;
+  margin-bottom: 4px;
+}
+
+.metric-card.net-profit.negative .metric-value {
+  color: #e53e3e;
+}
+
+.metric-subtext {
+  color: #a0aec0;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.stat-box {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stat-box.warning {
+  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+}
+
+.stat-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1a202c;
+}
+
+.stat-label {
+  color: #718096;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+.info-box {
+  background: linear-gradient(135deg, #e6fffa 0%, #b2f5ea 100%);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.info-box h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.3rem;
+  color: #1a202c;
+}
+
+.info-box ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.info-box li {
+  margin-bottom: 12px;
+  color: #2d3748;
+  line-height: 1.6;
+}
+
+.info-box li:last-child {
+  margin-bottom: 0;
+}
+
+.info-box strong {
+  color: #1a202c;
+}
+
+.error-message {
+  background-color: #fed7d7;
+  color: #c53030;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: #718096;
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .financial-summary .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .date-filter {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .date-filter button {
+    flex: 1;
+    min-width: 80px;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .metric-value {
+    font-size: 1.5rem;
+  }
+  
+  .stat-value {
+    font-size: 1.5rem;
+  }
+}
