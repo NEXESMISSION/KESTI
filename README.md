@@ -136,6 +136,58 @@ Current Version: **V10.1** - Production Ready
 
 Proprietary - All rights reserved
 
+## V11 Update Instructions
+
+### Critical: Apply V11 SQL Migration
+
+The V11 update includes critical fixes for:
+- ✅ Automatic `business_id` population (fixes INSERT errors)
+- ✅ Phone number fields for businesses
+- ✅ Robust device session management with automatic limit enforcement
+- ✅ Password update edge function
+
+**Step 1: Apply SQL Migration**
+
+```bash
+# Open Supabase SQL Editor in your dashboard
+# Copy and paste the contents of V11_COMPLETE_FIX.sql
+# Run the migration
+```
+
+Or use the CLI:
+```bash
+cat V11_COMPLETE_FIX.sql | npx supabase db execute
+```
+
+**Step 2: Deploy Edge Functions**
+
+```bash
+# Deploy the updated create-business-account function (with phone numbers)
+npx supabase functions deploy create-business-account
+
+# Deploy the new password update function
+npx supabase functions deploy update-business-password
+```
+
+**Step 3: Redeploy to Vercel**
+
+Vercel will automatically detect the git push and redeploy. Or trigger manually:
+```bash
+vercel --prod
+```
+
+### What's New in V11?
+
+1. **Fixed business_id Issues**: Database triggers now automatically set `business_id` when creating products, categories, or expenses
+2. **Phone Numbers**: Businesses can now have up to 3 phone numbers
+3. **Search Bar**: Super Admin Dashboard now has a search bar to filter businesses
+4. **Robust Device Limits**: 
+   - Sessions expire after 5 minutes of inactivity
+   - When device limit is reached, oldest session is automatically removed
+   - Session monitor checks every 30 seconds and logs out if kicked out
+   - Device limit is now properly enforced (e.g., limit of 1 = only 1 active device)
+5. **Password Change**: Super Admin can now change business admin passwords (requires edge function)
+
 ## Troubleshooting
 
 ### CORS Errors on Production
