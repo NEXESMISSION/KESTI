@@ -19,8 +19,19 @@ function SessionMonitor({ onSessionInvalid }) {
     const sessionToken = getSessionToken();
     if (!deviceId || !sessionToken) return;
 
+    // Grace period: Don't check for 90 seconds after mount
+    // This allows NEW logins to establish themselves in the database
+    const mountTime = Date.now();
+    const GRACE_PERIOD_MS = 90 * 1000; // 90 seconds
+
     // Check if THIS session is still valid (if another device logged in and kicked us out)
     const checkSession = async () => {
+      // Skip validation during grace period
+      const elapsed = Date.now() - mountTime;
+      if (elapsed < GRACE_PERIOD_MS) {
+        console.log(`Grace period: ${Math.floor((GRACE_PERIOD_MS - elapsed) / 1000)}s remaining`);
+        return; // Don't check yet, new login is establishing
+      }
       try {
         const { data: user } = await supabase.auth.getUser();
         
