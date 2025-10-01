@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabaseClient';
 import { formatCurrency } from './utils';
-import './CashierViewNew.css';
+import './CashierView.css';
 
 // --- Helper Components ---
 
