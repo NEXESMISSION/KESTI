@@ -356,7 +356,7 @@ function CashierView({ onUnlock }) {
                               )}
                               <div className="product-tile-name">{product.name}</div>
                               <div className="product-tile-price">
-                                ${parseFloat(product.selling_price).toFixed(2)}
+                                {parseFloat(product.selling_price).toFixed(2)} TND
                                 {product.price_type === 'per_weight' && product.unit ? `/${product.unit}` : ''}
                               </div>
                               <div className="product-tile-stock">{product.stock_quantity} in stock</div>
@@ -392,7 +392,7 @@ function CashierView({ onUnlock }) {
                     <div key={item.id} className="cart-item">
                       <div className="cart-item-info">
                         <div className="cart-item-name">{item.name}</div>
-                        <div className="cart-item-price">${parseFloat(item.selling_price).toFixed(2)}</div>
+                        <div className="cart-item-price">{parseFloat(item.selling_price).toFixed(2)} TND</div>
                       </div>
                       <div className="cart-item-controls">
                         <button
@@ -416,7 +416,7 @@ function CashierView({ onUnlock }) {
                         </button>
                       </div>
                       <div className="cart-item-total">
-                        ${(parseFloat(item.selling_price) * item.quantity).toFixed(2)}
+                        {(parseFloat(item.selling_price) * item.quantity).toFixed(2)} TND
                       </div>
                     </div>
                   ))
@@ -426,7 +426,7 @@ function CashierView({ onUnlock }) {
               <div className="cart-footer">
                 <div className="cart-total">
                   <span className="total-label">Total:</span>
-                  <span className="total-amount">${calculateTotal().toFixed(2)}</span>
+                  <span className="total-amount">{calculateTotal().toFixed(2)} TND</span>
                 </div>
                 <button
                   className="checkout-button"
@@ -456,14 +456,14 @@ function CashierView({ onUnlock }) {
                       <span className="sale-time">
                         {new Date(sale.created_at).toLocaleTimeString()}
                       </span>
-                      <span className="sale-total">${parseFloat(sale.total_amount).toFixed(2)}</span>
+                      <span className="sale-total">{parseFloat(sale.total_amount).toFixed(2)} TND</span>
                     </div>
                     <div className="sale-items">
                       {sale.sale_items.map(item => (
                         <div key={item.id} className="sale-item-row">
                           <span>{item.products?.name || 'Unknown'}</span>
                           <span>x{item.quantity}</span>
-                          <span>${parseFloat(item.price_at_sale).toFixed(2)}</span>
+                          <span>{parseFloat(item.price_at_sale).toFixed(2)} TND</span>
                         </div>
                       ))}
                     </div>
@@ -472,7 +472,7 @@ function CashierView({ onUnlock }) {
                 <div className="history-summary">
                   <strong>Total Sales Today:</strong> {todaysSales.length}
                   <br />
-                  <strong>Total Revenue:</strong> ${todaysSales.reduce((sum, s) => sum + parseFloat(s.total_amount), 0).toFixed(2)}
+                  <strong>Total Revenue:</strong> {todaysSales.reduce((sum, s) => sum + parseFloat(s.total_amount), 0).toFixed(2)} TND
                 </div>
               </div>
             )}
