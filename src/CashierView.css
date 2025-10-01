@@ -684,4 +684,64 @@
   .cart-section {
     width: 100%;
   }
+  
+  /* Mobile-specific font size reductions for better readability */
+  .cashier-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .admin-unlock-button,
+  .logout-button {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+  }
+  
+  .category-header h3 {
+    font-size: 1rem;
+  }
+  
+  .product-tile-name {
+    font-size: 0.85rem;
+  }
+  
+  .product-tile-price {
+    font-size: 1rem;
+  }
+  
+  .product-tile-stock {
+    font-size: 0.75rem;
+  }
+  
+  .cart-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .cart-item-name {
+    font-size: 0.9rem;
+  }
+  
+  .cart-item-quantity {
+    font-size: 0.95rem;
+  }
+  
+  .cart-item-total {
+    font-size: 0.95rem;
+  }
+  
+  .total-label {
+    font-size: 1.1rem;
+  }
+  
+  .total-amount {
+    font-size: 1.4rem;
+  }
+  
+  .checkout-button {
+    font-size: 1rem;
+    padding: 0.85rem;
+  }
+  
+  .empty-products {
+    font-size: 1rem;
+  }
 }

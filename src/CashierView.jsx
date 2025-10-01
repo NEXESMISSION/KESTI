@@ -127,9 +127,8 @@ function CashierView({ onUnlock }) {
             ? { ...item, quantity: item.quantity + 1 }
             : item
         ));
-      } else {
-        alert('Not enough stock available');
       }
+      // Silent - no alert for better UX
     } else {
       setCart([...cart, { ...product, quantity: 1 }]);
     }
@@ -145,7 +144,8 @@ function CashierView({ onUnlock }) {
     if (newQuantity <= 0) {
       removeFromCart(productId);
     } else if (newQuantity > product.stock_quantity) {
-      alert('Not enough stock available');
+      // Silent - no alert for better UX
+      return;
     } else {
       setCart(cart.map(item =>
         item.id === productId ? { ...item, quantity: newQuantity } : item
@@ -159,7 +159,7 @@ function CashierView({ onUnlock }) {
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
-      alert('Cart is empty');
+      // Silent - no alert for better UX
       return;
     }
 
@@ -202,12 +202,12 @@ function CashierView({ onUnlock }) {
         if (stockError) throw stockError;
       }
 
-      alert(`Sale completed! Total: ${total.toFixed(2)} TND`);
+      // Sale completed silently - no alert for faster checkout
       setCart([]);
       loadProducts(); // Reload to get updated stock
     } catch (error) {
-      alert('Error completing sale: ' + error.message);
       console.error('Checkout error:', error);
+      // Error logged to console - no alert for better UX
     }
   };
 
@@ -225,7 +225,7 @@ function CashierView({ onUnlock }) {
         // The app will redirect to login automatically via AuthProvider
       } catch (error) {
         console.error('Error logging out:', error);
-        alert('Error logging out: ' + error.message);
+        // Error logged to console - no alert for better UX
       }
     }
   };
