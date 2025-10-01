@@ -130,7 +130,7 @@ function SalesHistoryPage() {
           <div className="summary-icon">💰</div>
           <div className="summary-info">
             <div className="summary-label">Total Revenue</div>
-            <div className="summary-value">${totals.totalRevenue.toFixed(2)}</div>
+            <div className="summary-value">{totals.totalRevenue.toFixed(2)} TND</div>
           </div>
         </div>
 
@@ -146,7 +146,7 @@ function SalesHistoryPage() {
           <div className="summary-icon">💵</div>
           <div className="summary-info">
             <div className="summary-label">Average Sale</div>
-            <div className="summary-value">${totals.avgSale.toFixed(2)}</div>
+            <div className="summary-value">{totals.avgSale.toFixed(2)} TND</div>
           </div>
         </div>
       </div>
@@ -178,7 +178,7 @@ function SalesHistoryPage() {
                     </span>
                   </div>
                   <div className="sale-amount">
-                    ${parseFloat(sale.total_amount).toFixed(2)}
+                    {parseFloat(sale.total_amount).toFixed(2)} TND
                   </div>
                   <button className="expand-button">
                     {expandedSale === sale.id ? '▲' : '▼'}
@@ -201,8 +201,8 @@ function SalesHistoryPage() {
                           <tr key={item.id}>
                             <td>{item.products?.name || 'Unknown Product'}</td>
                             <td>{item.quantity}</td>
-                            <td>${parseFloat(item.price_at_sale).toFixed(2)}</td>
-                            <td>${(parseFloat(item.price_at_sale) * item.quantity).toFixed(2)}</td>
+                            <td>{parseFloat(item.price_at_sale).toFixed(2)} TND</td>
+                            <td>{(parseFloat(item.price_at_sale) * item.quantity).toFixed(2)} TND</td>
                           </tr>
                         ))}
                       </tbody>

@@ -182,7 +182,7 @@ function ExpenseTracker() {
       <div className="header">
         <div>
           <h2>Expense Tracker</h2>
-          <p className="total-expenses">Total: ${calculateTotalExpenses()}</p>
+          <p className="total-expenses">Total: {calculateTotalExpenses()} TND</p>
         </div>
         <button className="btn-primary" onClick={openCreateModal}>
           + Add New Expense
@@ -230,7 +230,7 @@ function ExpenseTracker() {
                   >
                     {getFrequencyLabel(expense.frequency)}
                   </span>
-                  <span className="expense-amount">${parseFloat(expense.amount).toFixed(2)}</span>
+                  <span className="expense-amount">{parseFloat(expense.amount).toFixed(2)} TND</span>
                 </div>
               </div>
               <div className="expense-actions">

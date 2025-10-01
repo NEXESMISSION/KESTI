@@ -202,7 +202,7 @@ function CashierView({ onUnlock }) {
         if (stockError) throw stockError;
       }
 
-      alert(`Sale completed! Total: $${total.toFixed(2)}`);
+      alert(`Sale completed! Total: ${total.toFixed(2)} TND`);
       setCart([]);
       loadProducts(); // Reload to get updated stock
     } catch (error) {

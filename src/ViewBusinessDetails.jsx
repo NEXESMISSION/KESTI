@@ -241,11 +241,11 @@ function ViewBusinessDetails({ businessId, onClose }) {
                     {details.products.map(product => (
                       <tr key={product.id}>
                         <td>{product.name}</td>
-                        <td>${parseFloat(product.buying_price).toFixed(2)}</td>
-                        <td>${parseFloat(product.selling_price).toFixed(2)}</td>
+                        <td>{parseFloat(product.buying_price).toFixed(2)} TND</td>
+                        <td>{parseFloat(product.selling_price).toFixed(2)} TND</td>
                         <td>{product.stock_quantity}</td>
                         <td className="profit">
-                          ${(parseFloat(product.selling_price) - parseFloat(product.buying_price)).toFixed(2)}
+                          {(parseFloat(product.selling_price) - parseFloat(product.buying_price)).toFixed(2)} TND
                         </td>
                       </tr>
                     ))}
@@ -273,7 +273,7 @@ function ViewBusinessDetails({ businessId, onClose }) {
                     {details.expenses.map(expense => (
                       <tr key={expense.id}>
                         <td>{expense.name}</td>
-                        <td>${parseFloat(expense.amount).toFixed(2)}</td>
+                        <td>{parseFloat(expense.amount).toFixed(2)} TND</td>
                         <td>{formatDate(expense.expense_date)}</td>
                         <td><span className="frequency-badge">{expense.frequency}</span></td>
                       </tr>
@@ -300,7 +300,7 @@ function ViewBusinessDetails({ businessId, onClose }) {
                     {details.sales.map(sale => (
                       <tr key={sale.id}>
                         <td>{formatDate(sale.created_at)}</td>
-                        <td className="amount">${parseFloat(sale.total_amount).toFixed(2)}</td>
+                        <td className="amount">{parseFloat(sale.total_amount).toFixed(2)} TND</td>
                       </tr>
                     ))}
                   </tbody>

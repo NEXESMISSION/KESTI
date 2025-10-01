@@ -340,15 +340,15 @@ function ProductManager() {
                 </div>
                 <div className="detail-row">
                   <span className="label">Buying Price:</span>
-                  <span className="value">${parseFloat(product.buying_price).toFixed(2)}</span>
+                  <span className="value">{parseFloat(product.buying_price).toFixed(2)} TND</span>
                 </div>
                 <div className="detail-row">
                   <span className="label">Selling Price:</span>
-                  <span className="value">${parseFloat(product.selling_price).toFixed(2)}{product.price_type === 'per_weight' ? `/${product.unit}` : ''}</span>
+                  <span className="value">{parseFloat(product.selling_price).toFixed(2)} TND{product.price_type === 'per_weight' ? `/${product.unit}` : ''}</span>
                 </div>
                 <div className="detail-row">
                   <span className="label">Profit per Unit:</span>
-                  <span className="value profit">${calculateProfit(product.buying_price, product.selling_price)}</span>
+                  <span className="value profit">{calculateProfit(product.buying_price, product.selling_price)} TND</span>
                 </div>
                 <div className="detail-row">
                   <span className="label">Margin:</span>
@@ -500,7 +500,7 @@ function ProductManager() {
 
               {formData.buying_price && formData.selling_price && (
                 <div className="profit-preview">
-                  <p><strong>Profit per Unit:</strong> ${calculateProfit(parseFloat(formData.buying_price), parseFloat(formData.selling_price))}</p>
+                  <p><strong>Profit per Unit:</strong> {calculateProfit(parseFloat(formData.buying_price), parseFloat(formData.selling_price))} TND</p>
                   <p><strong>Margin:</strong> {calculateMargin(parseFloat(formData.buying_price), parseFloat(formData.selling_price))}%</p>
                 </div>
               )}

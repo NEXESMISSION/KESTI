@@ -170,7 +170,7 @@ function FinancialSummary() {
           <div className="metric-icon">💰</div>
           <div className="metric-content">
             <div className="metric-label">Total Revenue</div>
-            <div className="metric-value">${summary.totalRevenue}</div>
+            <div className="metric-value">{summary.totalRevenue} TND</div>
           </div>
         </div>
 
@@ -178,7 +178,7 @@ function FinancialSummary() {
           <div className="metric-icon">📦</div>
           <div className="metric-content">
             <div className="metric-label">Cost of Goods Sold</div>
-            <div className="metric-value">${summary.totalCost}</div>
+            <div className="metric-value">{summary.totalCost} TND</div>
           </div>
         </div>
 
@@ -186,7 +186,7 @@ function FinancialSummary() {
           <div className="metric-icon">💸</div>
           <div className="metric-content">
             <div className="metric-label">Total Expenses</div>
-            <div className="metric-value">${summary.totalExpenses}</div>
+            <div className="metric-value">{summary.totalExpenses} TND</div>
           </div>
         </div>
 
@@ -194,7 +194,7 @@ function FinancialSummary() {
           <div className="metric-icon">📈</div>
           <div className="metric-content">
             <div className="metric-label">Gross Profit</div>
-            <div className="metric-value">${summary.grossProfit}</div>
+            <div className="metric-value">{summary.grossProfit} TND</div>
             <div className="metric-subtext">Revenue - COGS</div>
           </div>
         </div>
@@ -203,7 +203,7 @@ function FinancialSummary() {
           <div className="metric-icon">{parseFloat(summary.netProfit) >= 0 ? '✅' : '⚠️'}</div>
           <div className="metric-content">
             <div className="metric-label">Net Profit</div>
-            <div className="metric-value">${summary.netProfit}</div>
+            <div className="metric-value">{summary.netProfit} TND</div>
             <div className="metric-subtext">Gross Profit - Expenses</div>
           </div>
         </div>
