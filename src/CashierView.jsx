@@ -1,486 +1,394 @@
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabaseClient';
-import './CashierView.css';
+import { formatCurrency } from './utils';
+import './CashierViewNew.css';
 
-function CashierView({ onUnlock }) {
+// --- Helper Components ---
+
+const Icon = ({ name, className = 'w-6 h-6' }) => {
+  // Simple icon placeholder - you can replace with lucide-react or heroicons
+  const icons = {
+    'search': '🔍',
+    'shopping-cart': '🛒',
+    'x': '❌',
+    'minus': '➖',
+    'plus': '➕',
+    'log-out': '🚪',
+    'lock': '🔒',
+  };
+  return <span className={className}>{icons[name] || '📦'}</span>;
+};
+
+const Toast = ({ message, type, onRemove }) => {
+  useEffect(() => {
+    const timer = setTimeout(onRemove, 3000);
+    return () => clearTimeout(timer);
+  }, [onRemove]);
+
+  const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+  return (
+    <div className={`toast text-white px-6 py-3 rounded-full shadow-lg ${bgColor}`}>
+      {message}
+    </div>
+  );
+};
+
+// --- Main CashierView Component ---
+
+const CashierViewModern = ({ onUnlock, onLogout }) => {
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [cart, setCart] = useState([]);
+  const [cartItems, setCartItems] = useState([]);
+  const [business, setBusiness] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [businessName, setBusinessName] = useState('');
-  const [activeView, setActiveView] = useState('pos'); // 'pos' or 'history'
+  
+  // UI State
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [todaysSales, setTodaysSales] = useState([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
-  const [expandedCategories, setExpandedCategories] = useState({});
+  const [showWeightDialog, setShowWeightDialog] = useState(false);
+  const [selectedProductForWeight, setSelectedProductForWeight] = useState(null);
+  const [toasts, setToasts] = useState([]);
 
-  useEffect(() => {
-    loadProducts();
-    getBusinessInfo();
-  }, []);
+  const showToast = (message, type = 'success') => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { id, message, type }]);
+  };
 
-  useEffect(() => {
-    if (activeView === 'history') {
-      loadTodaysHistory();
-    }
-  }, [activeView]);
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
-  async function getBusinessInfo() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('business_id')
-          .eq('id', user.id)
-          .single();
-
-        if (profile?.business_id) {
-          const { data: business } = await supabase
-            .from('businesses')
-            .select('name')
-            .eq('id', profile.business_id)
-            .single();
-
-          if (business) setBusinessName(business.name);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching business info:', error);
-    }
-  }
-
-  async function loadProducts() {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      // Fetch products with category information
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("User not found");
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('business_id')
+        .eq('id', user.id)
+        .single();
+      if (!profile || !profile.business_id) throw new Error("Business not found for user");
+      
+      const { data: businessData, error: businessError } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('id', profile.business_id)
+        .single();
+      if (businessError) throw businessError;
+      setBusiness(businessData);
+
       const { data: productsData, error: productsError } = await supabase
         .from('products')
-        .select(`
-          *,
-          categories(id, name)
-        `)
-        .gt('stock_quantity', 0)
-        .order('name');
-
+        .select('*, categories(name)')
+        .eq('business_id', profile.business_id);
       if (productsError) throw productsError;
-      if (productsData) setProducts(productsData);
 
-      // Fetch all categories
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
+      const productsWithCategoryNames = productsData.map(p => ({
+          ...p,
+          categoryName: p.categories?.name || 'Uncategorized'
+      }));
+      setProducts(productsWithCategoryNames);
 
-      if (categoriesError) throw categoriesError;
-      if (categoriesData) {
-        setCategories(categoriesData);
-        // Initialize all categories as expanded
-        const expanded = {};
-        categoriesData.forEach(cat => expanded[cat.id] = true);
-        expanded['uncategorized'] = true;
-        setExpandedCategories(expanded);
-      }
     } catch (error) {
-      console.error('Error loading products:', error);
+      console.error('Error fetching data:', error);
+      showToast('Failed to load store data', 'error');
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  async function loadTodaysHistory() {
-    try {
-      setLoadingHistory(true);
-      // Get the start of today in local timezone
-      const startOfToday = new Date();
-      startOfToday.setHours(0, 0, 0, 0);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-      const { data, error } = await supabase
-        .from('sales')
-        .select(`
-          *,
-          sale_items(
-            *,
-            products(name)
-          )
-        `)
-        .gte('created_at', startOfToday.toISOString())
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setTodaysSales(data || []);
-    } catch (error) {
-      console.error('Error loading today\'s history:', error);
-    } finally {
-      setLoadingHistory(false);
-    }
-  }
-
-  const addToCart = (product) => {
-    const existingItem = cart.find(item => item.id === product.id);
-    
-    if (existingItem) {
-      if (existingItem.quantity < product.stock_quantity) {
-        setCart(cart.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        ));
-      } else {
-        alert('Not enough stock available');
+  // --- Business Logic ---
+  const handleAddToCart = (product, weight = 1) => {
+      if (product.stock_quantity <= 0) {
+          showToast('Product is out of stock', 'error');
+          return;
       }
-    } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
-    }
+      
+      const itemPrice = product.price_type === 'per_weight' ? product.selling_price * weight : product.selling_price;
+      const existingItem = cartItems.find(item => item.id === product.id && product.price_type === 'fixed');
+
+      if (existingItem) {
+          setCartItems(cartItems.map(item =>
+              item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          ));
+      } else {
+          const newItem = {
+              id: product.id,
+              cart_id: product.price_type === 'per_weight' ? `${product.id}-${Date.now()}` : product.id,
+              name: product.name,
+              price: itemPrice,
+              quantity: 1,
+              image_url: product.image_url,
+              weight: product.price_type === 'per_weight' ? weight : undefined,
+              original_price: product.selling_price,
+              buying_price: product.buying_price,
+              price_type: product.price_type,
+              unit: product.unit
+          };
+          setCartItems([...cartItems, newItem]);
+      }
+      showToast(`${product.name} added to cart`);
   };
 
-  const removeFromCart = (productId) => {
-    setCart(cart.filter(item => item.id !== productId));
-  };
-
-  const updateQuantity = (productId, newQuantity) => {
-    const product = products.find(p => p.id === productId);
-    
+  const handleUpdateQuantity = (cart_id, newQuantity) => {
     if (newQuantity <= 0) {
-      removeFromCart(productId);
-    } else if (newQuantity > product.stock_quantity) {
-      alert('Not enough stock available');
+      setCartItems(cartItems.filter(item => item.cart_id !== cart_id));
     } else {
-      setCart(cart.map(item =>
-        item.id === productId ? { ...item, quantity: newQuantity } : item
+      setCartItems(cartItems.map(item =>
+        item.cart_id === cart_id ? { ...item, quantity: newQuantity } : item
       ));
     }
   };
 
-  const calculateTotal = () => {
-    return cart.reduce((sum, item) => sum + (parseFloat(item.selling_price) * item.quantity), 0);
-  };
+  const handleConfirmSale = async () => {
+    const total_amount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const handleCheckout = async () => {
-    if (cart.length === 0) {
-      alert('Cart is empty');
+    // Step 1: Create Sale Record
+    const { data: saleData, error: saleError } = await supabase
+      .from('sales')
+      .insert({ total_amount })
+      .select()
+      .single();
+
+    if (saleError) {
+      console.error('Error creating sale:', saleError);
+      showToast('Failed to complete sale', 'error');
       return;
     }
 
-    if (!confirm('Complete this sale?')) return;
-
-    try {
-      const total = calculateTotal();
-
-      // Create the sale
-      const { data: sale, error: saleError } = await supabase
-        .from('sales')
-        .insert([{ total_amount: total }])
-        .select()
-        .single();
-
-      if (saleError) throw saleError;
-
-      // Create sale items
-      const saleItems = cart.map(item => ({
-        sale_id: sale.id,
-        product_id: item.id,
-        quantity: item.quantity,
-        price_at_sale: item.selling_price,
-        buying_price_at_sale: item.buying_price || 0
-      }));
-
-      const { error: itemsError } = await supabase
-        .from('sale_items')
-        .insert(saleItems);
-
-      if (itemsError) throw itemsError;
-
-      // Update stock quantities
-      for (const item of cart) {
-        const { error: stockError } = await supabase
-          .from('products')
-          .update({ stock_quantity: item.stock_quantity - item.quantity })
-          .eq('id', item.id);
-
-        if (stockError) throw stockError;
-      }
-
-      alert(`Sale completed! Total: ${total.toFixed(2)} TND`);
-      setCart([]);
-      loadProducts(); // Reload to get updated stock
-    } catch (error) {
-      alert('Error completing sale: ' + error.message);
-      console.error('Checkout error:', error);
-    }
-  };
-
-  const clearCart = () => {
-    if (cart.length > 0 && confirm('Clear all items from cart?')) {
-      setCart([]);
-    }
-  };
-
-  const handleLogout = async () => {
-    if (confirm('Are you sure you want to logout?')) {
-      try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-        // The app will redirect to login automatically via AuthProvider
-      } catch (error) {
-        console.error('Error logging out:', error);
-        alert('Error logging out: ' + error.message);
-      }
-    }
-  };
-
-  if (loading) {
-    return <div className="cashier-loading">Loading products...</div>;
-  }
-
-  // Helper functions for V9.0 features
-  const toggleCategory = (categoryId) => {
-    setExpandedCategories(prev => ({
-      ...prev,
-      [categoryId]: !prev[categoryId]
+    // Step 2: Create Sale Items
+    const saleItemsToInsert = cartItems.map(item => ({
+      sale_id: saleData.id,
+      product_id: item.id,
+      quantity: item.price_type === 'per_weight' ? item.weight : item.quantity,
+      price_at_sale: item.original_price,
+      buying_price_at_sale: item.buying_price,
     }));
+
+    const { error: itemsError } = await supabase.from('sale_items').insert(saleItemsToInsert);
+    if (itemsError) {
+      console.error('Error creating sale items:', itemsError);
+      showToast('Error recording sale items', 'error');
+      return;
+    }
+    
+    // Step 3: Decrement Stock
+    for (const item of cartItems) {
+      const qtyToDecrement = item.price_type === 'per_weight' ? item.weight : item.quantity;
+      const { error } = await supabase
+        .from('products')
+        .update({ stock_quantity: supabase.raw(`stock_quantity - ${qtyToDecrement}`) })
+        .eq('id', item.id);
+      if (error) console.error('Stock update error:', error);
+    }
+
+    setCartItems([]);
+    setIsCartOpen(false);
+    showToast(`Sale completed! Total: ${formatCurrency(total_amount, business?.currency)}`);
+    fetchData(); // Refresh products to show updated stock
   };
 
-  const getFilteredProducts = () => {
-    if (!searchTerm) return products;
-    
-    return products.filter(p =>
+  // --- Rendering ---
+  const renderProductGrid = () => {
+    const filteredProducts = products.filter(p =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.categories?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      p.categoryName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const productsByCategory = filteredProducts.reduce((acc, product) => {
+      const category = product.categoryName || 'Other';
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(product);
+      return acc;
+    }, {});
+
+    return (
+      <div className="p-4 space-y-6">
+        <div className="relative">
+          <Icon name="search" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+        </div>
+        <div className="space-y-6">
+          {Object.entries(productsByCategory).map(([category, prods]) => (
+            <div key={category} className="space-y-3">
+              <h2 className="text-lg font-semibold text-gray-800">{category}</h2>
+              <div className="flex gap-4 pb-2 overflow-x-auto scrollbar-hide">
+                {prods.map(p => {
+                  const isOutOfStock = p.stock_quantity <= 0;
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={() => !isOutOfStock && (p.price_type === 'per_weight' ? (setSelectedProductForWeight(p), setShowWeightDialog(true)) : handleAddToCart(p))}
+                      className={`product-card flex-shrink-0 w-48 bg-white rounded-lg shadow-sm border transition-all duration-200 hover:shadow-md hover:-translate-y-1 ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    >
+                      <div className="relative">
+                        <img src={p.image_url || 'https://via.placeholder.com/150'} alt={p.name} className="w-full h-32 object-cover rounded-t-lg" />
+                        {isOutOfStock && <span className="absolute top-2 right-2 text-xs bg-red-600 text-white px-2 py-0.5 rounded-full">Out of Stock</span>}
+                      </div>
+                      <div className="p-3">
+                        <h3 className="font-medium text-gray-900 mb-1 truncate">{p.name}</h3>
+                        <p className="text-sm text-gray-600 mb-2">{formatCurrency(p.selling_price, business?.currency)}{p.price_type === 'per_weight' ? `/${p.unit}` : ''}</p>
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-500">Stock: {p.stock_quantity}</span>
+                            {p.price_type === 'per_weight' && <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">By {p.unit}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+  
+  const renderCart = () => {
+      const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+      const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+      if (!isCartOpen) {
+          return (
+              <button onClick={() => setIsCartOpen(true)} className="fixed bottom-4 right-4 w-16 h-16 rounded-full shadow-lg bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-transform hover:scale-110">
+                  <Icon name="shopping-cart" className="text-2xl" />
+                  {itemCount > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">{itemCount}</span>}
+              </button>
+          );
+      }
+
+      return (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={() => setIsCartOpen(false)}>
+              <div className="absolute right-0 top-0 h-full w-full max-w-md bg-gray-50 shadow-xl flex flex-col" onClick={e => e.stopPropagation()}>
+                  <div className="p-4 border-b flex items-center justify-between bg-white">
+                      <h2 className="text-lg font-semibold">Cart ({itemCount} items)</h2>
+                      <button onClick={() => setIsCartOpen(false)} className="p-1 hover:bg-gray-100 rounded-md"><Icon name="x" /></button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                      {cartItems.length === 0 ? (
+                           <div className="text-center text-gray-500 mt-8 flex flex-col items-center">
+                              <Icon name="shopping-cart" className="text-4xl mb-3 text-gray-300" />
+                              <p>Your cart is empty</p>
+                          </div>
+                      ) : cartItems.map(item => (
+                          <div key={item.cart_id} className="bg-white p-3 rounded-lg border">
+                               <div className="flex items-center gap-3">
+                                  <img src={item.image_url || 'https://via.placeholder.com/150'} alt={item.name} className="w-12 h-12 object-cover rounded" />
+                                  <div className="flex-1">
+                                      <h3 className="font-medium text-sm">{item.name} {item.weight ? `(${item.weight}${item.unit})` : ''}</h3>
+                                      <p className="text-xs text-gray-500">{formatCurrency(item.original_price, business?.currency)} {item.price_type === 'per_weight' ? `/${item.unit}` : ''}</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                      <button onClick={() => handleUpdateQuantity(item.cart_id, item.quantity - 1)} className="w-7 h-7 border rounded-md hover:bg-gray-100 flex items-center justify-center"><Icon name="minus" className="text-xs" /></button>
+                                      <span className="w-8 text-center text-sm">{item.quantity}</span>
+                                      <button onClick={() => handleUpdateQuantity(item.cart_id, item.quantity + 1)} className="w-7 h-7 border rounded-md hover:bg-gray-100 flex items-center justify-center"><Icon name="plus" className="text-xs" /></button>
+                                  </div>
+                                  <p className="font-semibold w-24 text-right">{formatCurrency(item.price * item.quantity, business?.currency)}</p>
+                                  <button onClick={() => handleUpdateQuantity(item.cart_id, 0)} className="text-red-500 hover:text-red-700"><Icon name="x" /></button>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+                  {cartItems.length > 0 && (
+                      <div className="p-4 border-t bg-white space-y-3">
+                          <div className="flex justify-between items-center text-lg font-semibold">
+                              <span>Total:</span>
+                              <span className="text-xl font-bold text-blue-600">{formatCurrency(total, business?.currency)}</span>
+                          </div>
+                          <button onClick={handleConfirmSale} className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">Confirm Sale</button>
+                      </div>
+                  )}
+              </div>
+          </div>
+      );
+  };
+  
+  const renderWeightDialog = () => {
+    if (!showWeightDialog || !selectedProductForWeight) return null;
+    
+    const product = selectedProductForWeight;
+    
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const weight = parseFloat(e.target.elements.weight.value);
+        if (weight > 0 && weight <= product.stock_quantity) {
+            handleAddToCart(product, weight);
+            setShowWeightDialog(false);
+        } else {
+            showToast('Invalid weight or not enough stock.', 'error');
+        }
+    };
+    
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center">
+            <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4">
+                <form onSubmit={handleSubmit}>
+                    <h2 className="text-lg font-semibold">Select Weight - {product.name}</h2>
+                     <div className="text-center mt-4">
+                        <img src={product.image_url || 'https://via.placeholder.com/150'} alt={product.name} className="w-24 h-24 object-cover rounded-lg mx-auto mb-2" />
+                        <p className="text-sm text-gray-600">{formatCurrency(product.selling_price, business?.currency)} per {product.unit}</p>
+                    </div>
+                    <div className="mt-4">
+                        <label htmlFor="weight" className="text-sm font-medium">Weight ({product.unit})</label>
+                        <input name="weight" type="number" step="0.01" min="0.01" max={product.stock_quantity} defaultValue="1" className="w-full mt-1 p-2 border rounded-md" required />
+                        <p className="text-xs text-gray-500 mt-1">Available stock: {product.stock_quantity} {product.unit}</p>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                        <button type="button" onClick={() => setShowWeightDialog(false)} className="flex-1 py-2 border rounded-md hover:bg-gray-100">Cancel</button>
+                        <button type="submit" className="flex-1 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Add to Cart</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     );
   };
 
-  const getGroupedProducts = () => {
-    const filtered = getFilteredProducts();
-    const grouped = {};
-    
-    // Group by category
-    filtered.forEach(product => {
-      const categoryId = product.category_id || 'uncategorized';
-      const categoryName = product.categories?.name || 'Uncategorized';
-      
-      if (!grouped[categoryId]) {
-        grouped[categoryId] = {
-          id: categoryId,
-          name: categoryName,
-          products: []
-        };
-      }
-      grouped[categoryId].products.push(product);
-    });
-    
-    return Object.values(grouped);
-  };
-
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen text-lg">Loading Cashier...</div>;
+  }
+  
   return (
-    <div className="cashier-view">
-      <header className="cashier-header">
-        <div className="cashier-header-content">
-          <h1>🛒 {businessName || 'Cashier'}</h1>
-          <div className="header-buttons">
-            <button className="admin-unlock-button" onClick={onUnlock}>
-              🔐 Admin
-            </button>
-            <button className="logout-button" onClick={handleLogout}>
-              🚪 Logout
-            </button>
-          </div>
+    <div className="relative bg-gray-50 min-h-screen">
+        <header className="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-40">
+            <div className="flex items-center justify-between">
+                <h1 className="text-xl font-bold text-gray-800">{business?.name || 'Cashier'}</h1>
+                <div className="flex items-center gap-2">
+                    <button onClick={onLogout} className="p-2 text-gray-600 hover:bg-gray-100 rounded-md">
+                        <Icon name="log-out" />
+                    </button>
+                    <button onClick={onUnlock} className="flex items-center gap-2 px-3 py-1.5 border rounded-md text-sm font-medium hover:bg-gray-50">
+                        <Icon name="lock" />
+                        Admin
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+          {renderProductGrid()}
+        </main>
+        
+        {renderCart()}
+        {renderWeightDialog()}
+
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] space-y-2">
+            {toasts.map(toast => (
+                <Toast key={toast.id} {...toast} onRemove={() => removeToast(toast.id)} />
+            ))}
         </div>
-      </header>
-
-      {/* Tabs Navigation */}
-      <div className="cashier-tabs">
-        <button
-          className={`tab-button ${activeView === 'pos' ? 'active' : ''}`}
-          onClick={() => setActiveView('pos')}
-        >
-          💵 POS
-        </button>
-        <button
-          className={`tab-button ${activeView === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveView('history')}
-        >
-          📊 Today's History
-        </button>
-      </div>
-
-      <div className="cashier-main">
-        {activeView === 'pos' ? (
-          <>
-            <div className="products-section">
-              {/* Search Bar */}
-              <div className="products-header">
-                <h2>Products</h2>
-                <input
-                  type="text"
-                  className="search-bar"
-                  placeholder="🔍 Search products or categories..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              {/* Categorized Product Grid */}
-              <div className="categorized-products">
-                {getGroupedProducts().length === 0 ? (
-                  <div className="empty-products">
-                    <p>No products found</p>
-                  </div>
-                ) : (
-                  getGroupedProducts().map(group => (
-                    <div key={group.id} className="category-section">
-                      <div
-                        className="category-header"
-                        onClick={() => toggleCategory(group.id)}
-                      >
-                        <span className="category-toggle">
-                          {expandedCategories[group.id] ? '▼' : '▶'}
-                        </span>
-                        <h3>{group.name}</h3>
-                        <span className="category-count">({group.products.length})</span>
-                      </div>
-                      
-                      {expandedCategories[group.id] && (
-                        <div className="products-grid-cashier">
-                          {group.products.map(product => (
-                            <div
-                              key={product.id}
-                              className="product-tile"
-                              onClick={() => addToCart(product)}
-                            >
-                              {product.image_url && (
-                                <div className="product-tile-image">
-                                  <img src={product.image_url} alt={product.name} />
-                                </div>
-                              )}
-                              <div className="product-tile-name">{product.name}</div>
-                              <div className="product-tile-price">
-                                ${parseFloat(product.selling_price).toFixed(2)}
-                                {product.price_type === 'per_weight' && product.unit ? `/${product.unit}` : ''}
-                              </div>
-                              <div className="product-tile-stock">{product.stock_quantity} in stock</div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div className="cart-section">
-              <div className="cart-header">
-                <h2>Current Sale</h2>
-                {cart.length > 0 && (
-                  <button className="clear-cart-button" onClick={clearCart}>
-                    Clear
-                  </button>
-                )}
-              </div>
-
-              <div className="cart-items">
-                {cart.length === 0 ? (
-                  <div className="empty-cart">
-                    <p>🛒</p>
-                    <p>Cart is empty</p>
-                    <p className="empty-cart-hint">Click on a product to add it</p>
-                  </div>
-                ) : (
-                  cart.map(item => (
-                    <div key={item.id} className="cart-item">
-                      <div className="cart-item-info">
-                        <div className="cart-item-name">{item.name}</div>
-                        <div className="cart-item-price">{parseFloat(item.selling_price).toFixed(2)} TND</div>
-                      </div>
-                      <div className="cart-item-controls">
-                        <button
-                          className="qty-button"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        >
-                          −
-                        </button>
-                        <span className="cart-item-quantity">{item.quantity}</span>
-                        <button
-                          className="qty-button"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        >
-                          +
-                        </button>
-                        <button
-                          className="remove-button"
-                          onClick={() => removeFromCart(item.id)}
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                      <div className="cart-item-total">
-                        {(parseFloat(item.selling_price) * item.quantity).toFixed(2)} TND
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="cart-footer">
-                <div className="cart-total">
-                  <span className="total-label">Total:</span>
-                  <span className="total-amount">{calculateTotal().toFixed(2)} TND</span>
-                </div>
-                <button
-                  className="checkout-button"
-                  onClick={handleCheckout}
-                  disabled={cart.length === 0}
-                >
-                  Complete Sale
-                </button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="history-section">
-            <h2>Today's Sales History</h2>
-            {loadingHistory ? (
-              <div className="loading-history">Loading...</div>
-            ) : todaysSales.length === 0 ? (
-              <div className="empty-history">
-                <p>📊</p>
-                <p>No sales today yet</p>
-              </div>
-            ) : (
-              <div className="sales-list">
-                {todaysSales.map(sale => (
-                  <div key={sale.id} className="sale-card">
-                    <div className="sale-header">
-                      <span className="sale-time">
-                        {new Date(sale.created_at).toLocaleTimeString()}
-                      </span>
-                      <span className="sale-total">{parseFloat(sale.total_amount).toFixed(2)} TND</span>
-                    </div>
-                    <div className="sale-items">
-                      {sale.sale_items.map(item => (
-                        <div key={item.id} className="sale-item-row">
-                          <span>{item.products?.name || 'Unknown'}</span>
-                          <span>x{item.quantity}</span>
-                          <span>{parseFloat(item.price_at_sale).toFixed(2)} TND</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-                <div className="history-summary">
-                  <strong>Total Sales Today:</strong> {todaysSales.length}
-                  <br />
-                  <strong>Total Revenue:</strong> {todaysSales.reduce((sum, s) => sum + parseFloat(s.total_amount), 0).toFixed(2)} TND
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
     </div>
   );
-}
+};
 
-export default CashierView;
+export default CashierViewModern;
