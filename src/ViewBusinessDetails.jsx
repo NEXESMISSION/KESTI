@@ -17,12 +17,55 @@ function ViewBusinessDetails({ businessId, onClose }) {
       setLoading(true);
       setError('');
 
-      const { data, error } = await supabase.rpc('get_business_details', {
-        business_id_to_fetch: businessId
-      });
+      // Fetch business info
+      const { data: business, error: businessError } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('id', businessId)
+        .single();
 
-      if (error) throw error;
-      setDetails(data);
+      if (businessError) throw businessError;
+
+      // Fetch products
+      const { data: products, error: productsError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('business_id', businessId);
+
+      if (productsError) throw productsError;
+
+      // Fetch sales
+      const { data: sales, error: salesError } = await supabase
+        .from('sales')
+        .select('*')
+        .eq('business_id', businessId);
+
+      if (salesError) throw salesError;
+
+      // Fetch expenses
+      const { data: expenses, error: expensesError } = await supabase
+        .from('expenses')
+        .select('*')
+        .eq('business_id', businessId);
+
+      if (expensesError) throw expensesError;
+
+      // Fetch users/profiles
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('business_id', businessId);
+
+      if (profilesError) throw profilesError;
+
+      // Combine all data
+      setDetails({
+        business,
+        products: products || [],
+        sales: sales || [],
+        expenses: expenses || [],
+        profiles: profiles || []
+      });
     } catch (error) {
       console.error('Error fetching business details:', error);
       setError('Failed to load business details: ' + error.message);
@@ -125,14 +168,14 @@ function ViewBusinessDetails({ businessId, onClose }) {
                   <div className="stat-icon">💰</div>
                   <div className="stat-info">
                     <div className="stat-label">Total Revenue</div>
-                    <div className="stat-value">${calculateTotalRevenue().toFixed(2)}</div>
+                    <div className="stat-value">{calculateTotalRevenue().toFixed(2)} TND</div>
                   </div>
                 </div>
                 <div className="stat-card">
                   <div className="stat-icon">💸</div>
                   <div className="stat-info">
                     <div className="stat-label">Total Expenses</div>
-                    <div className="stat-value">${calculateTotalExpenses().toFixed(2)}</div>
+                    <div className="stat-value">{calculateTotalExpenses().toFixed(2)} TND</div>
                   </div>
                 </div>
                 <div className="stat-card">
