@@ -1,22 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './supabaseClient';
 import { formatCurrency } from './utils';
+import { Search, ShoppingCart, LogOut, Lock, X, Plus, Minus } from 'lucide-react';
 import './CashierView.css';
 
 // --- Helper Components ---
 
 const Icon = ({ name, className = 'w-6 h-6' }) => {
-  // Simple icon placeholder - you can replace with lucide-react or heroicons
   const icons = {
-    'search': '🔍',
-    'shopping-cart': '🛒',
-    'x': '❌',
-    'minus': '➖',
-    'plus': '➕',
-    'log-out': '🚪',
-    'lock': '🔒',
+    search: Search,
+    'shopping-cart': ShoppingCart,
+    'log-out': LogOut,
+    lock: Lock,
+    x: X,
+    plus: Plus,
+    minus: Minus,
   };
-  return <span className={className}>{icons[name] || '📦'}</span>;
+  const LucideIcon = icons[name];
+  return LucideIcon ? <LucideIcon className={className} /> : null;
 };
 
 const Toast = ({ message, type, onRemove }) => {
