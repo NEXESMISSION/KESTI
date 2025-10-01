@@ -182,7 +182,8 @@ function CashierView({ onUnlock }) {
         sale_id: sale.id,
         product_id: item.id,
         quantity: item.quantity,
-        price_at_sale: item.selling_price
+        price_at_sale: item.selling_price,
+        buying_price_at_sale: item.buying_price || 0
       }));
 
       const { error: itemsError } = await supabase
