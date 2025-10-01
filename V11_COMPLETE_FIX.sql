@@ -13,6 +13,10 @@ ADD COLUMN IF NOT EXISTS phone_tertiary VARCHAR(20);
 ALTER TABLE device_sessions 
 ADD COLUMN IF NOT EXISTS session_token TEXT;
 
+-- Add created_at to track when session was first created (not just last_active)
+ALTER TABLE device_sessions
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
+
 -- Step 2: Create trigger functions to auto-populate business_id
 -- This function automatically sets business_id based on the authenticated user's profile
 
@@ -221,8 +225,8 @@ BEGIN
   -- Super admins bypass device limits entirely
   IF v_user_role = 'super_admin' THEN
     -- Just register session without any limit checks
-    INSERT INTO device_sessions (business_id, device_id, device_name, session_token, last_active)
-    VALUES (NULL, p_device_id, p_device_name, p_session_token, NOW())
+    INSERT INTO device_sessions (business_id, device_id, device_name, session_token, created_at, last_active)
+    VALUES (NULL, p_device_id, p_device_name, p_session_token, NOW(), NOW())
     ON CONFLICT (business_id, device_id)
     DO UPDATE SET
       session_token = EXCLUDED.session_token,
@@ -257,15 +261,14 @@ BEGIN
     AND device_id != p_device_id
     AND last_active > NOW() - INTERVAL '5 minutes';
 
-  -- If limit is reached, delete the oldest session
+  -- If limit is reached, delete the OLDEST session (by creation time, not activity)
   IF v_current_count >= v_device_limit THEN
-    -- Get the oldest session device_id
+    -- Get the OLDEST session device_id (first one created, not just least active)
     SELECT device_id INTO v_oldest_session_device_id
     FROM device_sessions
     WHERE business_id = v_business_id
       AND device_id != p_device_id
-      AND last_active > NOW() - INTERVAL '5 minutes'
-    ORDER BY last_active ASC
+    ORDER BY created_at ASC, last_active ASC
     LIMIT 1;
 
     -- Delete the oldest session (this invalidates their token)
@@ -275,12 +278,13 @@ BEGIN
   END IF;
 
   -- Insert or update this device's session with NEW token
-  INSERT INTO device_sessions (business_id, device_id, device_name, session_token, last_active)
-  VALUES (v_business_id, p_device_id, p_device_name, p_session_token, NOW())
+  INSERT INTO device_sessions (business_id, device_id, device_name, session_token, created_at, last_active)
+  VALUES (v_business_id, p_device_id, p_device_name, p_session_token, NOW(), NOW())
   ON CONFLICT (business_id, device_id)
   DO UPDATE SET
     session_token = EXCLUDED.session_token,
     last_active = NOW(),
+    -- Don't update created_at on conflict - keep original creation time
     device_name = COALESCE(EXCLUDED.device_name, device_sessions.device_name);
 
   RETURN json_build_object(

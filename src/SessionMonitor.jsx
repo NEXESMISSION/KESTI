@@ -16,10 +16,10 @@ function getSessionToken() {
 function SessionMonitor({ onSessionInvalid }) {
   useEffect(() => {
     const deviceId = getDeviceId();
-    if (!deviceId) return;
+    const sessionToken = getSessionToken();
+    if (!deviceId || !sessionToken) return;
 
-    // SIMPLIFIED: Just keep session alive, don't check validity
-    // This ensures login always works without any automatic logout
+    // Check if THIS session is still valid (if another device logged in and kicked us out)
     const checkSession = async () => {
       try {
         const { data: user } = await supabase.auth.getUser();
@@ -29,18 +29,35 @@ function SessionMonitor({ onSessionInvalid }) {
           return;
         }
 
-        // Just update heartbeat, don't validate token
-        // This keeps the session alive without checking if it's been kicked out
-        try {
-          await supabase.rpc('update_device_session', {
-            p_device_id: deviceId
-          });
-        } catch (error) {
-          // Ignore errors, just log them
-          console.log('Heartbeat error (ignored):', error.message);
+        // Check if OUR token is still valid in database
+        // If another device logged in, our token was invalidated
+        const { data, error } = await supabase.rpc('check_device_session', {
+          p_device_id: deviceId,
+          p_session_token: sessionToken
+        });
+
+        if (error) {
+          console.log('Session check error:', error.message);
+          return;
         }
+
+        // If our token is invalid, we were kicked out by another device
+        if (data && !data.valid) {
+          console.log('You were logged out because another device logged in with your account');
+          localStorage.removeItem('session_token');
+          await supabase.auth.signOut();
+          if (onSessionInvalid) {
+            onSessionInvalid('Your session was ended because another device logged in');
+          }
+          return;
+        }
+
+        // Session is valid, update heartbeat
+        await supabase.rpc('update_device_session', {
+          p_device_id: deviceId
+        });
       } catch (error) {
-        console.log('Session monitor error (ignored):', error.message);
+        console.log('Session monitor error:', error.message);
       }
     };
 
