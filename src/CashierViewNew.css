@@ -1,0 +1,32 @@
+.toast {
+    animation: slide-in 0.5s forwards, slide-out 0.5s 2.5s forwards;
+}
+
+@keyframes slide-in {
+    from {
+        bottom: -100px;
+        opacity: 0;
+    }
+    to {
+        bottom: 20px;
+        opacity: 1;
+    }
+}
+
+@keyframes slide-out {
+    from {
+        bottom: 20px;
+        opacity: 1;
+    }
+    to {
+        bottom: -100px;
+        opacity: 0;
+    }
+}
+
+.product-card {
+    /* Ensures the card maintains its size during transitions */
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-font-smoothing: subpixel-antialiased;
+}
