@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import CashierView from './CashierView';
+import CashierPage from './pages/CashierPage';
 import BusinessAdminDashboard from './BusinessAdminDashboard';
 import PinModal from './PinModal';
 
@@ -182,7 +182,7 @@ function ClientApp({ onLogout }) {
 
   return (
     <>
-      <CashierView onUnlock={handleUnlock} />
+      <CashierPage onUnlock={handleUnlock} />
       {showPinModal && (
         <PinModal
           onClose={() => setShowPinModal(false)}
