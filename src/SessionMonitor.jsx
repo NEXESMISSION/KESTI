@@ -18,59 +18,29 @@ function SessionMonitor({ onSessionInvalid }) {
     const deviceId = getDeviceId();
     if (!deviceId) return;
 
-    // Track when component mounted (login time)
-    const loginTime = Date.now();
-    const GRACE_PERIOD = 2 * 60 * 1000; // 2 minutes grace period after login
-
-    // Check session validity every 30 seconds
+    // SIMPLIFIED: Just keep session alive, don't check validity
+    // This ensures login always works without any automatic logout
     const checkSession = async () => {
-      // Skip check during grace period to allow session to be established
-      const timeSinceLogin = Date.now() - loginTime;
-      if (timeSinceLogin < GRACE_PERIOD) {
-        return; // Don't check yet, session is fresh
-      }
       try {
         const { data: user } = await supabase.auth.getUser();
         
         if (!user || !user.user) {
-          // Not logged in, skip check
+          // Not logged in, skip
           return;
         }
 
-        const sessionToken = getSessionToken();
-        if (!sessionToken) {
-          // No session token, can't validate
-          return;
+        // Just update heartbeat, don't validate token
+        // This keeps the session alive without checking if it's been kicked out
+        try {
+          await supabase.rpc('update_device_session', {
+            p_device_id: deviceId
+          });
+        } catch (error) {
+          // Ignore errors, just log them
+          console.log('Heartbeat error (ignored):', error.message);
         }
-
-        // Check if our session token is still valid
-        const { data, error } = await supabase.rpc('check_device_session', {
-          p_device_id: deviceId,
-          p_session_token: sessionToken
-        });
-
-        if (error) {
-          console.error('Session check error:', error);
-          return;
-        }
-
-        // If token doesn't match (someone else logged in), log out
-        if (data && !data.valid) {
-          console.log('Session invalidated:', data.message);
-          localStorage.removeItem('session_token'); // Clear invalid token
-          await supabase.auth.signOut();
-          if (onSessionInvalid) {
-            onSessionInvalid(data.message);
-          }
-          return;
-        }
-
-        // Update session activity (heartbeat)
-        await supabase.rpc('update_device_session', {
-          p_device_id: deviceId
-        });
       } catch (error) {
-        console.error('Session monitor error:', error);
+        console.log('Session monitor error (ignored):', error.message);
       }
     };
 
