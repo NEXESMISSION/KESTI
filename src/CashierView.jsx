@@ -356,7 +356,7 @@ function CashierView({ onUnlock }) {
                               )}
                               <div className="product-tile-name">{product.name}</div>
                               <div className="product-tile-price">
-                                {parseFloat(product.selling_price).toFixed(2)} TND
+                                ${parseFloat(product.selling_price).toFixed(2)}
                                 {product.price_type === 'per_weight' && product.unit ? `/${product.unit}` : ''}
                               </div>
                               <div className="product-tile-stock">{product.stock_quantity} in stock</div>
