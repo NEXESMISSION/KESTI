@@ -1,5 +1,6 @@
-import { useState, useEffect, FormEvent } from 'react'
+import { useState, useEffect, FormEvent, ChangeEvent } from 'react'
 import { supabase, Product, ProductCategory } from '@/lib/supabase'
+import Image from 'next/image'
 import CategoryModal from './CategoryModal'
 
 type ProductFormProps = {
@@ -24,6 +25,9 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
   const [costPrice, setCostPrice] = useState('')
   const [unitType, setUnitType] = useState('item')
   const [imageUrl, setImageUrl] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [categoryId, setCategoryId] = useState<string | null>(null)
   const [stockQuantity, setStockQuantity] = useState('')
   const [lowStockThreshold, setLowStockThreshold] = useState('10')
@@ -31,6 +35,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
   const [categories, setCategories] = useState<ProductCategory[]>([])
   
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showCategoryModal, setShowCategoryModal] = useState(false)
   
@@ -86,55 +91,171 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
     }
   }
   
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    
-    // Validation
-    if (!name.trim()) {
-      setError('Product name is required')
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file size (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image too large. Please select an image under 5MB.')
       return
     }
-    
-    if (!sellingPrice || isNaN(Number(sellingPrice)) || Number(sellingPrice) < 0) {
-      setError('Valid selling price is required')
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file.')
       return
     }
-    
-    if (!costPrice || isNaN(Number(costPrice)) || Number(costPrice) < 0) {
-      setError('Valid cost price is required')
-      return
+
+    setImageFile(file)
+    setError(null)
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = () => {
+      setImagePreview(reader.result as string)
     }
+    reader.readAsDataURL(file)
+  }
+
+  const uploadImage = async (userId: string): Promise<string | null> => {
+    if (!imageFile) return imageUrl || null
     
-    setLoading(true)
+    setUploading(true)
+    setUploadProgress(0)
     setError(null)
     
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Not authenticated')
+      // Get file extension and create a unique filename
+      const fileExt = imageFile.name.split('.').pop()
+      const fileName = `${userId}-${Date.now()}.${fileExt}`
+      const filePath = `products/${fileName}`
       
-      const productData: any = {
-        name: name.trim(),
-        selling_price: Number(sellingPrice),
-        cost_price: Number(costPrice),
-        unit_type: unitType,
-        image_url: imageUrl.trim() || null,
-        category_id: categoryId,
-        owner_id: session.user.id,
+      // Simulated progress during upload preparation
+      setUploadProgress(10)
+      
+      // Check if bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets()
+      const bucketExists = buckets ? buckets.some(bucket => bucket.name === 'product-images') : false
+      
+      if (!bucketExists) {
+        console.warn('Product-images bucket does not exist, falling back to public bucket')
+        // Try uploading to public bucket instead
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('public')
+          .upload(filePath, imageFile, {
+            cacheControl: '3600',
+            upsert: true
+          })
+        
+        if (uploadError) throw uploadError
+        
+        setUploadProgress(70)
+        
+        // Get public URL
+        const { data } = supabase.storage
+          .from('public')
+          .getPublicUrl(filePath)
+        
+        setUploading(false)
+        setUploadProgress(100)
+        
+        return data.publicUrl
       }
       
-      // Add stock fields only if tracking stock
-      if (trackStock && stockQuantity) {
-        productData.stock_quantity = Number(stockQuantity)
-        productData.low_stock_threshold = lowStockThreshold ? Number(lowStockThreshold) : 10
-      } else {
-        productData.stock_quantity = null
-        productData.low_stock_threshold = null
+      // Upload to product-images bucket
+      setUploadProgress(30)
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, imageFile, {
+          cacheControl: '3600',
+          upsert: true
+        })
+      
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+        throw new Error(`Upload failed: ${uploadError.message}`)
+      }
+      
+      setUploadProgress(80)
+      
+      // Get public URL
+      const { data } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath)
+      
+      if (!data || !data.publicUrl) {
+        throw new Error('Failed to get public URL')
+      }
+      
+      setUploading(false)
+      setUploadProgress(100)
+      
+      return data.publicUrl
+    } catch (err: any) {
+      console.error('Error uploading image:', err)
+      setUploading(false)
+      setError(`Failed to upload image: ${err.message || 'Unknown error'}`)
+      setUploadProgress(0)
+      return null
+    }
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+    
+    if (!name || !sellingPrice) {
+      setError('Product name and selling price are required')
+      setLoading(false)
+      return
+    }
+
+    try {
+      // Calculate numeric values
+      const sellingPriceNum = parseFloat(sellingPrice)
+      const costPriceNum = costPrice ? parseFloat(costPrice) : 0
+      
+      // Stock related values
+      let stockQty = null
+      let lowStockThresh = null
+      
+      if (trackStock) {
+        if (!stockQuantity) {
+          setError('Stock quantity is required when tracking stock')
+          setLoading(false)
+          return
+        }
+        
+        stockQty = parseFloat(stockQuantity)
+        lowStockThresh = parseFloat(lowStockThreshold)
+      }
+      
+      const userId = (await supabase.auth.getUser()).data.user?.id
+      if (!userId) throw new Error('Not authenticated')
+
+      // Upload image if there's a new one or use existing URL
+      let finalImageUrl = imageUrl
+      if (imageFile) {
+        const uploadedUrl = await uploadImage(userId)
+        if (uploadedUrl) finalImageUrl = uploadedUrl
+      }
+      
+      const productData = {
+        name,
+        selling_price: sellingPriceNum,
+        cost_price: costPriceNum,
+        unit_type: unitType,
+        image_url: finalImageUrl,
+        category_id: categoryId,
+        stock_quantity: stockQty,
+        low_stock_threshold: lowStockThresh,
       }
       
       let result
       
       if (isEditing && product) {
-        // Update existing product
         const { data, error } = await supabase
           .from('products')
           .update(productData)
@@ -145,7 +266,6 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
         if (error) throw error
         result = data
       } else {
-        // Create new product
         const { data, error } = await supabase
           .from('products')
           .insert([productData])
@@ -294,18 +414,81 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
               </select>
             </div>
             
-            {/* Image URL */}
+            {/* Image Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Image URL
+                Product Image
               </label>
-              <input
-                type="text"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
-                placeholder="https://example.com/image.jpg"
-              />
+              
+              {/* Image preview */}
+              {(imagePreview || imageUrl) && (
+                <div className="mb-3 relative w-full h-40 border rounded-lg overflow-hidden">
+                  <Image 
+                    src={imagePreview || imageUrl} 
+                    alt="Product preview" 
+                    fill
+                    className="object-contain"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImagePreview(null);
+                      setImageUrl('');
+                    }} 
+                    className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+              
+              {/* File input */}
+              <div className="flex items-center justify-center w-full">
+                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <svg className="w-8 h-8 mb-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p className="mb-1 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                    <p className="text-xs text-gray-500">PNG, JPG or WebP (MAX. 5MB)</p>
+                  </div>
+                  <input 
+                    id="dropzone-file" 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                </label>
+              </div>
+              
+              {/* Upload progress */}
+              {uploading && (
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                  <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
+                </div>
+              )}
+              
+              {/* Manual URL input as fallback */}
+              <div className="mt-3">
+                <label className="block text-xs font-medium text-gray-500 mb-1">
+                  Or enter image URL directly
+                </label>
+                <input
+                  type="text"
+                  value={imageUrl}
+                  onChange={(e) => {
+                    setImageUrl(e.target.value)
+                    setImageFile(null)
+                    setImagePreview(null)
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary text-sm"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
             </div>
             
             {/* Stock Tracking (Optional) */}
