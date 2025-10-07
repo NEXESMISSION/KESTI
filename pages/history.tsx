@@ -48,6 +48,7 @@ function History() {
 
   useEffect(() => {
     checkAuthAndFetch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeFilter, startDate, endDate, minAmount, maxAmount, paymentMethod, sortBy])
 
   const checkAuthAndFetch = async () => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 import { supabase, Product } from '@/lib/supabase'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 
@@ -24,6 +25,7 @@ function Stock() {
 
   useEffect(() => {
     checkAuthAndFetch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Auto-refresh when page becomes visible (user navigates back)
@@ -36,6 +38,7 @@ function Stock() {
 
     document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const checkAuthAndFetch = async () => {
@@ -470,7 +473,7 @@ function Stock() {
                         {/* Product Image */}
                         <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded overflow-hidden">
                           {product.image_url ? (
-                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                            <Image src={product.image_url} alt={product.name} width={48} height={48} className="w-full h-full object-cover" />
                           ) : (
                             <div className="flex items-center justify-center h-full text-gray-500 text-xs">No img</div>
                           )}
@@ -655,7 +658,7 @@ function Stock() {
                           <div className="flex items-center">
                             <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded-md overflow-hidden">
                               {product.image_url ? (
-                                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                                <Image src={product.image_url} alt={product.name} width={40} height={40} className="w-full h-full object-cover" />
                               ) : (
                                 <div className="flex items-center justify-center h-full text-gray-500 text-xs">No img</div>
                               )}

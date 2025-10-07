@@ -47,7 +47,7 @@ export default function SimpleLogin() {
     }
     
     checkSession()
-  }, [router.isReady, router.query])
+  }, [router.isReady, router.query, router])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()

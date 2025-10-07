@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { CartItem as CartItemType } from '@/contexts/CartContext'
 import { useCart } from '@/contexts/CartContext'
 
@@ -73,9 +74,11 @@ export default function CartItem({ item }: CartItemProps) {
       <div className="flex gap-3 mb-3">
         {/* Product Image */}
         {product.image_url ? (
-          <img
+          <Image
             src={product.image_url}
             alt={product.name}
+            width={64}
+            height={64}
             className="w-16 h-16 rounded object-cover flex-shrink-0"
           />
         ) : (

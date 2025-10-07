@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 import { supabase, Product, ProductCategory } from '@/lib/supabase'
 import { useCart } from '@/contexts/CartContext'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
@@ -25,6 +26,7 @@ function POS() {
 
   useEffect(() => {
     checkAuthAndFetchProducts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const checkAuthAndFetchProducts = async () => {
@@ -319,11 +321,15 @@ function POS() {
                   {/* Product image */}
                   <div className="w-full h-32 bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
                     {product.image_url ? (
-                      <img 
-                        src={product.image_url} 
-                        alt={product.name}
-                        className="w-full h-full object-cover" 
-                      />
+                      <div className="relative w-full h-full">
+                        <Image 
+                          src={product.image_url} 
+                          alt={product.name}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 384px"
+                          className="object-cover" 
+                        />
+                      </div>
                     ) : (
                       <div className="text-gray-400 text-xl">
                         No Image

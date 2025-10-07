@@ -270,7 +270,7 @@ export default function ProductsSimple() {
                 />
               </svg>
               <h3 className="mt-2 text-lg font-medium text-gray-900">No products yet</h3>
-              <p className="mt-1 text-gray-500">Create your first product by clicking "Add New Product"</p>
+              <p className="mt-1 text-gray-500">Create your first product by clicking &quot;Add New Product&quot;</p>
             </div>
           ) : (
             <table className="min-w-full divide-y divide-gray-200">

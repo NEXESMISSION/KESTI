@@ -23,7 +23,7 @@ export default function useSales() {
       
       // Calculate total amount
       const totalAmount = cartItems.reduce(
-        (sum, item) => sum + (item.product.price * item.quantity), 
+        (sum, item) => sum + (item.product.selling_price * item.quantity), 
         0
       )
       
@@ -31,7 +31,7 @@ export default function useSales() {
       const items = cartItems.map(item => ({
         productId: item.product.id,
         quantity: item.quantity,
-        priceAtSale: item.product.price,
+        priceAtSale: item.product.selling_price,
       }))
       
       // Create sale using RPC function

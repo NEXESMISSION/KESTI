@@ -74,6 +74,7 @@ function Finance() {
 
   useEffect(() => {
     checkAuthAndFetch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeFilter, startDate, endDate])
 
   const checkAuthAndFetch = async () => {
@@ -263,6 +264,7 @@ function Finance() {
     if (saleItems.length >= 0 && expenses.length >= 0) {
       calculateMetrics(saleItems, expenses)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [saleItems, expenses, timeFilter, startDate, endDate])
 
   const handleLogout = async () => {

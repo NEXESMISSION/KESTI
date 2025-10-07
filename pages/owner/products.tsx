@@ -11,7 +11,7 @@ export default function OwnerProducts() {
   const [formData, setFormData] = useState({
     name: '',
     price: '',
-    unit_type: 'item' as 'item' | 'weight',
+    unit_type: 'item' as 'item' | 'kg' | 'g' | 'l' | 'ml',
   })
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -19,6 +19,7 @@ export default function OwnerProducts() {
 
   useEffect(() => {
     checkAuthAndFetchProducts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const checkAuthAndFetchProducts = async () => {
@@ -72,7 +73,7 @@ export default function OwnerProducts() {
       setEditingProduct(product)
       setFormData({
         name: product.name,
-        price: product.price.toString(),
+        price: product.selling_price.toString(),
         unit_type: product.unit_type,
       })
     } else {
@@ -226,7 +227,7 @@ export default function OwnerProducts() {
                 />
               </svg>
               <h3 className="mt-4 text-xl font-semibold text-gray-900">No products yet</h3>
-              <p className="mt-2 text-gray-600">Click "Add New Product" to create your first product</p>
+              <p className="mt-2 text-gray-600">Click &quot;Add New Product&quot; to create your first product</p>
             </div>
           ) : (
             <table className="min-w-full divide-y divide-gray-200">
@@ -253,7 +254,7 @@ export default function OwnerProducts() {
                       <div className="text-sm font-medium text-gray-900">{product.name}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
+                      <div className="text-sm text-gray-900">${product.selling_price.toFixed(2)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -325,11 +326,14 @@ export default function OwnerProducts() {
                 </label>
                 <select
                   value={formData.unit_type}
-                  onChange={(e) => setFormData({ ...formData, unit_type: e.target.value as 'item' | 'weight' })}
+                  onChange={(e) => setFormData({ ...formData, unit_type: e.target.value as 'item' | 'kg' | 'g' | 'l' | 'ml' })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                 >
                   <option value="item">Item</option>
-                  <option value="weight">Weight</option>
+                  <option value="kg">Kilogram (kg)</option>
+                  <option value="g">Gram (g)</option>
+                  <option value="l">Liter (l)</option>
+                  <option value="ml">Milliliter (ml)</option>
                 </select>
               </div>
             </div>

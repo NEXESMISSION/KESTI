@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 import { supabase, Product, ProductCategory } from '@/lib/supabase'
 import ProductForm from '@/components/ProductForm'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
@@ -18,6 +19,7 @@ function OwnerDashboard() {
 
   useEffect(() => {
     checkAuthAndFetch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const checkAuthAndFetch = async () => {
@@ -319,7 +321,7 @@ function OwnerDashboard() {
             </svg>
             <h3 className="mt-4 text-lg sm:text-xl font-semibold text-gray-900">No products yet</h3>
             <p className="mt-2 text-sm text-gray-600">
-              Click "Add New Product" to create your first product
+              Click &quot;Add New Product&quot; to create your first product
             </p>
           </div>
         ) : (
@@ -333,7 +335,7 @@ function OwnerDashboard() {
                       {/* Product Image */}
                       <div className="flex-shrink-0 h-14 w-14 bg-gray-100 rounded-md overflow-hidden">
                         {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+                          <Image src={product.image_url} alt={product.name} width={48} height={48} className="h-full w-full object-cover" />
                         ) : (
                           <div className="h-full w-full flex items-center justify-center">
                             <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -346,7 +348,7 @@ function OwnerDashboard() {
                       {/* Product Info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                        <p className="text-xs text-gray-500">{product.category?.name || 'Uncategorized'} • {product.unit_type}</p>
+                        <p className="text-xs text-gray-500">{product.category?.name || 'Uncategorized'} - {product.unit_type}</p>
                       </div>
                       
                       {/* Price */}
@@ -411,9 +413,11 @@ function OwnerDashboard() {
                         <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             {product.image_url ? (
-                              <img
+                              <Image
                                 src={product.image_url}
                                 alt={product.name}
+                                width={40}
+                                height={40}
                                 className="h-8 w-8 sm:h-10 sm:w-10 rounded object-cover mr-3"
                               />
                             ) : (

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Product } from '@/lib/supabase'
 
 type QuantityModalProps = {
@@ -62,11 +63,13 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
 
         {/* Product Image */}
         {product.image_url && (
-          <div className="mb-3 sm:mb-4">
-            <img
+          <div className="mb-3 sm:mb-4 relative w-full h-24 sm:h-32">
+            <Image
               src={product.image_url}
               alt={product.name}
-              className="w-full h-24 sm:h-32 object-cover rounded-lg"
+              fill
+              sizes="(max-width: 640px) 100vw, 384px"
+              className="object-cover rounded-lg"
             />
           </div>
         )}

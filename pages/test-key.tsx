@@ -89,8 +89,8 @@ export default function TestKey() {
                         <ul className="list-disc ml-6 mt-2 text-yellow-700">
                           <li>The key has been regenerated in Supabase</li>
                           <li>The key has expired</li>
-                          <li>The key doesn't have the correct permissions</li>
-                          <li>There's a typo in the key</li>
+                          <li>The key doesn&apos;t have the correct permissions</li>
+                          <li>There&apos;s a typo in the key</li>
                         </ul>
                         <p className="text-yellow-700 mt-3 font-bold">
                           Solution: Go to your Supabase Dashboard → Settings → API and copy the fresh service_role key.

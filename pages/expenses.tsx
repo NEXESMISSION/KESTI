@@ -41,6 +41,7 @@ function Expenses() {
 
   useEffect(() => {
     checkAuthAndFetch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const checkAuthAndFetch = async () => {
@@ -568,7 +569,7 @@ function Expenses() {
             </svg>
             <h3 className="mt-4 text-lg sm:text-xl font-semibold text-gray-900">No expenses yet</h3>
             <p className="mt-2 text-sm text-gray-600">
-              Click "New Expense" to start tracking your business expenses
+              Click &quot;New Expense&quot; to start tracking your business expenses
             </p>
           </div>
         ) : (

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 import { supabase, Product, ProductCategory } from '@/lib/supabase'
 import { useCart } from '@/contexts/CartContext'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
@@ -28,6 +29,7 @@ function POS() {
 
   useEffect(() => {
     checkAuthAndFetchProducts()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Prevent autofill in PIN fields
@@ -437,11 +439,15 @@ function POS() {
                         className="flex-shrink-0 w-48 sm:w-56 md:w-72 bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 cursor-pointer"
                       >
                         {/* Product Image */}
-                        <img
-                          src={product.image_url || 'https://placehold.co/300x200/e5e7eb/6b7280?text=No+Image'}
-                          alt={product.name}
-                          className="w-full h-32 sm:h-36 md:h-40 object-cover"
-                        />
+                        <div className="relative w-full h-32 sm:h-36 md:h-40">
+                          <Image
+                            src={product.image_url || 'https://placehold.co/300x200/e5e7eb/6b7280?text=No+Image'}
+                            alt={product.name}
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 56px, 72px"
+                            className="object-cover"
+                          />
+                        </div>
                         
                         {/* Product Info */}
                         <div className="p-3 sm:p-4">

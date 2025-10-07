@@ -101,7 +101,7 @@ export default function SimpleAdmin() {
       <h1 className="text-2xl font-bold mb-4">Simple Admin Dashboard</h1>
       
       <div className="bg-green-50 border border-green-300 p-4 rounded mb-6">
-        <p className="text-green-700">✅ You're successfully logged in as a super admin!</p>
+        <p className="text-green-700">✅ You&apos;re successfully logged in as a super admin!</p>
       </div>
       
       <div className="mb-8">
