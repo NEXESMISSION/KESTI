@@ -468,7 +468,7 @@ function POS() {
                           {/* Price and Action */}
                           <div className="flex justify-between items-center mt-3 sm:mt-4">
                             <span className="font-bold text-base sm:text-lg md:text-xl text-gray-900">
-                              ${product.selling_price.toFixed(2)}
+                              {product.selling_price.toFixed(2)} TND
                             </span>
                             <div className="bg-blue-600 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium">
                               Add
@@ -527,7 +527,7 @@ function POS() {
                   <div className="bg-blue-50 rounded-lg p-4 mb-4">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700 font-medium">Subtotal</span>
-                      <span className="text-2xl font-bold text-blue-600">${getTotalPrice().toFixed(2)}</span>
+                      <span className="text-2xl font-bold text-blue-600">{getTotalPrice().toFixed(2)} TND</span>
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
                       {getTotalItems()} item{getTotalItems() !== 1 ? 's' : ''} in cart
@@ -548,7 +548,8 @@ function POS() {
                         Processing...
                       </>
                     ) : (
-                      <>Checkout (${getTotalPrice().toFixed(2)})</>
+                      <>Checkout ({getTotalPrice().toFixed(2)} TND)</>
+                    
                     )}
                   </button>
                   

@@ -57,10 +57,7 @@ export default function CartItem({ item }: CartItemProps) {
   }
 
   const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(price)
+    return `${price.toFixed(2)} TND`
   }
 
   const unitLabel = getFormattedUnitLabel(product.unit_type, quantity)

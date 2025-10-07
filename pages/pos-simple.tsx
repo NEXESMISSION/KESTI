@@ -260,7 +260,7 @@ export default function POSSimple() {
               >
                 <div className="text-3xl mb-2">🛍️</div>
                 <div className="font-medium truncate">{product.name}</div>
-                <div className="text-lg font-bold text-blue-600">${product.price.toFixed(2)}</div>
+                <div className="text-lg font-bold text-blue-600">{product.price.toFixed(2)} TND</div>
                 <div className="text-xs text-gray-500">{product.unit_type}</div>
               </button>
             ))}
@@ -280,7 +280,6 @@ export default function POSSimple() {
               className="w-full px-4 py-3 border border-gray-300 rounded mb-4 text-center text-xl tracking-widest"
               placeholder="••••"
               maxLength={6}
-              autoFocus
             />
             <div className="flex space-x-3">
               <button
@@ -328,7 +327,7 @@ export default function POSSimple() {
                     <div key={item.product.id} className="flex items-center justify-between pb-4 border-b">
                       <div>
                         <div className="font-medium">{item.product.name}</div>
-                        <div className="text-sm text-gray-500">${item.product.price.toFixed(2)} each</div>
+                        <div className="text-sm text-gray-500">{item.product.price.toFixed(2)} TND each</div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
@@ -345,7 +344,7 @@ export default function POSSimple() {
                           +
                         </button>
                         <div className="w-20 text-right font-bold">
-                          ${(item.product.price * item.quantity).toFixed(2)}
+                          {(item.product.price * item.quantity).toFixed(2)} TND
                         </div>
                         <button
                           onClick={() => removeFromCart(item.product.id)}
@@ -362,7 +361,7 @@ export default function POSSimple() {
                   <div className="flex justify-between mb-4">
                     <span className="text-xl font-semibold">Total:</span>
                     <span className="text-2xl font-bold text-blue-600">
-                      ${getTotalPrice().toFixed(2)}
+                      {getTotalPrice().toFixed(2)} TND
                     </span>
                   </div>
                   

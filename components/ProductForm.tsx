@@ -305,7 +305,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
         if (uploadedUrl) finalImageUrl = uploadedUrl
       }
       
-      const productData = {
+      const productData: any = {
         name,
         selling_price: sellingPriceNum,
         cost_price: costPriceNum,
@@ -319,6 +319,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
       let result
       
       if (isEditing && product) {
+        // For updates, don't include owner_id (it shouldn't change)
         const { data, error } = await supabase
           .from('products')
           .update(productData)
@@ -329,6 +330,8 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
         if (error) throw error
         result = data
       } else {
+        // For inserts, include owner_id
+        productData.owner_id = userId
         const { data, error } = await supabase
           .from('products')
           .insert([productData])
@@ -358,10 +361,10 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-40">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <h2 className="text-xl font-semibold mb-4">
-            {isEditing ? 'Edit Product' : 'Add New Product'}
+            {isEditing ? 'تعديل المنتج' : 'إضافة منتج جديد'}
           </h2>
           
           {error && (
@@ -374,14 +377,14 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
             {/* Product Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Product Name *
+                اسم المنتج *
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
-                placeholder="Enter product name"
+                placeholder="أدخل اسم المنتج"
                 required
               />
             </div>
@@ -390,15 +393,15 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Selling Price *
+                  سعر البيع *
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 text-sm pointer-events-none">TND</span>
                   <input
                     type="number"
                     value={sellingPrice}
                     onChange={(e) => setSellingPrice(e.target.value)}
-                    className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full pl-14 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     placeholder="0.00"
                     step="0.01"
                     min="0"
@@ -409,15 +412,15 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Cost Price *
+                  سعر التكلفة *
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 text-sm pointer-events-none">TND</span>
                   <input
                     type="number"
                     value={costPrice}
                     onChange={(e) => setCostPrice(e.target.value)}
-                    className="w-full pl-7 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                    className="w-full pl-14 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                     placeholder="0.00"
                     step="0.01"
                     min="0"
@@ -430,7 +433,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
             {/* Unit Type */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Unit Type *
+                نوع الوحدة *
               </label>
               <select
                 value={unitType}
@@ -445,7 +448,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                 ))}
               </select>
               <p className="text-xs text-gray-500 mt-1">
-                For weight/volume products, price is per unit (e.g., price per kg)
+                للمنتجات بالوزن/الحجم، السعر لكل وحدة (مثال: السعر لكل كجم)
               </p>
             </div>
             
@@ -453,14 +456,14 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="block text-sm font-medium text-gray-700">
-                  Category
+                  الفئة
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowCategoryModal(true)}
                   className="text-xs text-blue-600 hover:text-blue-800"
                 >
-                  + Manage Categories
+                  + إدارة الفئات
                 </button>
               </div>
               <select
@@ -468,7 +471,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                 onChange={(e) => setCategoryId(e.target.value || null)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
               >
-                <option value="">Select a category</option>
+                <option value="">اختر فئة</option>
                 {categories.map(category => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -480,7 +483,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
             {/* Image Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Product Image
+                صورة المنتج
               </label>
               
               {/* Image preview */}
@@ -518,8 +521,8 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                     <svg className="w-8 h-8 mb-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
-                    <p className="mb-1 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                    <p className="text-xs text-gray-500">PNG, JPG or WebP (MAX. 5MB)</p>
+                    <p className="mb-1 text-sm text-gray-500"><span className="font-semibold">انقر للرفع</span> أو اسحب وأفلت</p>
+                    <p className="text-xs text-gray-500">PNG, JPG أو WebP (الحد الأقصى 5 ميجابايت)</p>
                   </div>
                   <input 
                     id="dropzone-file" 
@@ -538,23 +541,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                 </div>
               )}
               
-              {/* Manual URL input as fallback */}
-              <div className="mt-3">
-                <label className="block text-xs font-medium text-gray-500 mb-1">
-                  Or enter image URL directly
-                </label>
-                <input
-                  type="text"
-                  value={imageUrl}
-                  onChange={(e) => {
-                    setImageUrl(e.target.value)
-                    setImageFile(null)
-                    setImagePreview(null)
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary text-sm"
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
+
             </div>
             
             {/* Stock Tracking (Optional) */}
@@ -568,7 +555,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                   className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                 />
                 <label htmlFor="trackStock" className="ml-2 text-sm font-medium text-gray-700">
-                  Track Stock (Optional)
+                  تتبع المخزون (اختياري)
                 </label>
               </div>
               
@@ -576,7 +563,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                 <div className="grid grid-cols-2 gap-4 ml-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Stock Quantity *
+                      كمية المخزون *
                     </label>
                     <input
                       type="number"
@@ -595,7 +582,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Low Stock Alert
+                      تنبيه انخفاض المخزون
                     </label>
                     <input
                       type="number"
@@ -607,7 +594,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                       min="0"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Alert when stock is below this
+                      تنبيه عندما يكون المخزون أقل من هذا
                     </p>
                   </div>
                 </div>
@@ -621,14 +608,14 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                 onClick={onClose}
                 className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg transition"
               >
-                Cancel
+                إلغاء
               </button>
               <button
                 type="submit"
                 disabled={loading}
                 className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition"
               >
-                {loading ? 'Saving...' : isEditing ? 'Update Product' : 'Add Product'}
+                {loading ? 'جاري الحفظ...' : isEditing ? 'تحديث المنتج' : 'إضافة المنتج'}
               </button>
             </div>
           </form>

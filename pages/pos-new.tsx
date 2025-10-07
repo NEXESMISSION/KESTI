@@ -355,7 +355,7 @@ function POS() {
                   {/* Product info */}
                   <div className="font-medium text-gray-900 truncate">{product.name}</div>
                   <div className="text-gray-700 mt-1">
-                    ${product.selling_price.toFixed(2)} / {product.unit_type}
+                    {product.selling_price.toFixed(2)} TND / {product.unit_type}
                   </div>
                   
                   {/* Category tag */}
@@ -434,7 +434,7 @@ function POS() {
                 <div className="border-t border-gray-200 p-4">
                   <div className="flex justify-between items-center mb-4">
                     <div className="text-gray-700">Subtotal</div>
-                    <div className="font-medium text-lg">${getTotalPrice().toFixed(2)}</div>
+                    <div className="font-medium text-lg">{getTotalPrice().toFixed(2)} TND</div>
                   </div>
                   
                   <button
@@ -451,7 +451,8 @@ function POS() {
                         Processing...
                       </>
                     ) : (
-                      <>Checkout (${getTotalPrice().toFixed(2)})</>
+                      <>Checkout ({getTotalPrice().toFixed(2)} TND)</>
+                    
                     )}
                   </button>
                   

@@ -145,39 +145,39 @@ function OwnerDashboard() {
         </div>
       </header>
 
-      {/* Horizontal Scrolling Page Navigation */}
+      {/* Page Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="flex gap-2 sm:gap-3 overflow-x-auto py-3 scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+          <div className="grid grid-cols-5 gap-1 sm:gap-2 md:gap-3 py-3">
             <button
               onClick={() => router.push('/owner-dashboard')}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm sm:text-base font-medium whitespace-nowrap bg-blue-600 text-white"
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
             >
-              🏦 Dashboard
+              🏦 <span className="hidden xs:inline">لوحة التحكم</span>
             </button>
             <button
               onClick={() => router.push('/stock')}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm sm:text-base font-medium whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              🏷️ Stock
+              🏷️ <span className="hidden xs:inline">المخزون</span>
             </button>
             <button
               onClick={() => router.push('/finance')}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm sm:text-base font-medium whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              💰 Finance
+              💰 <span className="hidden xs:inline">المالية</span>
             </button>
             <button
               onClick={() => router.push('/expenses')}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm sm:text-base font-medium whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              📊 Expenses
+              📊 <span className="hidden xs:inline">المصروفات</span>
             </button>
             <button
               onClick={() => router.push('/history')}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm sm:text-base font-medium whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              📜 History
+              📜 <span className="hidden xs:inline">السجل</span>
             </button>
           </div>
         </div>
@@ -186,14 +186,14 @@ function OwnerDashboard() {
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-3 sm:px-4 lg:px-8">
         {/* Page Title */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Product Management</h1>
-          <p className="text-sm text-gray-600 mt-1">Create, edit and organize your products</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">إدارة المنتجات</h1>
+          <p className="text-sm text-gray-600 mt-1">إنشاء وتعديل وتنظيم منتجاتك</p>
         </div>
 
         {error && (
           <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg relative flex justify-between items-start">
             <div>
-              <p className="font-bold text-sm sm:text-base">Error:</p>
+              <p className="font-bold text-sm sm:text-base">خطأ:</p>
               <p className="text-sm">{error}</p>
               <p className="mt-2 text-xs sm:text-sm">Please run the SQL migration from IMPORTANT_RUN_THIS_SQL.md</p>
             </div>
@@ -258,7 +258,7 @@ function OwnerDashboard() {
                       onClick={() => setSelectedCategory(null)}
                       className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg whitespace-nowrap text-xs sm:text-sm ${!selectedCategory ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-800'}`}
                     >
-                      All Products ({products.length})
+                      🗂️ جميع المنتجات ({products.length})
                     </button>
                     
                     {categories.map((category) => {
@@ -286,206 +286,206 @@ function OwnerDashboard() {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      Clear Filter
+                      إزالة الفلتر
                     </button>
                   </div>
                 )}
               </div>
             )}
-            
-            {/* Results Count */}
-            <div className="border-t border-gray-200 p-2 sm:p-3 text-xs sm:text-sm text-gray-600 text-center bg-gray-50">
-              Showing {filteredProducts.length} products
-            </div>
-          </div>
-        )}
+        
+        {/* Results Count */}
+        <div className="border-t border-gray-200 p-2 sm:p-3 text-xs sm:text-sm text-gray-600 text-center bg-gray-50">
+          إظهار {filteredProducts.length} منتجات
+        </div>
+      </div>
+    )}
 
-        {loading ? (
-          <div className="flex justify-center items-center h-40 sm:h-64">
-            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600"></div>
+    {loading ? (
+      <div className="flex justify-center items-center h-40 sm:h-64">
+        <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600"></div>
+      </div>
+    ) : filteredProducts.length === 0 ? (
+      <div className="text-center py-8 sm:py-12 bg-white rounded-xl shadow">
+        <svg
+          className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+          />
+        </svg>
+        <h3 className="mt-4 text-lg sm:text-xl font-semibold text-gray-900">لم يتم العثور على منتجات</h3>
+        <p className="mt-2 text-sm text-gray-600">
+          انقر على "إضافة منتج جديد" لإنشاء منتجك الأول
+        </p>
+      </div>
+    ) : (
+      <>
+        {/* Mobile View - Cards */}
+        <div className="block md:hidden">
+          <div className="space-y-3">
+            {filteredProducts.map((product) => (
+              <div key={product.id} className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="p-3 flex items-center space-x-3">
+                  {/* Product Image */}
+                  <div className="flex-shrink-0 h-14 w-14 bg-gray-100 rounded-md overflow-hidden">
+                    {product.image_url ? (
+                      <Image 
+                        src={product.image_url} 
+                        alt={product.name} 
+                        width={56} 
+                        height={56} 
+                        className="h-full w-full object-cover" 
+                        loading="lazy"
+                        quality={75}
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center">
+                        <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Product Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
+                    <p className="text-xs text-gray-500">{product.category?.name || 'غير مصنف'} - {product.unit_type}</p>
+                  </div>
+                  
+                  {/* Price */}
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-gray-900">{product.selling_price?.toFixed(2) || '0.00'} TND</p>
+                    <p className="text-xs text-gray-500">التكلفة: {product.cost_price?.toFixed(2) || '0.00'} TND</p>
+                  </div>
+                </div>
+                
+                {/* Actions */}
+                <div className="border-t border-gray-100 flex divide-x divide-gray-100">
+                  <button
+                    onClick={() => {
+                      setSelectedProduct(product)
+                      setShowProductForm(true)
+                    }}
+                    className="flex-1 py-2 text-xs text-blue-600 font-medium hover:bg-blue-50"
+                  >
+                    تعديل
+                  </button>
+                  <button
+                    onClick={() => handleDeleteProduct(product.id)}
+                    className="flex-1 py-2 text-xs text-red-600 font-medium hover:bg-red-50"
+                  >
+                    حذف
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-8 sm:py-12 bg-white rounded-xl shadow">
-            <svg
-              className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-              />
-            </svg>
-            <h3 className="mt-4 text-lg sm:text-xl font-semibold text-gray-900">No products yet</h3>
-            <p className="mt-2 text-sm text-gray-600">
-              Click &quot;Add New Product&quot; to create your first product
-            </p>
-          </div>
-        ) : (
-          <>
-            {/* Mobile View - Cards */}
-            <div className="block md:hidden">
-              <div className="space-y-3">
+        </div>
+        
+        {/* Desktop View - Table */}
+        <div className="hidden md:block bg-white rounded-xl shadow overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    المنتج
+                  </th>
+                  <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    الفئة
+                  </th>
+                  <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    نوع الوحدة
+                  </th>
+                  <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    سعر التكلفة
+                  </th>
+                  <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    سعر البيع
+                  </th>
+                  <th className="px-4 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    الإجراءات
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
                 {filteredProducts.map((product) => (
-                  <div key={product.id} className="bg-white rounded-lg shadow overflow-hidden">
-                    <div className="p-3 flex items-center space-x-3">
-                      {/* Product Image */}
-                      <div className="flex-shrink-0 h-14 w-14 bg-gray-100 rounded-md overflow-hidden">
+                  <tr key={product.id} className="hover:bg-gray-50">
+                    <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                      <div className="flex items-center">
                         {product.image_url ? (
-                          <Image 
-                            src={product.image_url} 
-                            alt={product.name} 
-                            width={56} 
-                            height={56} 
-                            className="h-full w-full object-cover" 
-                            loading="lazy"
-                            quality={75}
+                          <Image
+                            src={product.image_url}
+                            alt={product.name}
+                            width={40}
+                            height={40}
+                            className="h-8 w-8 sm:h-10 sm:w-10 rounded object-cover mr-3"
                           />
                         ) : (
-                          <div className="h-full w-full flex items-center justify-center">
-                            <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded bg-gray-200 flex items-center justify-center mr-3">
+                            <svg
+                              className="h-4 w-4 sm:h-6 sm:w-6 text-gray-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                              />
                             </svg>
                           </div>
                         )}
+                        <div className="text-xs sm:text-sm font-medium text-gray-900">{product.name}</div>
                       </div>
-                      
-                      {/* Product Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                        <p className="text-xs text-gray-500">{product.category?.name || 'Uncategorized'} - {product.unit_type}</p>
-                      </div>
-                      
-                      {/* Price */}
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-gray-900">${product.selling_price?.toFixed(2) || '0.00'}</p>
-                        <p className="text-xs text-gray-500">Cost: ${product.cost_price?.toFixed(2) || '0.00'}</p>
-                      </div>
-                    </div>
-                    
-                    {/* Actions */}
-                    <div className="border-t border-gray-100 flex divide-x divide-gray-100">
+                    </td>
+                    <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                      {product.category?.name || 'غير مصنف'}
+                    </td>
+                    <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                      {product.unit_type}
+                    </td>
+                    <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                      {product.cost_price?.toFixed(2) || '0.00'} TND
+                    </td>
+                    <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">
+                      {product.selling_price?.toFixed(2) || '0.00'} TND
+                    </td>
+                    <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-right">
                       <button
                         onClick={() => {
                           setSelectedProduct(product)
                           setShowProductForm(true)
                         }}
-                        className="flex-1 py-2 text-xs text-blue-600 font-medium hover:bg-blue-50"
+                        className="text-blue-600 hover:text-blue-900 mr-4"
                       >
-                        Edit
+                        تعديل
                       </button>
                       <button
                         onClick={() => handleDeleteProduct(product.id)}
-                        className="flex-1 py-2 text-xs text-red-600 font-medium hover:bg-red-50"
+                        className="text-red-600 hover:text-red-900"
                       >
-                        Delete
+                        حذف
                       </button>
-                    </div>
-                  </div>
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            </div>
-            
-            {/* Desktop View - Table */}
-            <div className="hidden md:block bg-white rounded-xl shadow overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Product
-                      </th>
-                      <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Unit Type
-                      </th>
-                      <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Cost Price
-                      </th>
-                      <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Selling Price
-                      </th>
-                      <th className="px-4 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredProducts.map((product) => (
-                      <tr key={product.id} className="hover:bg-gray-50">
-                        <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            {product.image_url ? (
-                              <Image
-                                src={product.image_url}
-                                alt={product.name}
-                                width={40}
-                                height={40}
-                                className="h-8 w-8 sm:h-10 sm:w-10 rounded object-cover mr-3"
-                              />
-                            ) : (
-                              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded bg-gray-200 flex items-center justify-center mr-3">
-                                <svg
-                                  className="h-4 w-4 sm:h-6 sm:w-6 text-gray-400"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                  />
-                                </svg>
-                              </div>
-                            )}
-                            <div className="text-xs sm:text-sm font-medium text-gray-900">{product.name}</div>
-                          </div>
-                        </td>
-                        <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                          {product.category?.name || 'Uncategorized'}
-                        </td>
-                        <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                          {product.unit_type}
-                        </td>
-                        <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                          ${product.cost_price?.toFixed(2) || '0.00'}
-                        </td>
-                        <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-gray-900">
-                          ${product.selling_price?.toFixed(2) || '0.00'}
-                        </td>
-                        <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium text-right">
-                          <button
-                            onClick={() => {
-                              setSelectedProduct(product)
-                              setShowProductForm(true)
-                            }}
-                            className="text-blue-600 hover:text-blue-900 mr-4"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteProduct(product.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Delete
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </>
-        )}
-      </main>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </>
+    )}
+  </main>
 
       {/* Product Form Modal */}
       <ProductForm

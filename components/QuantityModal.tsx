@@ -50,7 +50,7 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
           <div className="flex-1">
             <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900">{product.name}</h2>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              ${product.selling_price.toFixed(2)} per {product.unit_type}
+              {product.selling_price.toFixed(2)} TND per {product.unit_type}
             </p>
           </div>
           <button
@@ -94,7 +94,6 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
                 onKeyPress={handleKeyPress}
                 className="flex-1 text-center text-xl sm:text-2xl font-bold border-2 border-gray-300 rounded-lg h-10 sm:h-12 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 min="1"
-                autoFocus
               />
               <button
                 onClick={() => setQuantity(String(parseInt(quantity || '1') + 1))}
@@ -115,14 +114,14 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
             <div className="flex justify-between items-center">
               <span className="text-xs sm:text-sm font-medium text-gray-700">Total Price:</span>
               <span className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">
-                ${(
+                {(
                   product.selling_price *
                   parseInt(quantity || '1')
-                ).toFixed(2)}
+                ).toFixed(2)} TND
               </span>
             </div>
             <p className="text-[10px] sm:text-xs text-gray-600 mt-1 text-center">
-              {quantity} × ${product.selling_price.toFixed(2)} per {product.unit_type}
+              {quantity} × {product.selling_price.toFixed(2)} TND per {product.unit_type}
             </p>
           </div>
         </div>

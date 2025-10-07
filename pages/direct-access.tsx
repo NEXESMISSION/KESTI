@@ -241,7 +241,7 @@ export default function DirectAccess() {
                     {products.map((product) => (
                       <tr key={product.id} className="border-b">
                         <td className="px-4 py-2">{product.name}</td>
-                        <td className="px-4 py-2">${product.price.toFixed(2)}</td>
+                        <td className="px-4 py-2">{product.price.toFixed(2)} TND</td>
                         <td className="px-4 py-2">{product.unit_type}</td>
                       </tr>
                     ))}

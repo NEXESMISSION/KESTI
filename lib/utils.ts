@@ -5,20 +5,16 @@
 /**
  * Format a number as currency
  * @param value The value to format
- * @param currency The currency code (default: USD)
+ * @param currency The currency code (default: TND)
  * @param locale The locale (default: en-US)
  */
 export function formatCurrency(
   value: number, 
-  currency: string = 'USD', 
+  currency: string = 'TND', 
   locale: string = 'en-US'
 ): string {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value)
+  // TND might not be supported by all browsers, so we'll use a custom format
+  return `${value.toFixed(2)} TND`
 }
 
 /**

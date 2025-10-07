@@ -258,39 +258,39 @@ function Stock() {
         </div>
       </header>
 
-      {/* Horizontal Scrolling Page Navigation */}
+      {/* Page Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="flex gap-2 sm:gap-3 overflow-x-auto py-3 scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+          <div className="grid grid-cols-5 gap-1 sm:gap-2 md:gap-3 py-3">
             <button
               onClick={() => router.push('/owner-dashboard')}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm sm:text-base font-medium whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              🏦 Dashboard
+              🏦 <span className="hidden xs:inline">Dashboard</span>
             </button>
             <button
               onClick={() => router.push('/stock')}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm sm:text-base font-medium whitespace-nowrap bg-blue-600 text-white"
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
             >
-              🏷️ Stock
+              🏷️ <span className="hidden xs:inline">Stock</span>
             </button>
             <button
               onClick={() => router.push('/finance')}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm sm:text-base font-medium whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              💰 Finance
+              💰 <span className="hidden xs:inline">Finance</span>
             </button>
             <button
               onClick={() => router.push('/expenses')}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm sm:text-base font-medium whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              📊 Expenses
+              📊 <span className="hidden xs:inline">Expenses</span>
             </button>
             <button
               onClick={() => router.push('/history')}
-              className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm sm:text-base font-medium whitespace-nowrap bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              📜 History
+              📜 <span className="hidden xs:inline">History</span>
             </button>
           </div>
         </div>
