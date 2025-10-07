@@ -473,7 +473,15 @@ function Stock() {
                         {/* Product Image */}
                         <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded overflow-hidden">
                           {product.image_url ? (
-                            <Image src={product.image_url} alt={product.name} width={48} height={48} className="w-full h-full object-cover" />
+                            <Image 
+                              src={product.image_url} 
+                              alt={product.name} 
+                              width={48} 
+                              height={48} 
+                              className="w-full h-full object-cover" 
+                              loading="lazy"
+                              quality={75}
+                            />
                           ) : (
                             <div className="flex items-center justify-center h-full text-gray-500 text-xs">No img</div>
                           )}

@@ -118,80 +118,143 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
     reader.readAsDataURL(file)
   }
 
-  const uploadImage = async (userId: string): Promise<string | null> => {
-    if (!imageFile) return imageUrl || null
-    
-    setUploading(true)
-    setUploadProgress(0)
-    setError(null)
-    
+  // Helper function to compress image
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = (event) => {
+        const img = new window.Image()
+        img.src = event.target?.result as string
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          let width = img.width
+          let height = img.height
+          
+          // Resize if image is too large (max 1200px on longest side)
+          const maxSize = 1200
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = (height / width) * maxSize
+              width = maxSize
+            } else {
+              width = (width / height) * maxSize
+              height = maxSize
+            }
+          }
+          
+          canvas.width = width
+          canvas.height = height
+          
+          const ctx = canvas.getContext('2d')
+          if (!ctx) {
+            reject(new Error('Could not get canvas context'))
+            return
+          }
+          
+          ctx.drawImage(img, 0, 0, width, height)
+          
+          // Convert to blob with compression (0.85 quality)
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Could not compress image'))
+                return
+              }
+              
+              // Create new file from blob
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              })
+              
+              console.log('Original size:', (file.size / 1024).toFixed(2), 'KB')
+              console.log('Compressed size:', (compressedFile.size / 1024).toFixed(2), 'KB')
+              
+              resolve(compressedFile)
+            },
+            'image/jpeg',
+            0.85 // 85% quality
+          )
+        }
+        img.onerror = () => reject(new Error('Could not load image'))
+      }
+      reader.onerror = () => reject(new Error('Could not read file'))
+    })
+  }
+
+  const uploadImage = async (imageFile: File): Promise<string | null> => {
     try {
-      // Get file extension and create a unique filename
-      const fileExt = imageFile.name.split('.').pop()
+      setUploading(true)
+      setUploadProgress(0)
+      
+      const user = (await supabase.auth.getUser()).data.user
+      if (!user) throw new Error('User not authenticated')
+      
+      const userId = user.id
+      
+      // Compress image before upload
+      console.log('Compressing image...')
+      const compressedImage = await compressImage(imageFile)
+      
+      const fileExt = 'jpg' // Always use jpg after compression
       const fileName = `${userId}-${Date.now()}.${fileExt}`
       const filePath = `products/${fileName}`
       
-      // Simulated progress during upload preparation
+      // Start upload process
       setUploadProgress(10)
       
-      // Check if bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets()
-      const bucketExists = buckets ? buckets.some(bucket => bucket.name === 'product-images') : false
+      console.log('Uploading to product-images bucket...')
       
-      if (!bucketExists) {
-        console.warn('Product-images bucket does not exist, falling back to public bucket')
-        // Try uploading to public bucket instead
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('public')
-          .upload(filePath, imageFile, {
-            cacheControl: '3600',
-            upsert: true
-          })
-        
-        if (uploadError) throw uploadError
-        
-        setUploadProgress(70)
-        
-        // Get public URL
-        const { data } = supabase.storage
-          .from('public')
-          .getPublicUrl(filePath)
-        
-        setUploading(false)
-        setUploadProgress(100)
-        
-        return data.publicUrl
-      }
-      
-      // Upload to product-images bucket
+      // Upload directly to product-images bucket
       setUploadProgress(30)
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(filePath, imageFile, {
+        .upload(filePath, compressedImage, {
           cacheControl: '3600',
           upsert: true
         })
       
       if (uploadError) {
         console.error('Upload error:', uploadError)
+        console.error('Error details:', uploadError.message, uploadError.statusCode)
+        
+        // Check if it's a bucket not found error
+        if (uploadError.message?.includes('Bucket not found') || uploadError.statusCode === '404') {
+          throw new Error(
+            'Storage bucket "product-images" not found. Please create it in your Supabase dashboard: ' +
+            'Storage → New bucket → Name: product-images → Public: Yes'
+          )
+        }
+        
+        // Check if it's a policy/permission error
+        if (uploadError.message?.includes('policy') || uploadError.statusCode === '403') {
+          throw new Error(
+            'Permission denied. Please set up storage policies in Supabase SQL Editor. ' +
+            'See SETUP_STORAGE_BUCKETS.sql for the required policies.'
+          )
+        }
+        
         throw new Error(`Upload failed: ${uploadError.message}`)
       }
       
+      console.log('Upload successful:', uploadData)
       setUploadProgress(80)
       
       // Get public URL
-      const { data } = supabase.storage
+      const { data: urlData } = supabase.storage
         .from('product-images')
         .getPublicUrl(filePath)
       
-      if (!data || !data.publicUrl) {
-        throw new Error('Failed to get public URL')
+      if (!urlData || !urlData.publicUrl) {
+        throw new Error('Failed to get public URL for uploaded image')
       }
       
+      console.log('Image URL:', urlData.publicUrl)
       setUploading(false)
       setUploadProgress(100)
       
-      return data.publicUrl
+      return urlData.publicUrl
     } catch (err: any) {
       console.error('Error uploading image:', err)
       setUploading(false)
@@ -238,7 +301,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
       // Upload image if there's a new one or use existing URL
       let finalImageUrl = imageUrl
       if (imageFile) {
-        const uploadedUrl = await uploadImage(userId)
+        const uploadedUrl = await uploadImage(imageFile)
         if (uploadedUrl) finalImageUrl = uploadedUrl
       }
       
@@ -428,6 +491,9 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                     alt="Product preview" 
                     fill
                     className="object-contain"
+                    loading="lazy"
+                    quality={85}
+                    sizes="(max-width: 768px) 100vw, 400px"
                   />
                   <button 
                     type="button"

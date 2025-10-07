@@ -335,7 +335,15 @@ function OwnerDashboard() {
                       {/* Product Image */}
                       <div className="flex-shrink-0 h-14 w-14 bg-gray-100 rounded-md overflow-hidden">
                         {product.image_url ? (
-                          <Image src={product.image_url} alt={product.name} width={48} height={48} className="h-full w-full object-cover" />
+                          <Image 
+                            src={product.image_url} 
+                            alt={product.name} 
+                            width={56} 
+                            height={56} 
+                            className="h-full w-full object-cover" 
+                            loading="lazy"
+                            quality={75}
+                          />
                         ) : (
                           <div className="h-full w-full flex items-center justify-center">
                             <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
