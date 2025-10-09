@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 import { supabase, Profile } from '@/lib/supabase'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 
@@ -323,17 +324,20 @@ function SuperAdmin() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-3 sm:py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
-              <p className="text-gray-600 mt-1">Manage all business accounts</p>
+              <div className="mb-2">
+                <Image src="/logo/KESTi.png" alt="KESTI" width={140} height={45} className="h-10 w-auto" priority />
+              </div>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Super Admin Dashboard</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">Manage all business accounts</p>
             </div>
             <button
               onClick={handleLogout}
-              className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg transition"
+              className="w-full sm:w-auto bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg transition text-sm sm:text-base"
             >
-              Logout
+              تسجيل الخروج
             </button>
           </div>
         </div>
@@ -356,17 +360,17 @@ function SuperAdmin() {
         )}
 
         {/* Create Button */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <button
             onClick={() => setShowCreateModal(true)}
-            className="bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition"
+            className="w-full sm:w-auto bg-primary hover:bg-blue-700 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition text-sm sm:text-base"
           >
             + Create New Business Account
           </button>
         </div>
 
-        {/* Businesses Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        {/* Businesses Table - Hidden on Mobile */}
+        <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -472,13 +476,93 @@ function SuperAdmin() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile View - Cards */}
+        <div className="block md:hidden space-y-3">
+          {loading ? (
+            <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+              Loading...
+            </div>
+          ) : businesses.length === 0 ? (
+            <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+              No businesses found. Create your first one!
+            </div>
+          ) : (
+            businesses.map((business) => {
+              const subStatus = getSubscriptionStatus(business.subscription_ends_at)
+              return (
+                <div key={business.id} className="bg-white rounded-lg shadow p-4">
+                  {/* Business Info */}
+                  <div className="mb-3">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {business.full_name || 'N/A'}
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1">{business.email}</p>
+                  </div>
+
+                  {/* Status Badges */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span className={`text-xs font-semibold px-2 py-1 rounded ${subStatus.color}`}>
+                      {subStatus.text}
+                    </span>
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                        business.is_suspended
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}
+                    >
+                      {business.is_suspended ? 'Suspended' : 'Active'}
+                    </span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="border-t border-gray-200 pt-3 space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => extendSubscription(business.id, business.subscription_ends_at)}
+                        className="text-xs bg-green-50 text-green-600 hover:bg-green-100 px-3 py-2 rounded-lg font-medium transition"
+                      >
+                        +30 Days
+                      </button>
+                      <button
+                        onClick={() => business.is_suspended ? unsuspendUser(business.id) : openSuspendModal(business.id)}
+                        className={`text-xs px-3 py-2 rounded-lg font-medium transition ${
+                          business.is_suspended
+                            ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                            : 'bg-red-50 text-red-600 hover:bg-red-100'
+                        }`}
+                      >
+                        {business.is_suspended ? 'Unsuspend' : 'Suspend'}
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => handleEditBusiness(business)}
+                        className="text-xs bg-gray-50 text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg font-medium transition"
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(business.id)}
+                        className="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg font-medium transition"
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
       </main>
 
       {/* Create Business Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">Create New Business Account</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Create New Business Account</h2>
             
             <div className="space-y-4">
               <div>
@@ -571,9 +655,9 @@ function SuperAdmin() {
 
       {/* Edit Business Modal */}
       {showEditModal && editingBusiness && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4">Edit Business Account</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Edit Business Account</h2>
             
             <div className="space-y-4">
               <div>
@@ -664,9 +748,9 @@ function SuperAdmin() {
 
       {/* Delete Confirmation Modal */}
       {confirmDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4 text-red-600">Confirm Delete</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-red-600">Confirm Delete</h2>
             <p className="text-gray-700 mb-6">
               Are you sure you want to delete this business account? This action cannot be undone.
               The account will be permanently removed from both the database and authentication system.
@@ -697,9 +781,9 @@ function SuperAdmin() {
 
       {/* Suspend User Modal */}
       {showSuspendModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-2xl font-bold mb-4 text-red-600">Suspend Account</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-red-600">Suspend Account</h2>
             <p className="text-gray-700 mb-4">
               Enter a message that will be displayed to the user when they try to access the system.
             </p>

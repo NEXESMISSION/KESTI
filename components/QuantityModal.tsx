@@ -78,7 +78,7 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
           {/* Quantity Input */}
           <div>
             <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-              Quantity
+              الكمية
             </label>
             <div className="flex items-center gap-2 sm:gap-3">
               <button
@@ -104,7 +104,7 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
             </div>
             {showUnitQuantity && (
               <p className="text-xs sm:text-sm text-gray-500 mt-2 text-center">
-                Each item is 1 {product.unit_type}
+                كل عنصر يساوي 1 {product.unit_type}
               </p>
             )}
           </div>
@@ -112,7 +112,7 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
           {/* Total Price Preview */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
             <div className="flex justify-between items-center">
-              <span className="text-xs sm:text-sm font-medium text-gray-700">Total Price:</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-700">السعر الإجمالي:</span>
               <span className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">
                 {(
                   product.selling_price *
@@ -121,7 +121,7 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
               </span>
             </div>
             <p className="text-[10px] sm:text-xs text-gray-600 mt-1 text-center">
-              {quantity} × {product.selling_price.toFixed(2)} TND per {product.unit_type}
+              {quantity} × {product.selling_price.toFixed(2)} دينار لكل {product.unit_type}
             </p>
           </div>
         </div>
@@ -132,13 +132,13 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
             onClick={onClose}
             className="flex-1 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-gray-800 py-2 sm:py-2.5 md:py-3 rounded-lg text-sm sm:text-base font-medium transition"
           >
-            Cancel
+            إلغاء
           </button>
           <button
             onClick={handleAdd}
             className="flex-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-2 sm:py-2.5 md:py-3 rounded-lg text-sm sm:text-base font-medium transition"
           >
-            Add to Cart
+            إضافة إلى السلة
           </button>
         </div>
       </div>

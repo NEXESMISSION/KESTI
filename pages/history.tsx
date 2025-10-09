@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 
@@ -270,14 +271,14 @@ function History() {
       <header className="bg-white shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto py-3 sm:py-4 px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">KESTI</h1>
+            <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Back to POS */}
               <button
                 onClick={() => router.push('/pos')}
                 className="bg-gray-600 hover:bg-gray-700 text-white p-2 sm:p-2.5 rounded-lg transition"
-                title="Back to POS"
+                title="العودة إلى نقطة البيع"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -288,7 +289,7 @@ function History() {
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 text-white p-2 sm:p-2.5 rounded-lg transition"
-                title="Logout"
+                title="تسجيل الخروج"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -307,31 +308,31 @@ function History() {
               onClick={() => router.push('/owner-dashboard')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              🏦 <span className="hidden xs:inline">Dashboard</span>
+              🏦 <span className="hidden xs:inline">لوحة التحكم</span>
             </button>
             <button
               onClick={() => router.push('/stock')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              🏷️ <span className="hidden xs:inline">Stock</span>
+              🏷️ <span className="hidden xs:inline">المخزون</span>
             </button>
             <button
               onClick={() => router.push('/finance')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              💰 <span className="hidden xs:inline">Finance</span>
+              💰 <span className="hidden xs:inline">المالية</span>
             </button>
             <button
               onClick={() => router.push('/expenses')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              📊 <span className="hidden xs:inline">Expenses</span>
+              📊 <span className="hidden xs:inline">المصروفات</span>
             </button>
             <button
               onClick={() => router.push('/history')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
             >
-              📜 <span className="hidden xs:inline">History</span>
+              📜 <span className="hidden xs:inline">السجل</span>
             </button>
           </div>
         </div>
@@ -340,8 +341,8 @@ function History() {
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-3 sm:px-4 lg:px-8">
         {/* Page Title */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Financial History</h1>
-          <p className="text-sm text-gray-600 mt-1">Track your sales and expenses history</p>
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">سجل المعاملات</h2>
+          <p className="text-sm text-gray-600 mt-1">تتبع سجل المبيعات والمصروفات</p>
         </div>
         
         {/* View Mode Tabs - Simple tab strip at the top */}
@@ -354,7 +355,7 @@ function History() {
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            All Transactions
+            كل المعاملات
           </button>
           <button
             onClick={() => setViewMode('sales')}
@@ -364,7 +365,7 @@ function History() {
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            Sales Only
+            المبيعات فقط
           </button>
           <button
             onClick={() => setViewMode('expenses')}
@@ -374,7 +375,7 @@ function History() {
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            Expenses Only
+            المصروفات فقط
           </button>
         </div>
 
@@ -383,7 +384,7 @@ function History() {
           <div className="flex sm:grid sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 min-w-max sm:min-w-0">
             <div className="bg-white rounded-xl shadow p-4 sm:p-6 min-w-[180px] sm:min-w-0">
               <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500">Total Sales</h3>
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500">إجمالي المبيعات</h3>
                 <span className="text-lg sm:text-xl bg-green-50 text-green-600 p-1 rounded-full">
                   <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -391,12 +392,12 @@ function History() {
                 </span>
               </div>
               <p className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">{formatCurrency(totalRevenue)}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">{filteredSales.length} transactions</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">{filteredSales.length} معاملة</p>
             </div>
             
             <div className="bg-white rounded-xl shadow p-4 sm:p-6 min-w-[180px] sm:min-w-0">
               <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500">Total Expenses</h3>
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500">إجمالي المصروفات</h3>
                 <span className="text-lg sm:text-xl bg-red-50 text-red-600 p-1 rounded-full">
                   <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -404,12 +405,12 @@ function History() {
                 </span>
               </div>
               <p className="text-lg sm:text-xl md:text-2xl font-bold text-red-600">{formatCurrency(totalExpenses)}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">{filteredExpenses.length} expenses</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">{filteredExpenses.length} مصروف</p>
             </div>
             
             <div className="bg-white rounded-xl shadow p-4 sm:p-6 min-w-[180px] sm:min-w-0">
               <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500">Net Amount</h3>
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500">المبلغ الصافي</h3>
                 <span className="text-lg sm:text-xl bg-blue-50 text-blue-600 p-1 rounded-full">
                   <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -421,12 +422,12 @@ function History() {
               }`}>
                 {formatCurrency(netAmount)}
               </p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Revenue - Expenses</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">الإيرادات - المصروفات</p>
             </div>
             
             <div className="bg-white rounded-xl shadow p-4 sm:p-6 min-w-[180px] sm:min-w-0">
               <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500">Transactions</h3>
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500">المعاملات</h3>
                 <span className="text-lg sm:text-xl bg-gray-100 text-gray-600 p-1 rounded-full">
                   <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -436,7 +437,7 @@ function History() {
               <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">
                 {filteredSales.length + filteredExpenses.length}
               </p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Sales + Expenses</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">المبيعات + المصروفات</p>
             </div>
           </div>
         </div>
@@ -446,15 +447,15 @@ function History() {
           <div className="p-3 sm:p-4">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search transactions..."
+                placeholder="بحث في المعاملات..."
                 className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                 autoComplete="off"
               />
@@ -480,7 +481,7 @@ function History() {
               <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
               </svg>
-              <h3 className="font-medium text-sm sm:text-base">Advanced Filters</h3>
+              <h3 className="font-medium text-sm sm:text-base">فلاتر متقدمة</h3>
               <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
                 {/* Count how many filters are applied */}
                 {(timeFilter !== 'all' ? 1 : 0) + 
@@ -503,22 +504,22 @@ function History() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {/* Time Period */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Time Period</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">فترة الزمن</label>
                   <select
                     value={timeFilter}
                     onChange={(e) => setTimeFilter(e.target.value as any)}
                     className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                   >
-                    <option value="all">All Time</option>
-                    <option value="today">Today</option>
-                    <option value="week">Last 7 Days</option>
-                    <option value="month">Last 30 Days</option>
+                    <option value="all">كل الوقت</option>
+                    <option value="today">اليوم</option>
+                    <option value="week">الأسبوع الماضي</option>
+                    <option value="month">الشهر الماضي</option>
                   </select>
                 </div>
 
                 {/* Date Range */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Start Date</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">تاريخ البدء</label>
                   <input
                     type="date"
                     value={startDate}
@@ -528,7 +529,7 @@ function History() {
                 </div>
 
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">End Date</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">تاريخ النهاية</label>
                   <input
                     type="date"
                     value={endDate}
@@ -539,22 +540,22 @@ function History() {
 
                 {/* Payment Method */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Payment Method</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">طريقة الدفع</label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
                     className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                   >
-                    <option value="all">All Methods</option>
-                    <option value="cash">Cash</option>
-                    <option value="card">Card</option>
-                    <option value="mobile">Mobile Payment</option>
+                    <option value="all">كل الطرق</option>
+                    <option value="cash">النقد</option>
+                    <option value="card">البطاقة</option>
+                    <option value="mobile">الدفع المباشر</option>
                   </select>
                 </div>
 
                 {/* Amount Range */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Min Amount</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">الحد الأدنى للمبلغ</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <span className="text-gray-500 text-xs sm:text-sm">$</span>
@@ -572,7 +573,7 @@ function History() {
                 </div>
 
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Max Amount</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">الحد الأقصى للمبلغ</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <span className="text-gray-500 text-xs sm:text-sm">$</span>
@@ -591,16 +592,16 @@ function History() {
 
                 {/* Sort By */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Sort By</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">ترتيب حسب</label>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
                     className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                   >
-                    <option value="date-desc">Date (Newest First)</option>
-                    <option value="date-asc">Date (Oldest First)</option>
-                    <option value="amount-desc">Amount (Highest First)</option>
-                    <option value="amount-asc">Amount (Lowest First)</option>
+                    <option value="date-desc">التاريخ (الأحدث أولا)</option>
+                    <option value="date-asc">التاريخ (الأقدم أولا)</option>
+                    <option value="amount-desc">المبلغ (الأعلى أولا)</option>
+                    <option value="amount-asc">المبلغ (الأقل أولا)</option>
                   </select>
                 </div>
               </div>
@@ -614,7 +615,7 @@ function History() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                  Clear All Filters
+                  إعادة تعيين كل الفلاتر
                 </button>
               </div>
             </div>
@@ -622,32 +623,32 @@ function History() {
           
           {/* Results Count */}
           <div className="border-t border-gray-200 p-2 sm:p-3 text-xs sm:text-sm text-gray-600 text-center bg-gray-50">
-            Showing {filteredSales.length + filteredExpenses.length} transactions
+            إظهار {filteredSales.length + filteredExpenses.length} معاملة
           </div>
         </div>
 
         {/* Transactions List */}
         <div className="bg-white rounded-xl shadow overflow-hidden">
           <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
-            <h3 className="text-base sm:text-lg font-semibold">Transaction Records</h3>
+            <h3 className="text-base sm:text-lg font-semibold">سجل المعاملات</h3>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              {viewMode === 'all' && `Showing ${filteredSales.length + filteredExpenses.length} transactions`}
-              {viewMode === 'sales' && `Showing ${filteredSales.length} sales`}
-              {viewMode === 'expenses' && `Showing ${filteredExpenses.length} expenses`}
+              {viewMode === 'all' && `إظهار ${filteredSales.length + filteredExpenses.length} معاملة`}
+              {viewMode === 'sales' && `إظهار ${filteredSales.length} مبيعات`}
+              {viewMode === 'expenses' && `إظهار ${filteredExpenses.length} مصروفات`}
             </p>
           </div>
           
           {loading ? (
             <div className="p-8 text-center">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="mt-2 text-gray-500">Loading financial history...</p>
+              <p className="mt-2 text-gray-500">تحميل السجل المالي...</p>
             </div>
           ) : (viewMode === 'all' && filteredSales.length === 0 && filteredExpenses.length === 0) ||
              (viewMode === 'sales' && filteredSales.length === 0) ||
              (viewMode === 'expenses' && filteredExpenses.length === 0) ? (
             <div className="p-8 text-center text-gray-500">
-              <p className="text-lg font-medium">No transactions found</p>
-              <p className="text-sm mt-2">Try adjusting your filters!</p>
+              <p className="text-lg font-medium">لم يتم العثور على معاملات</p>
+              <p className="text-sm mt-2">حاول تعديل الفلاتر!</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
@@ -666,7 +667,7 @@ function History() {
                               {formatDate(sale.created_at)}
                             </p>
                             <p className="text-xs text-gray-500 mt-1">
-                              {sale.sale_items.length} {sale.sale_items.length === 1 ? 'item' : 'items'} • {' '}
+                              {sale.sale_items.length} {sale.sale_items.length === 1 ? 'عنصر' : 'عناصر'} • {' '}
                               <span className="capitalize">{sale.payment_method}</span>
                             </p>
                           </div>
@@ -703,7 +704,7 @@ function History() {
                   {expandedSale === sale.id && (
                     <div className="px-6 pb-4 bg-gray-50">
                       <div className="border-t border-gray-200 pt-4">
-                        <h4 className="text-sm font-semibold text-gray-700 mb-3">Sale Items:</h4>
+                        <h4 className="text-sm font-semibold text-gray-700 mb-3">عناصر البيع:</h4>
                         <div className="space-y-2">
                           {sale.sale_items.map((item) => (
                             <div
@@ -713,7 +714,7 @@ function History() {
                               <div className="flex-1">
                                 <p className="font-medium text-gray-900">{item.product_name}</p>
                                 <p className="text-sm text-gray-500">
-                                  Qty: {item.quantity} × {formatCurrency(item.price_at_sale)}
+                                  الكمية: {item.quantity} × {formatCurrency(item.price_at_sale)}
                                 </p>
                               </div>
                               <p className="font-semibold text-gray-900">

@@ -57,7 +57,7 @@ export default function CartItem({ item }: CartItemProps) {
   }
 
   const formatPrice = (price: number): string => {
-    return `${price.toFixed(2)} TND`
+    return `${price.toFixed(2)} دينار`
   }
 
   const unitLabel = getFormattedUnitLabel(product.unit_type, quantity)
@@ -94,7 +94,7 @@ export default function CartItem({ item }: CartItemProps) {
           </p>
           {showUnitQuantity && (
             <p className="text-xs text-gray-400 mt-1">
-              {quantity} orders × {unitQuantity} {product.unit_type}
+              {quantity} طلب × {unitQuantity} {product.unit_type}
             </p>
           )}
         </div>
@@ -115,7 +115,7 @@ export default function CartItem({ item }: CartItemProps) {
             type="button"
             onClick={() => decrementQuantity(product.id)}
             className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-200 rounded-l-lg active:bg-gray-300 transition text-xl font-bold"
-            aria-label="Decrease quantity"
+            aria-label="تنقيص الكمية"
           >
             −
           </button>
@@ -125,14 +125,14 @@ export default function CartItem({ item }: CartItemProps) {
             value={quantityInput}
             onChange={handleQuantityChange}
             className="w-12 h-10 bg-transparent text-center font-semibold border-0 focus:ring-0 text-gray-900"
-            aria-label="Quantity"
+            aria-label="الكمية"
           />
           
           <button
             type="button"
             onClick={() => incrementQuantity(product.id)}
             className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-200 rounded-r-lg active:bg-gray-300 transition text-xl font-bold"
-            aria-label="Increase quantity"
+            aria-label="زيادة الكمية"
           >
             +
           </button>
@@ -152,7 +152,7 @@ export default function CartItem({ item }: CartItemProps) {
               className="w-20 h-10 text-center font-semibold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               step="0.1"
               min="0.01"
-              aria-label={`Amount in ${product.unit_type}`}
+              aria-label={`الكمية بال${product.unit_type}`}
             />
             <span className="text-sm text-gray-600">
               {product.unit_type}
@@ -164,7 +164,7 @@ export default function CartItem({ item }: CartItemProps) {
         <button
           onClick={handleRemoveItem}
           className="ml-auto bg-red-50 hover:bg-red-100 text-red-600 px-3 h-10 rounded-lg font-medium transition active:bg-red-200"
-          aria-label="Remove item"
+          aria-label="حذف العنصر"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

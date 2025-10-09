@@ -229,14 +229,14 @@ function Stock() {
       <header className="bg-white shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto py-3 sm:py-4 px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">KESTI</h1>
+            <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Back to POS */}
               <button
                 onClick={() => router.push('/pos')}
                 className="bg-gray-600 hover:bg-gray-700 text-white p-2 sm:p-2.5 rounded-lg transition"
-                title="Back to POS"
+                title="العودة إلى نقطة البيع"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -247,7 +247,7 @@ function Stock() {
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 text-white p-2 sm:p-2.5 rounded-lg transition"
-                title="Logout"
+                title="تسجيل الخروج"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -266,31 +266,31 @@ function Stock() {
               onClick={() => router.push('/owner-dashboard')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              🏦 <span className="hidden xs:inline">Dashboard</span>
+              🏦 <span className="hidden xs:inline">لوحة التحكم</span>
             </button>
             <button
               onClick={() => router.push('/stock')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
             >
-              🏷️ <span className="hidden xs:inline">Stock</span>
+              🏷️ <span className="hidden xs:inline">المخزون</span>
             </button>
             <button
               onClick={() => router.push('/finance')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              💰 <span className="hidden xs:inline">Finance</span>
+              💰 <span className="hidden xs:inline">المالية</span>
             </button>
             <button
               onClick={() => router.push('/expenses')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              📊 <span className="hidden xs:inline">Expenses</span>
+              📊 <span className="hidden xs:inline">المصروفات</span>
             </button>
             <button
               onClick={() => router.push('/history')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              📜 <span className="hidden xs:inline">History</span>
+              📜 <span className="hidden xs:inline">السجل</span>
             </button>
           </div>
         </div>
@@ -301,33 +301,33 @@ function Stock() {
         <div className="overflow-x-auto pb-2 mb-4 sm:mb-6">
           <div className="flex sm:grid sm:grid-cols-5 gap-3 sm:gap-4 min-w-max sm:min-w-0">
             <div className="bg-white rounded-xl shadow p-3 sm:p-4 md:p-6 min-w-[140px] sm:min-w-0">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">In Stock</h3>
+              <h3 className="text-xs sm:text-sm font-medium text-gray-500">متوفر</h3>
               <p className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mt-1 sm:mt-2">{inStockCount}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Products</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">منتج</p>
             </div>
           
             <div className="bg-white rounded-xl shadow p-3 sm:p-4 md:p-6 min-w-[140px] sm:min-w-0">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Low Stock</h3>
+              <h3 className="text-xs sm:text-sm font-medium text-gray-500">مخزون منخفض</h3>
               <p className="text-xl sm:text-2xl md:text-3xl font-bold text-yellow-600 mt-1 sm:mt-2">{lowStockCount}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Need restock</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">يحتاج تجديد</p>
             </div>
             
             <div className="bg-white rounded-xl shadow p-3 sm:p-4 md:p-6 min-w-[140px] sm:min-w-0">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Out of Stock</h3>
+              <h3 className="text-xs sm:text-sm font-medium text-gray-500">نفذ من المخزون</h3>
               <p className="text-xl sm:text-2xl md:text-3xl font-bold text-red-600 mt-1 sm:mt-2">{outOfStockCount}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Urgent!</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">عاجل!</p>
             </div>
             
             <div className="bg-white rounded-xl shadow p-3 sm:p-4 md:p-6 min-w-[140px] sm:min-w-0">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Not Tracked</h3>
+              <h3 className="text-xs sm:text-sm font-medium text-gray-500">غير متتبع</h3>
               <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-600 mt-1 sm:mt-2">{notTrackedCount}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">No tracking</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">بدون تتبع</p>
             </div>
             
             <div className="bg-white rounded-xl shadow p-3 sm:p-4 md:p-6 min-w-[140px] sm:min-w-0">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">Total Products</h3>
+              <h3 className="text-xs sm:text-sm font-medium text-gray-500">إجمالي المنتجات</h3>
               <p className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600 mt-1 sm:mt-2">{products.length}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">{trackedProducts.length} tracked</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">{trackedProducts.length} متتبع</p>
             </div>
           </div>
         </div>
@@ -340,7 +340,7 @@ function Stock() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="🔍 Search products..."
+                placeholder="🔍 بحث عن منتجات..."
                 className="w-full px-4 py-2 sm:py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
               />
               {searchTerm && (
@@ -365,7 +365,7 @@ function Stock() {
               <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
               </svg>
-              <h3 className="font-medium text-sm sm:text-base">Filters & Sort</h3>
+              <h3 className="font-medium text-sm sm:text-base">التصفية والترتيب</h3>
               <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">{getActiveFilterCount()}</span>
             </div>
             
@@ -380,29 +380,29 @@ function Stock() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {/* Stock Status Filter */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Stock Status</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">حالة المخزون</label>
                   <select
                     value={stockStatus}
                     onChange={(e) => setStockStatus(e.target.value as any)}
                     className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                   >
-                    <option value="all">All Products</option>
-                    <option value="in_stock">In Stock</option>
-                    <option value="low_stock">Low Stock</option>
-                    <option value="out_of_stock">Out of Stock</option>
-                    <option value="not_tracked">Not Tracked</option>
+                    <option value="all">كل المنتجات</option>
+                    <option value="in_stock">متوفر</option>
+                    <option value="low_stock">مخزون منخفض</option>
+                    <option value="out_of_stock">نفذ من المخزون</option>
+                    <option value="not_tracked">غير متتبع</option>
                   </select>
                 </div>
 
                 {/* Category Filter */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Category</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">الفئة</label>
                   <select
                     value={categoryFilter}
                     onChange={(e) => setCategoryFilter(e.target.value)}
                     className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                   >
-                    <option value="all">All Categories</option>
+                    <option value="all">كل الفئات</option>
                     {categories.map((cat) => cat && (
                       <option key={cat.id} value={cat.id}>{cat.name}</option>
                     ))}
@@ -411,15 +411,15 @@ function Stock() {
 
                 {/* Sort */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Sort By</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">الترتيب حسب</label>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
                     className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                   >
-                    <option value="name">Name (A-Z)</option>
-                    <option value="stock-asc">Stock (Low to High)</option>
-                    <option value="stock-desc">Stock (High to Low)</option>
+                    <option value="name">الاسم (أ-ي)</option>
+                    <option value="stock-asc">المخزون (من الأقل إلى الأعلى)</option>
+                    <option value="stock-desc">المخزون (من الأعلى إلى الأقل)</option>
                   </select>
                 </div>
 
@@ -434,7 +434,7 @@ function Stock() {
                     }}
                     className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs sm:text-sm font-medium transition"
                   >
-                    Clear All Filters
+                    مسح كل الفلاتر
                   </button>
                 </div>
               </div>
@@ -443,7 +443,7 @@ function Stock() {
 
           {/* Results Count - Always Visible */}
           <div className="border-t border-gray-200 p-2 sm:p-3 text-xs sm:text-sm text-gray-600 text-center bg-gray-50">
-            Showing <span className="font-semibold text-blue-600">{filteredProducts.length}</span> of {products.length} products
+            عرض <span className="font-semibold text-blue-600">{filteredProducts.length}</span> من {products.length} منتج
           </div>
         </div>
 
@@ -452,15 +452,15 @@ function Stock() {
           {loading ? (
             <div className="p-6 sm:p-12 text-center">
               <div className="inline-block animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600"></div>
-              <p className="mt-4 text-xs sm:text-sm text-gray-500">Loading stock data...</p>
+              <p className="mt-4 text-xs sm:text-sm text-gray-500">جاري تحميل بيانات المخزون...</p>
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="p-6 sm:p-12 text-center">
               <svg className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
               </svg>
-              <h3 className="mt-4 text-base sm:text-lg font-semibold text-gray-900">No products found</h3>
-              <p className="mt-2 text-xs sm:text-sm text-gray-600">Try adjusting your filters or add products first</p>
+              <h3 className="mt-4 text-base sm:text-lg font-semibold text-gray-900">لم يتم العثور على منتجات</h3>
+              <p className="mt-2 text-xs sm:text-sm text-gray-600">حاول تعديل الفلاتر أو أضف منتجات أولاً</p>
             </div>
           ) : (
             <>
@@ -490,7 +490,7 @@ function Stock() {
                         {/* Product Info */}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                          <p className="text-xs text-gray-500">{product.category?.name || 'Uncategorized'}</p>
+                          <p className="text-xs text-gray-500">{product.category?.name || 'غير مصنف'}</p>
                         </div>
                       </div>
                       
@@ -506,20 +506,20 @@ function Stock() {
                             {product.stock_quantity !== null ? (
                               getStockStatus(product) === 'in_stock' ? (
                                 <span className="px-1.5 py-0.5 text-xs leading-none font-medium rounded-full bg-green-100 text-green-800">
-                                  In Stock
+                                  متوفر
                                 </span>
                               ) : getStockStatus(product) === 'low_stock' ? (
                                 <span className="px-1.5 py-0.5 text-xs leading-none font-medium rounded-full bg-yellow-100 text-yellow-800">
-                                  Low Stock
+                                  مخزون منخفض
                                 </span>
                               ) : (
                                 <span className="px-1.5 py-0.5 text-xs leading-none font-medium rounded-full bg-red-100 text-red-800">
-                                  Out of Stock
+                                  نفذ من المخزون
                                 </span>
                               )
                             ) : (
                               <span className="px-1.5 py-0.5 text-xs leading-none font-medium rounded-full bg-gray-100 text-gray-800">
-                                Not Tracked
+                                غير متتبع
                               </span>
                             )}
                           </div>
@@ -529,7 +529,7 @@ function Stock() {
                         {editingProduct?.id === product.id ? (
                           <div className="mt-2 border border-blue-200 rounded-lg p-2 bg-blue-50">
                             <div className="flex items-center justify-between gap-2">
-                              <div className="text-xs font-medium text-gray-700">Update Stock:</div>
+                              <div className="text-xs font-medium text-gray-700">تحديث المخزون:</div>
                               <div className="flex items-center gap-1">
                                 <button 
                                   onClick={() => {
@@ -569,7 +569,7 @@ function Stock() {
                                 onClick={cancelEditing}
                                 className="flex-1 text-xs bg-gray-100 hover:bg-gray-200 py-1 px-2 rounded"
                               >
-                                Cancel
+                                إلغاء
                               </button>
                               <button
                                 onClick={saveStockChange}
@@ -579,7 +579,7 @@ function Stock() {
                                 {updatingStock ? (
                                   <>
                                     <div className="w-3 h-3 border-t-2 border-b-2 border-white rounded-full animate-spin"></div>
-                                    Saving
+                                    حفظ...
                                   </>
                                 ) : 'Save'}
                               </button>
@@ -594,26 +594,26 @@ function Stock() {
                                   {product.stock_quantity} {product.unit_type}
                                 </span>
                               ) : (
-                                <span className="text-xs text-gray-500">No tracking</span>
+                                <span className="text-xs text-gray-500">بدون تتبع</span>
                               )}
                               
                               {/* Edit Button */}
                               <button
                                 onClick={() => startEditing(product)}
                                 className="text-xs bg-gray-100 hover:bg-gray-200 py-1 px-2 rounded inline-flex items-center"
-                                title="Edit Stock"
+                                title="تعديل المخزون"
                               >
                                 <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
-                                Edit
+                                تعديل
                               </button>
                             </div>
                             
                             {/* Low Stock Alert */}
                             {product.low_stock_threshold !== null && (
                               <span className="text-xs text-gray-500">
-                                Alert: {product.low_stock_threshold}
+                                تنبيه: {product.low_stock_threshold}
                               </span>
                             )}
                           </div>
@@ -637,25 +637,25 @@ function Stock() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Product
+                        المنتج
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category
+                        الفئة
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Unit Type
+                        نوع الوحدة
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Stock Level
+                        مستوى المخزون
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Low Stock Alert
+                        تنبيه نقص المخزون
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
+                        الحالة
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
+                        الإجراءات
                       </th>
                     </tr>
                   </thead>
@@ -668,7 +668,7 @@ function Stock() {
                               {product.image_url ? (
                                 <Image src={product.image_url} alt={product.name} width={40} height={40} className="w-full h-full object-cover" />
                               ) : (
-                                <div className="flex items-center justify-center h-full text-gray-500 text-xs">No img</div>
+                                <div className="flex items-center justify-center h-full text-gray-500 text-xs">بدون صورة</div>
                               )}
                             </div>
                             <div className="ml-3 sm:ml-4">
@@ -677,7 +677,7 @@ function Stock() {
                           </div>
                         </td>
                         <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                          {product.category?.name || 'Uncategorized'}
+                          {product.category?.name || 'غير مصنف'}
                         </td>
                         <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                           {product.unit_type}
@@ -688,7 +688,7 @@ function Stock() {
                               {product.stock_quantity} {product.unit_type}
                             </span>
                           ) : (
-                            <span className="text-gray-500">Not tracked</span>
+                            <span className="text-gray-500">بدون تتبع</span>
                           )}
                         </td>
                         <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
@@ -702,20 +702,20 @@ function Stock() {
                           {product.stock_quantity !== null ? (
                             getStockStatus(product) === 'in_stock' ? (
                               <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                ✓ In Stock
+                                ✓ متوفر
                               </span>
                             ) : getStockStatus(product) === 'low_stock' ? (
                               <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                ⚠️ Low Stock
+                                ⚠️ مخزون منخفض
                               </span>
                             ) : (
                               <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                ✗ Out of Stock
+                                ✗ نفذ من المخزون
                               </span>
                             )
                           ) : (
                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                              Not Tracked
+                              غير متتبع
                             </span>
                           )}
                         </td>
@@ -766,13 +766,13 @@ function Stock() {
                                       <div className="w-3 h-3 border-t-2 border-b-2 border-white rounded-full animate-spin"></div>
                                       Save
                                     </>
-                                  ) : 'Save'}
+                                  ) : 'حفظ'}
                                 </button>
                                 <button
                                   onClick={cancelEditing}
                                   className="text-xs bg-gray-300 hover:bg-gray-400 py-1 px-2 rounded"
                                 >
-                                  Cancel
+                                  إلغاء
                                 </button>
                               </div>
                               
@@ -788,7 +788,7 @@ function Stock() {
                               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
-                              Edit Stock
+                              تعديل المخزون
                             </button>
                           )}
                         </td>

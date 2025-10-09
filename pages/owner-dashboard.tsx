@@ -71,14 +71,14 @@ function OwnerDashboard() {
       setProducts(data || [])
     } catch (err: any) {
       console.error('Error fetching products:', err)
-      setError('Failed to load products. Make sure you have run the SQL migration!')
+      setError('فشل تحميل المنتجات. يرجى تشغيل ملف SQL من IMPORTANT_RUN_THIS_SQL.md')
     } finally {
       setLoading(false)
     }
   }
 
   const handleDeleteProduct = async (productId: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return
+    if (!confirm('هل أنت متأكد من رغبتك في حذف هذا المنتج؟')) return
 
     try {
       const { error } = await supabase
@@ -91,7 +91,7 @@ function OwnerDashboard() {
       setProducts(products.filter(p => p.id !== productId))
     } catch (err: any) {
       console.error('Error deleting product:', err)
-      alert('Failed to delete product')
+      alert('فشل حذف المنتج')
     }
   }
 
@@ -116,14 +116,14 @@ function OwnerDashboard() {
       <header className="bg-white shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto py-3 sm:py-4 px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">KESTI</h1>
+            <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Back to POS */}
               <button
                 onClick={() => router.push('/pos')}
                 className="bg-gray-600 hover:bg-gray-700 text-white p-2 sm:p-2.5 rounded-lg transition"
-                title="Back to POS"
+                title="العودة إلى نقطة البيع"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -134,7 +134,7 @@ function OwnerDashboard() {
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 text-white p-2 sm:p-2.5 rounded-lg transition"
-                title="Logout"
+                title="تسجيل الخروج"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -195,7 +195,7 @@ function OwnerDashboard() {
             <div>
               <p className="font-bold text-sm sm:text-base">خطأ:</p>
               <p className="text-sm">{error}</p>
-              <p className="mt-2 text-xs sm:text-sm">Please run the SQL migration from IMPORTANT_RUN_THIS_SQL.md</p>
+              <p className="mt-2 text-xs sm:text-sm">يرجى تشغيل ملف SQL من IMPORTANT_RUN_THIS_SQL.md</p>
             </div>
             <button
               onClick={() => setError(null)}
@@ -209,7 +209,7 @@ function OwnerDashboard() {
         )}
 
         <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
-          <h2 className="text-lg sm:text-xl font-semibold">Manage Products</h2>
+          <h2 className="text-lg sm:text-xl font-semibold">إدارة المنتجات</h2>
           <button
             onClick={() => {
               setSelectedProduct(undefined)
@@ -225,7 +225,7 @@ function OwnerDashboard() {
             >
               <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
             </svg>
-            Add New Product
+            إضافة منتج جديد
           </button>
         </div>
 
@@ -238,7 +238,7 @@ function OwnerDashboard() {
                 <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
-                <h3 className="font-medium text-sm sm:text-base">Category Filter</h3>
+                <h3 className="font-medium text-sm sm:text-base">تصفية حسب الفئة</h3>
                 <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
                   {selectedCategory ? 1 : 0}
                 </span>

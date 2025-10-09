@@ -267,7 +267,7 @@ function POS() {
         <div className="max-w-7xl mx-auto py-3 sm:py-4 px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             {/* Left: Brand */}
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">KESTI</h1>
+            <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             {/* Right: Icons */}
             <div className="flex items-center gap-2 sm:gap-3">
@@ -338,7 +338,7 @@ function POS() {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="🔍 Search products..."
+              placeholder="🔍 بحث عن المنتجات..."
               className="w-full px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
               autoComplete="off"
               name="product-search"
@@ -612,57 +612,78 @@ function POS() {
         }}
       />
 
-      {/* PIN Modal */}
+      {/* PIN Modal with Number Pad */}
       {showPinModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-semibold mb-4">Enter Owner PIN</h2>
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+            <h2 className="text-xl font-semibold mb-4 text-center">أدخل رمز PIN الخاص بالمالك</h2>
             
             {error && (
-              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
             
-            <form autoComplete="off" onSubmit={(e) => {
-              e.preventDefault();
-              handlePinSubmit();
-            }}>
-              <input
-                type="password"
-                value={pin}
-                onChange={(e) => setPin(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary mb-4"
-                placeholder="Enter PIN code"
-                autoComplete="off"
-                name="pin-code"
-                id="pin-field"
-              />
-              {/* Hidden dummy fields to prevent autofill */}
-              <input type="text" style={{display: 'none'}} name="fakeusernameremembered" />
-              <input type="password" style={{display: 'none'}} name="fakepasswordremembered" />
-            </form>
+            {/* PIN Display */}
+            <div className="mb-6 bg-gray-100 rounded-lg p-4 min-h-[60px] flex items-center justify-center">
+              <div className="flex gap-3">
+                {[...Array(Math.max(4, pin.length))].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-4 h-4 rounded-full ${
+                      i < pin.length ? 'bg-blue-600' : 'bg-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
             
-            <div className="flex justify-end space-x-3">
+            {/* Number Pad */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setPin(pin + num.toString())}
+                  className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 text-2xl font-semibold py-4 rounded-lg transition"
+                >
+                  {num}
+                </button>
+              ))}
               <button
-                type="button"
-                onClick={handlePinSubmit}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+                onClick={() => setPin(pin.slice(0, -1))}
+                className="bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-600 py-4 rounded-lg transition flex items-center justify-center"
+                title="حذف"
               >
-                Submit
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
+                </svg>
               </button>
               <button
-                type="button"
+                onClick={() => setPin(pin + '0')}
+                className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 text-2xl font-semibold py-4 rounded-lg transition"
+              >
+                0
+              </button>
+              <button
                 onClick={() => {
                   setShowPinModal(false)
                   setPin('')
                   setError(null)
                 }}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition"
+                className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-600 py-4 rounded-lg transition flex items-center justify-center text-sm font-medium"
               >
-                Cancel
+                إلغاء
               </button>
             </div>
+            
+            {/* Submit Button */}
+            <button
+              onClick={handlePinSubmit}
+              disabled={pin.length === 0}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-3 rounded-lg transition font-semibold"
+            >
+              إرسال
+            </button>
           </div>
         </div>
       )}

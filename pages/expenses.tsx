@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 
@@ -284,7 +285,7 @@ function Expenses() {
       <header className="bg-white shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto py-3 sm:py-4 px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">KESTI</h1>
+            <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Back to POS */}
@@ -460,7 +461,7 @@ function Expenses() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            <span>New Expense</span>
+            <span>مصروف جديد</span>
           </button>
         </div>
 
@@ -550,7 +551,7 @@ function Expenses() {
 
           {/* Results Count - Always Visible */}
           <div className="border-t border-gray-200 p-2 sm:p-3 text-xs sm:text-sm text-gray-600 text-center bg-gray-50">
-            Showing <span className="font-semibold text-blue-600">{filteredExpenses.length}</span> of {expenses.length} expenses
+            عرض <span className="font-semibold text-blue-600">{filteredExpenses.length}</span> من {expenses.length} مصروف
           </div>
         </div>
 
@@ -564,9 +565,9 @@ function Expenses() {
             <svg className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
-            <h3 className="mt-4 text-lg sm:text-xl font-semibold text-gray-900">No expenses yet</h3>
+            <h3 className="mt-4 text-lg sm:text-xl font-semibold text-gray-900">لا توجد مصروفات بعد</h3>
             <p className="mt-2 text-sm text-gray-600">
-              Click &quot;New Expense&quot; to start tracking your business expenses
+              انقر على "مصروف جديد" لبدء تتبع مصروفات عملك
             </p>
           </div>
         ) : (
@@ -579,7 +580,7 @@ function Expenses() {
                     <div>
                       <h4 className="font-medium text-sm text-gray-900">{expense.description}</h4>
                       <p className="text-xs text-gray-500">
-                        {expense.category || 'No category'} • {formatDate(expense.created_at)}
+                        {expense.category || 'بدون فئة'} • {formatDate(expense.created_at)}
                       </p>
                     </div>
                     <span className="font-semibold text-sm text-red-600">{formatCurrency(expense.amount)}</span>
@@ -588,7 +589,7 @@ function Expenses() {
                   <div className="px-3 pb-2 flex items-center gap-1.5">
                     {expense.expense_type === 'one_time' ? (
                       <span className="px-1.5 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                        One-time
+                        لمرة واحدة
                       </span>
                     ) : (
                       <>
@@ -597,11 +598,11 @@ function Expenses() {
                         </span>
                         {expense.is_active ? (
                           <span className="px-1.5 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                            Active
+                            نشط
                           </span>
                         ) : (
                           <span className="px-1.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                            Inactive
+                            غير نشط
                           </span>
                         )}
                       </>
@@ -614,7 +615,7 @@ function Expenses() {
                         onClick={() => handleToggleActive(expense)}
                         className="flex-1 py-2 text-xs text-indigo-600 font-medium hover:bg-indigo-50"
                       >
-                        {expense.is_active ? "Deactivate" : "Activate"}
+                        {expense.is_active ? "إيقاف" : "تفعيل"}
                       </button>
                     )}
                     <button
@@ -632,13 +633,13 @@ function Expenses() {
                       }}
                       className="flex-1 py-2 text-xs text-blue-600 font-medium hover:bg-blue-50"
                     >
-                      Edit
+                      تعديل
                     </button>
                     <button
                       onClick={() => handleDelete(expense.id)}
                       className="flex-1 py-2 text-xs text-red-600 font-medium hover:bg-red-50"
                     >
-                      Delete
+                      حذف
                     </button>
                   </div>
                 </div>
@@ -652,22 +653,22 @@ function Expenses() {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Description
+                        الوصف
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category
+                        الفئة
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Amount
+                        المبلغ
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Type
+                        النوع
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
+                        التاريخ
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
+                        الإجراءات
                       </th>
                     </tr>
                   </thead>
@@ -686,7 +687,7 @@ function Expenses() {
                         <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                           {expense.expense_type === 'one_time' ? (
                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                              One-time
+                              لمرة واحدة
                             </span>
                           ) : (
                             <div>
@@ -695,11 +696,11 @@ function Expenses() {
                               </span>
                               {expense.is_active ? (
                                 <span className="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                  Active
+                                  نشط
                                 </span>
                               ) : (
                                 <span className="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                  Inactive
+                                  غير نشط
                                 </span>
                               )}
                             </div>
@@ -714,9 +715,9 @@ function Expenses() {
                               <button
                                 onClick={() => handleToggleActive(expense)}
                                 className="text-indigo-600 hover:text-indigo-900"
-                                title={expense.is_active ? "Deactivate" : "Activate"}
+                                title={expense.is_active ? "إيقاف" : "تفعيل"}
                               >
-                                {expense.is_active ? "Deactivate" : "Activate"}
+                                {expense.is_active ? "إيقاف" : "تفعيل"}
                               </button>
                             )}
                             <button
@@ -734,13 +735,13 @@ function Expenses() {
                               }}
                               className="text-blue-600 hover:text-blue-900"
                             >
-                              Edit
+                              تعديل
                             </button>
                             <button
                               onClick={() => handleDelete(expense.id)}
                               className="text-red-600 hover:text-red-900"
                             >
-                              Delete
+                              حذف
                             </button>
                           </div>
                         </td>
@@ -760,21 +761,21 @@ function Expenses() {
           <div className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-2xl font-bold mb-4">
-                {editingExpense ? 'Edit Expense' : 'Add New Expense'}
+                {editingExpense ? 'تعديل المصروف' : 'إضافة مصروف جديد'}
               </h2>
               
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Description *
+                    الوصف *
                   </label>
                   <input
                     type="text"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     required
-                    placeholder="e.g., Office Rent, Electricity Bill"
+                    placeholder="مثال: إيجار المكتب، فاتورة الكهرباء"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -782,7 +783,7 @@ function Expenses() {
                 {/* Amount */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Amount *
+                    المبلغ *
                   </label>
                   <input
                     type="number"
@@ -799,13 +800,13 @@ function Expenses() {
                 {/* Category */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category
+                    الفئة
                   </label>
                   <input
                     type="text"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    placeholder="e.g., Rent, Utilities, Salary"
+                    placeholder="مثال: إيجار، مرافق، راتب"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -813,15 +814,15 @@ function Expenses() {
                 {/* Expense Type */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Expense Type *
+                    نوع المصروف *
                   </label>
                   <select
                     value={expenseType}
                     onChange={(e) => setExpenseType(e.target.value as any)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="one_time">One-Time</option>
-                    <option value="recurring">Recurring</option>
+                    <option value="one_time">لمرة واحدة</option>
+                    <option value="recurring">متكرر</option>
                   </select>
                 </div>
 
@@ -830,23 +831,23 @@ function Expenses() {
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Frequency *
+                        التكرار *
                       </label>
                       <select
                         value={recurringFrequency}
                         onChange={(e) => setRecurringFrequency(e.target.value as any)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
-                        <option value="yearly">Yearly</option>
+                        <option value="daily">يومي</option>
+                        <option value="weekly">أسبوعي</option>
+                        <option value="monthly">شهري</option>
+                        <option value="yearly">سنوي</option>
                       </select>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Next Occurrence Date
+                        تاريخ التكرار القادم
                       </label>
                       <input
                         type="date"
@@ -864,7 +865,7 @@ function Expenses() {
                     type="submit"
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition font-medium"
                   >
-                    {editingExpense ? 'Update' : 'Add'} Expense
+                    {editingExpense ? 'تحديث' : 'إضافة'} المصروف
                   </button>
                   <button
                     type="button"
@@ -874,7 +875,7 @@ function Expenses() {
                     }}
                     className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition font-medium"
                   >
-                    Cancel
+                    إلغاء
                   </button>
                 </div>
               </form>

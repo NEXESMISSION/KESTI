@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 
@@ -286,14 +287,14 @@ function Finance() {
       <header className="bg-white shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto py-3 sm:py-4 px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">KESTI</h1>
+            <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Back to POS */}
               <button
                 onClick={() => router.push('/pos')}
                 className="bg-gray-600 hover:bg-gray-700 text-white p-2 sm:p-2.5 rounded-lg transition"
-                title="Back to POS"
+                title="العودة إلى نقطة البيع"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -304,7 +305,7 @@ function Finance() {
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 text-white p-2 sm:p-2.5 rounded-lg transition"
-                title="Logout"
+                title="تسجيل الخروج"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -323,31 +324,31 @@ function Finance() {
               onClick={() => router.push('/owner-dashboard')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              🏦 <span className="hidden xs:inline">Dashboard</span>
+              🏦 <span className="hidden xs:inline">لوحة التحكم</span>
             </button>
             <button
               onClick={() => router.push('/stock')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              🏷️ <span className="hidden xs:inline">Stock</span>
+              🏷️ <span className="hidden xs:inline">المخزون</span>
             </button>
             <button
               onClick={() => router.push('/finance')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
             >
-              💰 <span className="hidden xs:inline">Finance</span>
+              💰 <span className="hidden xs:inline">المالية</span>
             </button>
             <button
               onClick={() => router.push('/expenses')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              📊 <span className="hidden xs:inline">Expenses</span>
+              📊 <span className="hidden xs:inline">المصروفات</span>
             </button>
             <button
               onClick={() => router.push('/history')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
             >
-              📜 <span className="hidden xs:inline">History</span>
+              📜 <span className="hidden xs:inline">السجل</span>
             </button>
           </div>
         </div>
@@ -356,8 +357,8 @@ function Finance() {
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-3 sm:px-4 lg:px-8">
         {/* Page Title */}
         <div className="mb-5 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Finance Dashboard</h1>
-          <p className="text-sm sm:text-base text-gray-600 mt-1">View and analyze your business financial performance</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">لوحة المالية</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">عرض وتحليل الأداء المالي لنشاطك التجاري</p>
         </div>
 
         {/* Collapsible Filter Options */}
@@ -368,7 +369,7 @@ function Finance() {
               <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
               </svg>
-              <h3 className="font-medium text-sm sm:text-base">Filters & Time Range</h3>
+              <h3 className="font-medium text-sm sm:text-base">الفلاتر والفترة الزمنية</h3>
               <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
                 {timeFilter !== 'all' ? '1' : '0'}
               </span>
@@ -385,17 +386,17 @@ function Finance() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {/* Time Period Filter */}
                 <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Time Period</label>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">الفترة الزمنية</label>
                   <select
                     value={timeFilter}
                     onChange={(e) => setTimeFilter(e.target.value as any)}
                     className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
                   >
-                    <option value="all">All Time</option>
-                    <option value="today">Today</option>
-                    <option value="week">Last 7 Days</option>
-                    <option value="month">Last 30 Days</option>
-                    <option value="custom">Custom Range</option>
+                    <option value="all">كل الوقت</option>
+                    <option value="today">اليوم</option>
+                    <option value="week">آخر 7 أيام</option>
+                    <option value="month">آخر 30 يوم</option>
+                    <option value="custom">فترة مخصصة</option>
                   </select>
                 </div>
 
@@ -404,7 +405,7 @@ function Finance() {
                   <>
                     {/* Start Date */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Start Date</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">تاريخ البداية</label>
                       <input
                         type="date"
                         value={startDate}
@@ -415,7 +416,7 @@ function Finance() {
 
                     {/* End Date */}
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">End Date</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">تاريخ النهاية</label>
                       <input
                         type="date"
                         value={endDate}
@@ -436,7 +437,7 @@ function Finance() {
                     }}
                     className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs sm:text-sm font-medium transition"
                   >
-                    Reset Filters
+                    إعادة تعيين الفلاتر
                   </button>
                 </div>
               </div>
@@ -450,41 +451,41 @@ function Finance() {
             {/* Total Revenue */}
             <div className="bg-white rounded-xl shadow p-4 sm:p-6 min-w-[180px] sm:min-w-0">
               <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500">Total Revenue</h3>
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500">إجمالي الإيرادات</h3>
                 <span className="text-lg sm:text-2xl">💵</span>
               </div>
               <p className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">{formatCurrency(metrics.totalRevenue)}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">From {metrics.totalSales} sales</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">من {metrics.totalSales} عملية بيع</p>
             </div>
             
             {/* Total Costs */}
             <div className="bg-white rounded-xl shadow p-4 sm:p-6 min-w-[180px] sm:min-w-0">
               <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500">Total Costs</h3>
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500">إجمالي التكاليف</h3>
                 <span className="text-lg sm:text-2xl">📦</span>
               </div>
               <p className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">{formatCurrency(metrics.totalCosts)}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Product costs</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">تكاليف المنتجات</p>
             </div>
             
             {/* Total Expenses */}
             <div className="bg-white rounded-xl shadow p-4 sm:p-6 min-w-[180px] sm:min-w-0">
               <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500">Total Expenses</h3>
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500">إجمالي المصروفات</h3>
                 <span className="text-lg sm:text-2xl">💸</span>
               </div>
               <p className="text-lg sm:text-xl md:text-2xl font-bold text-red-600">{formatCurrency(metrics.totalExpenses)}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Operating expenses</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">مصروفات التشغيل</p>
             </div>
             
             {/* Gross Profit */}
             <div className="bg-white rounded-xl shadow p-4 sm:p-6 min-w-[180px] sm:min-w-0">
               <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500">Gross Profit</h3>
+                <h3 className="text-xs sm:text-sm font-medium text-gray-500">الربح الإجمالي</h3>
                 <span className="text-lg sm:text-2xl">📈</span>
               </div>
               <p className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{formatCurrency(metrics.grossProfit)}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">Revenue - Costs</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">الإيرادات - التكاليف</p>
             </div>
           </div>
         </div>
@@ -493,30 +494,30 @@ function Finance() {
 
         {/* Net Profit & Margin */}
         <div className="mt-8 sm:mt-10 mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Financial Summary</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">الملخص المالي</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
           {/* Net Profit */}
           <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg p-4 sm:p-6 md:p-8 text-white">
-            <h3 className="text-base sm:text-lg font-medium opacity-90">Net Profit</h3>
+            <h3 className="text-base sm:text-lg font-medium opacity-90">صافي الربح</h3>
             <p className="text-2xl sm:text-3xl md:text-4xl font-bold mt-2 sm:mt-3">{formatCurrency(metrics.netProfit)}</p>
-            <p className="text-xs sm:text-sm mt-1 sm:mt-2 opacity-75">Gross Profit - Expenses</p>
+            <p className="text-xs sm:text-sm mt-1 sm:mt-2 opacity-75">الربح الإجمالي - المصروفات</p>
             <div className="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-white/20">
-              <p className="text-[10px] sm:text-xs opacity-75">This is your actual profit after all costs and expenses</p>
+              <p className="text-[10px] sm:text-xs opacity-75">هذا هو ربحك الفعلي بعد خصم جميع التكاليف والمصروفات</p>
             </div>
           </div>
           
           {/* Profit Margin */}
           <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-4 sm:p-6 md:p-8 text-white">
-            <h3 className="text-base sm:text-lg font-medium opacity-90">Profit Margin</h3>
+            <h3 className="text-base sm:text-lg font-medium opacity-90">هامش الربح</h3>
             <p className="text-2xl sm:text-3xl md:text-4xl font-bold mt-2 sm:mt-3">{(metrics.profitMargin * 100).toFixed(1)}%</p>
-            <p className="text-xs sm:text-sm mt-1 sm:mt-2 opacity-75">Net Profit / Revenue</p>
+            <p className="text-xs sm:text-sm mt-1 sm:mt-2 opacity-75">صافي الربح / الإيرادات</p>
             <div className="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-white/20">
               <p className="text-[10px] sm:text-xs opacity-75">
-                {metrics.profitMargin > 0.20 ? 'Excellent! 🎉' : 
-                 metrics.profitMargin > 0.10 ? 'Good margin 👍' : 
-                 metrics.profitMargin > 0 ? 'Room for improvement 📊' : 
-                 'Review pricing & costs ⚠️'}
+                {metrics.profitMargin > 0.20 ? 'ممتاز! 🎉' : 
+                 metrics.profitMargin > 0.10 ? 'هامش جيد 👍' : 
+                 metrics.profitMargin > 0 ? 'يحتاج تحسين 📊' : 
+                 'راجع الأسعار والتكاليف ⚠️'}
               </p>
             </div>
           </div>

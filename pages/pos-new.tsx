@@ -175,7 +175,7 @@ function POS() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">Kesti POS</h1>
+            <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-10 w-auto" priority />
             
             <div className="flex items-center gap-3">
               {/* Add Product Button */}
@@ -185,8 +185,8 @@ function POS() {
                   setShowProductForm(true)
                 }}
                 className="bg-green-600 hover:bg-green-700 text-white p-3 rounded-lg transition-all transform hover:scale-105"
-                aria-label="Add Product"
-                title="Add Product"
+                aria-label="إضافة منتج"
+                title="إضافة منتج"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -208,8 +208,8 @@ function POS() {
               <button
                 onClick={() => setShowPinModal(true)}
                 className="bg-gray-600 hover:bg-gray-700 text-white p-3 rounded-lg transition-all transform hover:scale-105"
-                aria-label="Owner Panel"
-                title="Owner Panel"
+                aria-label="لوحة المالك"
+                title="لوحة المالك"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -237,8 +237,8 @@ function POS() {
               <button
                 onClick={handleLogout}
                 className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-lg transition-all transform hover:scale-105"
-                aria-label="Logout"
-                title="Logout"
+                aria-label="تسجيل الخروج"
+                title="تسجيل الخروج"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -265,7 +265,7 @@ function POS() {
                 onClick={() => setSelectedCategory(null)}
                 className={`px-4 py-2 rounded-lg whitespace-nowrap text-sm ${!selectedCategory ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`}
               >
-                All Products
+                كل المنتجات
               </button>
               
               {categories.map((category) => (
@@ -303,9 +303,9 @@ function POS() {
                 d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
               />
             </svg>
-            <h3 className="mt-4 text-xl font-semibold text-gray-900">No products yet</h3>
+            <h3 className="mt-4 text-xl font-semibold text-gray-900">لا توجد منتجات بعد</h3>
             <p className="mt-2 text-gray-600">
-              Click the + button above to add your first product
+              انقر على زر + أعلاه لإضافة منتجك الأول
             </p>
           </div>
         ) : (
@@ -332,7 +332,7 @@ function POS() {
                       </div>
                     ) : (
                       <div className="text-gray-400 text-xl">
-                        No Image
+                        لا توجد صورة
                       </div>
                     )}
                   </div>
@@ -345,7 +345,7 @@ function POS() {
                       setShowProductForm(true);
                     }}
                     className="absolute top-2 right-2 bg-gray-800 bg-opacity-70 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label="Edit product"
+                    aria-label="تعديل المنتج"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                       <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
@@ -379,7 +379,7 @@ function POS() {
                     }}
                     className="mt-3 w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-sm"
                   >
-                    Add to Cart
+                    أضف إلى السلة
                   </button>
                 </div>
               ))}
@@ -388,7 +388,7 @@ function POS() {
               selectedCategory && 
               products.filter(product => product.category_id === selectedCategory).length === 0 && (
                 <div className="col-span-full text-center py-8 text-gray-500">
-                  No products found in this category.
+                  لم يتم العثور على منتجات في هذه الفئة.
                 </div>
               )
             }
@@ -401,7 +401,7 @@ function POS() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end z-40">
           <div className="bg-white w-full max-w-md h-full overflow-y-auto shadow-xl flex flex-col">
             <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-bold">Your Cart</h2>
+              <h2 className="text-xl font-bold">سلة التسوق</h2>
               <button
                 onClick={() => setShowCart(false)}
                 className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
@@ -415,12 +415,13 @@ function POS() {
                 <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
                 </svg>
-                <p>Your cart is empty</p>
+                <p>سلة التسوق فارغة</p>
+                <p className="text-sm text-gray-500 mt-2">أضف بعض المنتجات للبدء</p>
                 <button 
                   onClick={() => setShowCart(false)}
                   className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                 >
-                  Continue Shopping
+                  متابعة التسوق
                 </button>
               </div>
             ) : (
@@ -433,8 +434,8 @@ function POS() {
                 
                 <div className="border-t border-gray-200 p-4">
                   <div className="flex justify-between items-center mb-4">
-                    <div className="text-gray-700">Subtotal</div>
-                    <div className="font-medium text-lg">{getTotalPrice().toFixed(2)} TND</div>
+                    <div className="text-gray-700">المجموع الفرعي</div>
+                    <div className="font-medium text-lg">{getTotalPrice().toFixed(2)} دينار</div>
                   </div>
                   
                   <button
@@ -448,10 +449,10 @@ function POS() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Processing...
+                        جاري المعالجة...
                       </>
                     ) : (
-                      <>Checkout ({getTotalPrice().toFixed(2)} TND)</>
+                      <>إتمام الشراء ({getTotalPrice().toFixed(2)} دينار)</>
                     
                     )}
                   </button>
@@ -460,7 +461,7 @@ function POS() {
                     onClick={clearCart}
                     className="w-full mt-2 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg transition text-sm"
                   >
-                    Clear Cart
+                    إفراغ السلة
                   </button>
                 </div>
               </div>
@@ -473,7 +474,7 @@ function POS() {
       <button
         onClick={() => setShowCart(true)}
         className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-16 h-16 shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 z-50"
-        aria-label="Open Cart"
+        aria-label="فتح السلة"
       >
         <div className="relative">
           <svg
@@ -509,33 +510,57 @@ function POS() {
         }}
       />
 
-      {/* PIN Modal */}
+      {/* PIN Modal with Number Pad */}
       {showPinModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h2 className="text-xl font-semibold mb-4">Enter Owner PIN</h2>
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+            <h2 className="text-xl font-semibold mb-4 text-center">أدخل رمز PIN الخاص بالمالك</h2>
             
             {error && (
-              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
             
-            <input
-              type="password"
-              value={pin}
-              onChange={(e) => setPin(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handlePinSubmit()}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary mb-4"
-              placeholder="Enter PIN code"
-            />
+            {/* PIN Display */}
+            <div className="mb-6 bg-gray-100 rounded-lg p-4 min-h-[60px] flex items-center justify-center">
+              <div className="flex gap-3">
+                {[...Array(Math.max(4, pin.length))].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-4 h-4 rounded-full ${
+                      i < pin.length ? 'bg-blue-600' : 'bg-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
             
-            <div className="flex justify-end space-x-3">
+            {/* Number Pad */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                <button
+                  key={num}
+                  onClick={() => setPin(pin + num.toString())}
+                  className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 text-2xl font-semibold py-4 rounded-lg transition"
+                >
+                  {num}
+                </button>
+              ))}
               <button
-                onClick={handlePinSubmit}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition"
+                onClick={() => setPin(pin.slice(0, -1))}
+                className="bg-red-100 hover:bg-red-200 active:bg-red-300 text-red-600 py-4 rounded-lg transition flex items-center justify-center"
+                title="حذف"
               >
-                Submit
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setPin(pin + '0')}
+                className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-900 text-2xl font-semibold py-4 rounded-lg transition"
+              >
+                0
               </button>
               <button
                 onClick={() => {
@@ -543,11 +568,20 @@ function POS() {
                   setPin('')
                   setError(null)
                 }}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg transition"
+                className="bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-600 py-4 rounded-lg transition flex items-center justify-center text-sm font-medium"
               >
-                Cancel
+                إلغاء
               </button>
             </div>
+            
+            {/* Submit Button */}
+            <button
+              onClick={handlePinSubmit}
+              disabled={pin.length === 0}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-3 rounded-lg transition font-semibold"
+            >
+              إرسال
+            </button>
           </div>
         </div>
       )}

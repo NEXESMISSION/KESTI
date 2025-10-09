@@ -12,11 +12,11 @@ type ProductFormProps = {
 
 // Unit type options for dropdown
 const UNIT_TYPES = [
-  { value: 'item', label: 'Per Item' },
-  { value: 'kg', label: 'Per Kilogram' },
-  { value: 'g', label: 'Per Gram' },
-  { value: 'l', label: 'Per Liter' },
-  { value: 'ml', label: 'Per Milliliter' },
+  { value: 'item', label: 'لكل قطعة' },
+  { value: 'kg', label: 'لكل كيلوغرام' },
+  { value: 'g', label: 'لكل غرام' },
+  { value: 'l', label: 'لكل لتر' },
+  { value: 'ml', label: 'لكل ملليتر' },
 ]
 
 export default function ProductForm({ isOpen, onClose, product, onProductSaved }: ProductFormProps) {
@@ -97,13 +97,13 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
 
     // Check file size (limit to 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError('Image too large. Please select an image under 5MB.')
+      setError('الصورة كبيرة جدًا. يرجى اختيار صورة أقل من 5 ميجابايت.')
       return
     }
 
     // Check file type
     if (!file.type.startsWith('image/')) {
-      setError('Please select an image file.')
+      setError('يرجى اختيار ملف صورة.')
       return
     }
 
@@ -256,9 +256,9 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
       
       return urlData.publicUrl
     } catch (err: any) {
-      console.error('Error uploading image:', err)
+      console.error('خطأ في تحميل الصورة:', err)
       setUploading(false)
-      setError(`Failed to upload image: ${err.message || 'Unknown error'}`)
+      setError(`فشل تحميل الصورة. يرجى المحاولة مرة أخرى.`)
       setUploadProgress(0)
       return null
     }
@@ -270,7 +270,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
     setLoading(true)
     
     if (!name || !sellingPrice) {
-      setError('Product name and selling price are required')
+      setError('اسم المنتج وسعر البيع مطلوبان')
       setLoading(false)
       return
     }
@@ -286,7 +286,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
       
       if (trackStock) {
         if (!stockQuantity) {
-          setError('Stock quantity is required when tracking stock')
+          setError('يرجى ملء جميع الحقول المطلوبة')
           setLoading(false)
           return
         }
@@ -345,8 +345,8 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
       onProductSaved()
       onClose()
     } catch (err: any) {
-      console.error('Error saving product:', err)
-      setError(`Failed to ${isEditing ? 'update' : 'create'} product`)
+      console.error('خطأ في حفظ المنتج:', err)
+      setError(`فشل ${isEditing ? 'تحديث' : 'إضافة'} المنتج`)
     } finally {
       setLoading(false)
     }
@@ -441,7 +441,13 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                 required
               >
-                {UNIT_TYPES.map(option => (
+                {[
+                  { value: 'item', label: 'قطعة' },
+                  { value: 'kg', label: 'كجم' },
+                  { value: 'g', label: 'غرام' },
+                  { value: 'ml', label: 'مل' },
+                  { value: 'l', label: 'لتر' },
+                ].map(option => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -491,7 +497,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                 <div className="mb-3 relative w-full h-40 border rounded-lg overflow-hidden">
                   <Image 
                     src={imagePreview || imageUrl} 
-                    alt="Product preview" 
+                    alt="معاينة المنتج" 
                     fill
                     className="object-contain"
                     loading="lazy"
@@ -576,7 +582,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                       required={trackStock}
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      {unitType === 'item' ? 'Number of items' : `Amount in ${unitType}`}
+                      {unitType === 'item' ? 'عدد القطع' : `الكمية بال${unitType}`}
                     </p>
                   </div>
                   

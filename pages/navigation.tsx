@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import Image from 'next/image'
 
 export default function Navigation() {
   const [user, setUser] = useState<any>(null)
@@ -43,7 +44,7 @@ export default function Navigation() {
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <div className="inline-block animate-spin h-8 w-8 border-4 border-gray-400 border-t-blue-600 rounded-full mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">جاري التحميل...</p>
         </div>
       </div>
     )
@@ -56,19 +57,22 @@ export default function Navigation() {
         <header className="bg-white shadow-md rounded-lg p-6 mb-8">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Kesti POS</h1>
-              <p className="text-gray-600 mt-1">Navigation Page</p>
+              <div className="mb-2">
+                <Image src="/logo/KESTi.png" alt="KESTI" width={160} height={50} className="h-12 w-auto" priority />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900">نقطة البيع</h1>
+              <p className="text-gray-600 mt-1">صفحة التنقل</p>
             </div>
             
             {user ? (
               <div className="text-right">
                 <p className="font-medium">{user.full_name || 'User'}</p>
-                <p className="text-sm text-gray-500">Role: {user.role?.toString() || 'Unknown'}</p>
+                <p className="text-sm text-gray-500">الدور: {user.role?.toString() || 'غير معروف'}</p>
                 <button 
                   onClick={handleLogout}
                   className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                 >
-                  Logout
+                  تسجيل الخروج
                 </button>
               </div>
             ) : (
@@ -76,7 +80,7 @@ export default function Navigation() {
                 onClick={() => window.location.href = '/login'}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
-                Login
+                تسجيل الدخول
               </button>
             )}
           </div>
@@ -84,129 +88,129 @@ export default function Navigation() {
 
         {/* Main Content */}
         <div className="bg-white shadow-md rounded-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Available Pages</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">الصفحات المتاحة</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Login Pages */}
             <div className="border rounded-lg p-4">
-              <h3 className="text-lg font-bold mb-3">Authentication</h3>
+              <h3 className="text-lg font-bold mb-3">المصادقة</h3>
               <div className="space-y-2">
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer bg-green-50 border border-green-200" 
                      onClick={() => window.location.href = '/login-force-redirect'}>
-                  <div className="font-medium text-green-800">✅ Force Redirect Login</div>
-                  <div className="text-sm text-green-700">Guaranteed redirect after login</div>
+                  <div className="font-medium text-green-800">✅ تسجيل الدخول مع إعادة التوجيه</div>
+                  <div className="text-sm text-green-700">إعادة توجيه مضمونة بعد التسجيل</div>
                 </div>
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer" 
                      onClick={() => window.location.href = '/login'}>
-                  <div className="font-medium">Standard Login</div>
-                  <div className="text-sm text-gray-500">Regular login page</div>
+                  <div className="font-medium">تسجيل دخول قياسي</div>
+                  <div className="text-sm text-gray-500">صفحة تسجيل عادية</div>
                 </div>
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer" 
                      onClick={() => window.location.href = '/simple-login'}>
-                  <div className="font-medium">Simple Login</div>
-                  <div className="text-sm text-gray-500">Simplified login page</div>
+                  <div className="font-medium">تسجيل دخول بسيط</div>
+                  <div className="text-sm text-gray-500">واجهة مبسطة</div>
                 </div>
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer" 
                      onClick={() => window.location.href = '/emergency-login'}>
-                  <div className="font-medium">Emergency Login</div>
-                  <div className="text-sm text-gray-500">Diagnostic login page</div>
+                  <div className="font-medium">تسجيل دخول طارئ</div>
+                  <div className="text-sm text-gray-500">طريقة وصول خاصة</div>
                 </div>
               </div>
             </div>
             
             {/* Admin Pages */}
             <div className="border rounded-lg p-4">
-              <h3 className="text-lg font-bold mb-3">Super Admin</h3>
+              <h3 className="text-lg font-bold mb-3">المشرفين</h3>
               <div className="space-y-2">
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer" 
                      onClick={() => window.location.href = '/super-admin'}>
-                  <div className="font-medium">Regular Admin</div>
-                  <div className="text-sm text-gray-500">Full admin dashboard</div>
+                  <div className="font-medium">مشرف عام</div>
+                  <div className="text-sm text-gray-500">لوحة تحكم كاملة</div>
                 </div>
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer" 
                      onClick={() => window.location.href = '/super-admin-basic'}>
-                  <div className="font-medium">Basic Admin</div>
-                  <div className="text-sm text-gray-500">Simplified admin dashboard</div>
+                  <div className="font-medium">مشرف أساسي</div>
+                  <div className="text-sm text-gray-500">لوحة تحكم مبسطة</div>
                 </div>
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer" 
                      onClick={() => window.location.href = '/simple-admin'}>
-                  <div className="font-medium">Simple Admin</div>
-                  <div className="text-sm text-gray-500">Diagnostic admin dashboard</div>
+                  <div className="font-medium">مشرف بسيط</div>
+                  <div className="text-sm text-gray-500">لوحة تحكم خاصة</div>
                 </div>
               </div>
             </div>
             
             {/* POS Pages */}
             <div className="border rounded-lg p-4">
-              <h3 className="text-lg font-bold mb-3">Business POS</h3>
+              <h3 className="text-lg font-bold mb-3">نقطة البيع</h3>
               <div className="space-y-2">
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer" 
                      onClick={() => window.location.href = '/pos'}>
-                  <div className="font-medium">Regular POS</div>
-                  <div className="text-sm text-gray-500">Full POS interface</div>
+                  <div className="font-medium text-green-800">✅ نقطة بيع جديدة</div>
+                  <div className="text-sm text-green-700">واجهة حديثة مع سلة تسوق</div>
                 </div>
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer" 
                      onClick={() => window.location.href = '/pos-simple'}>
-                  <div className="font-medium">Simple POS</div>
-                  <div className="text-sm text-gray-500">Simplified POS interface</div>
+                  <div className="font-medium">نقطة بيع بسيطة</div>
+                  <div className="text-sm text-gray-500">واجهة مبسطة</div>
                 </div>
               </div>
             </div>
             
             {/* Owner Pages */}
             <div className="border rounded-lg p-4">
-              <h3 className="text-lg font-bold mb-3">Business Owner</h3>
+              <h3 className="text-lg font-bold mb-3">مالك النشاط</h3>
               <div className="space-y-2">
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer" 
                      onClick={() => window.location.href = '/owner/products'}>
-                  <div className="font-medium">Regular Products</div>
-                  <div className="text-sm text-gray-500">Full product management</div>
+                  <div className="font-medium">إدارة المنتجات</div>
+                  <div className="text-sm text-gray-500">إدارة منتجات كاملة</div>
                 </div>
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer" 
                      onClick={() => window.location.href = '/owner/products-simple'}>
-                  <div className="font-medium">Simple Products</div>
-                  <div className="text-sm text-gray-500">Basic product management</div>
+                  <div className="font-medium">إدارة بسيطة</div>
+                  <div className="text-sm text-gray-500">إدارة منتجات أساسية</div>
                 </div>
               </div>
             </div>
             
             {/* Utility Pages */}
             <div className="border rounded-lg p-4 md:col-span-2">
-              <h3 className="text-lg font-bold mb-3">Special Pages</h3>
+              <h3 className="text-lg font-bold mb-3">صفحات خاصة</h3>
               <div className="space-y-2">
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer" 
                      onClick={() => window.location.href = '/direct-access'}>
-                  <div className="font-medium">Direct Access</div>
-                  <div className="text-sm text-gray-500">Access content directly without navigation</div>
+                  <div className="font-medium">وصول مباشر</div>
+                  <div className="text-sm text-gray-500">الوصول إلى المحتوى مباشرة</div>
                 </div>
                 
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer bg-green-50 border border-green-200" 
                      onClick={() => window.location.href = '/create-business-consolidated'}>
-                  <div className="font-medium text-green-800">✅ RECOMMENDED: Consolidated Business Creation</div>
-                  <div className="text-sm text-green-700">New solution with proper environment variable handling</div>
+                  <div className="font-medium text-green-800">✅ موصى به: إنشاء نشاط موحد</div>
+                  <div className="text-sm text-green-700">حل جديد مع معالجة مناسبة</div>
                 </div>
                 
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer bg-blue-50 border border-blue-200" 
                      onClick={() => window.location.href = '/direct-business'}>
-                  <div className="font-medium text-blue-800">Direct REST API Method</div>
-                  <div className="text-sm text-blue-700">Completely bypasses client libraries</div>
+                  <div className="font-medium text-blue-800">طريقة REST API مباشرة</div>
+                  <div className="text-sm text-blue-700">يتجاوز مكتبات العميل</div>
                 </div>
 
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer bg-yellow-50 border border-yellow-200" 
                      onClick={() => window.location.href = '/create-business-direct'}>
-                  <div className="font-medium text-yellow-800">Direct Business Creation</div>
-                  <div className="text-sm text-yellow-700">Create business accounts directly</div>
+                  <div className="font-medium text-yellow-800">إنشاء نشاط مباشر</div>
+                  <div className="text-sm text-yellow-700">إنشاء حسابات مباشرة</div>
                 </div>
                 
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer bg-red-50 border border-red-200" 
                      onClick={() => window.location.href = '/create-business-emergency'}>
-                  <div className="font-medium text-red-800">Emergency Business Creation</div>
-                  <div className="text-sm text-red-700">Last resort method with hardcoded credentials</div>
+                  <div className="font-medium text-red-800">إنشاء نشاط طارئ</div>
+                  <div className="text-sm text-red-700">طريقة الملاذ الأخير</div>
                 </div>
                 <div className="p-3 hover:bg-gray-50 rounded cursor-pointer" 
                      onClick={() => window.location.href = '/suspended'}>
-                  <div className="font-medium">Suspended</div>
-                  <div className="text-sm text-gray-500">Suspension notification page</div>
+                  <div className="font-medium">معلق</div>
+                  <div className="text-sm text-gray-500">صفحة إشعار التعليق</div>
                 </div>
               </div>
             </div>
@@ -214,7 +218,7 @@ export default function Navigation() {
         </div>
         
         <div className="mt-8 text-center text-gray-500 text-sm">
-          <p>Kesti POS - Phase 1 MVP</p>
+          <p>KESTI - نقطة البيع - المرحلة الأولى</p>
         </div>
       </div>
     </div>
