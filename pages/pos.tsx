@@ -153,7 +153,7 @@ function POS() {
         profile.role.toString() : String(profile.role)
 
       if (userRole === 'business_user') {
-        router.push('/owner-dashboard')
+        router.push('/finance')
       } else {
         setError('Access denied. Not a business owner.')
       }

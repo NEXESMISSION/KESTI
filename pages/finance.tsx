@@ -75,6 +75,7 @@ function Finance() {
 
   useEffect(() => {
     checkAuthAndFetch()
+    document.title = 'KESTI - المالية'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeFilter, startDate, endDate])
 
@@ -279,7 +280,7 @@ function Finance() {
   }
 
   const formatCurrency = (amount: number) => {
-    return `${amount.toFixed(2)} TND`
+    return `${amount.toFixed(2)} دينار`
   }
 
   return (
@@ -323,32 +324,52 @@ function Finance() {
             <button
               onClick={() => router.push('/owner-dashboard')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="لوحة التحكم"
             >
-              🏦 <span className="hidden xs:inline">لوحة التحكم</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">🏦</span>
+                <span className="text-[10px] sm:text-xs">لوحة التحكم</span>
+              </div>
             </button>
             <button
               onClick={() => router.push('/stock')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="المخزون"
             >
-              🏷️ <span className="hidden xs:inline">المخزون</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">🏷️</span>
+                <span className="text-[10px] sm:text-xs">المخزون</span>
+              </div>
             </button>
             <button
               onClick={() => router.push('/finance')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
+              title="المالية"
             >
-              💰 <span className="hidden xs:inline">المالية</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">💰</span>
+                <span className="text-[10px] sm:text-xs">المالية</span>
+              </div>
             </button>
             <button
               onClick={() => router.push('/expenses')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="المصروفات"
             >
-              📊 <span className="hidden xs:inline">المصروفات</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">📊</span>
+                <span className="text-[10px] sm:text-xs">المصروفات</span>
+              </div>
             </button>
             <button
               onClick={() => router.push('/history')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="السجل"
             >
-              📜 <span className="hidden xs:inline">السجل</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">📜</span>
+                <span className="text-[10px] sm:text-xs">السجل</span>
+              </div>
             </button>
           </div>
         </div>
@@ -445,47 +466,47 @@ function Finance() {
           )}
         </div>
 
-        {/* Detailed Financial Breakdown - Horizontal Scroll on Mobile */}
-        <div className="overflow-x-auto pb-2 mb-4 sm:mb-6">
-          <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 min-w-max sm:min-w-0">
+        {/* Detailed Financial Breakdown - Grid Layout for Mobile */}
+        <div className="mb-4 sm:mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {/* Total Revenue */}
-            <div className="bg-white rounded-xl shadow p-4 sm:p-6 min-w-[180px] sm:min-w-0">
-              <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500">إجمالي الإيرادات</h3>
-                <span className="text-lg sm:text-2xl">💵</span>
+            <div className="bg-white rounded-xl shadow p-3 sm:p-6">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-xs font-medium text-gray-500">إجمالي الإيرادات</h3>
+                <span className="text-base sm:text-2xl">💵</span>
               </div>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">{formatCurrency(metrics.totalRevenue)}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">من {metrics.totalSales} عملية بيع</p>
+              <p className="text-sm sm:text-xl md:text-2xl font-bold text-green-600">{formatCurrency(metrics.totalRevenue)}</p>
+              <p className="text-[9px] sm:text-xs text-gray-500 mt-0.5">من {metrics.totalSales} عملية بيع</p>
             </div>
             
             {/* Total Costs */}
-            <div className="bg-white rounded-xl shadow p-4 sm:p-6 min-w-[180px] sm:min-w-0">
-              <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500">إجمالي التكاليف</h3>
-                <span className="text-lg sm:text-2xl">📦</span>
+            <div className="bg-white rounded-xl shadow p-3 sm:p-6">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-xs font-medium text-gray-500">إجمالي التكاليف</h3>
+                <span className="text-base sm:text-2xl">💶</span>
               </div>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">{formatCurrency(metrics.totalCosts)}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">تكاليف المنتجات</p>
+              <p className="text-sm sm:text-xl md:text-2xl font-bold text-orange-600">{formatCurrency(metrics.totalCosts)}</p>
+              <p className="text-[9px] sm:text-xs text-gray-500 mt-0.5">تكاليف المنتجات</p>
             </div>
             
             {/* Total Expenses */}
-            <div className="bg-white rounded-xl shadow p-4 sm:p-6 min-w-[180px] sm:min-w-0">
-              <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500">إجمالي المصروفات</h3>
-                <span className="text-lg sm:text-2xl">💸</span>
+            <div className="bg-white rounded-xl shadow p-3 sm:p-6">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-xs font-medium text-gray-500">إجمالي المصروفات</h3>
+                <span className="text-base sm:text-2xl">💸</span>
               </div>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-red-600">{formatCurrency(metrics.totalExpenses)}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">مصروفات التشغيل</p>
+              <p className="text-sm sm:text-xl md:text-2xl font-bold text-red-600">{formatCurrency(metrics.totalExpenses)}</p>
+              <p className="text-[9px] sm:text-xs text-gray-500 mt-0.5">مصروفات التشغيل</p>
             </div>
             
             {/* Gross Profit */}
-            <div className="bg-white rounded-xl shadow p-4 sm:p-6 min-w-[180px] sm:min-w-0">
-              <div className="flex items-center justify-between mb-1 sm:mb-2">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-500">الربح الإجمالي</h3>
-                <span className="text-lg sm:text-2xl">📈</span>
+            <div className="bg-white rounded-xl shadow p-3 sm:p-6">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-xs font-medium text-gray-500">الربح الإجمالي</h3>
+                <span className="text-base sm:text-2xl">📈</span>
               </div>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{formatCurrency(metrics.grossProfit)}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">الإيرادات - التكاليف</p>
+              <p className="text-sm sm:text-xl md:text-2xl font-bold text-blue-600">{formatCurrency(metrics.grossProfit)}</p>
+              <p className="text-[9px] sm:text-xs text-gray-500 mt-0.5">الإيرادات - التكاليف</p>
             </div>
           </div>
         </div>

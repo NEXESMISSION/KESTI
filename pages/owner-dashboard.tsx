@@ -19,6 +19,8 @@ function OwnerDashboard() {
 
   useEffect(() => {
     checkAuthAndFetch()
+    // Set document title
+    document.title = 'KESTI - لوحة التحكم'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -152,32 +154,52 @@ function OwnerDashboard() {
             <button
               onClick={() => router.push('/owner-dashboard')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
+              title="لوحة التحكم"
             >
-              🏦 <span className="hidden xs:inline">لوحة التحكم</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">🏦</span>
+                <span className="text-[10px] sm:text-xs">لوحة التحكم</span>
+              </div>
             </button>
             <button
               onClick={() => router.push('/stock')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="المخزون"
             >
-              🏷️ <span className="hidden xs:inline">المخزون</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">🏷️</span>
+                <span className="text-[10px] sm:text-xs">المخزون</span>
+              </div>
             </button>
             <button
               onClick={() => router.push('/finance')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="المالية"
             >
-              💰 <span className="hidden xs:inline">المالية</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">💰</span>
+                <span className="text-[10px] sm:text-xs">المالية</span>
+              </div>
             </button>
             <button
               onClick={() => router.push('/expenses')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="المصروفات"
             >
-              📊 <span className="hidden xs:inline">المصروفات</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">📊</span>
+                <span className="text-[10px] sm:text-xs">المصروفات</span>
+              </div>
             </button>
             <button
               onClick={() => router.push('/history')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="السجل"
             >
-              📜 <span className="hidden xs:inline">السجل</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">📜</span>
+                <span className="text-[10px] sm:text-xs">السجل</span>
+              </div>
             </button>
           </div>
         </div>
@@ -186,7 +208,7 @@ function OwnerDashboard() {
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-3 sm:px-4 lg:px-8">
         {/* Page Title */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">إدارة المنتجات</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">لوحة التحكم</h1>
           <p className="text-sm text-gray-600 mt-1">إنشاء وتعديل وتنظيم منتجاتك</p>
         </div>
 
@@ -209,7 +231,7 @@ function OwnerDashboard() {
         )}
 
         <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
-          <h2 className="text-lg sm:text-xl font-semibold">إدارة المنتجات</h2>
+          <h2 className="text-lg sm:text-xl font-semibold">المنتجات</h2>
           <button
             onClick={() => {
               setSelectedProduct(undefined)

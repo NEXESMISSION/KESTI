@@ -25,6 +25,8 @@ function Stock() {
 
   useEffect(() => {
     checkAuthAndFetch()
+    // Set document title
+    document.title = 'KESTI - المخزون'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -265,73 +267,58 @@ function Stock() {
             <button
               onClick={() => router.push('/owner-dashboard')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="لوحة التحكم"
             >
-              🏦 <span className="hidden xs:inline">لوحة التحكم</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">🏦</span>
+                <span className="text-[10px] sm:text-xs">لوحة التحكم</span>
+              </div>
             </button>
             <button
               onClick={() => router.push('/stock')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
+              title="المخزون"
             >
-              🏷️ <span className="hidden xs:inline">المخزون</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">🏷️</span>
+                <span className="text-[10px] sm:text-xs">المخزون</span>
+              </div>
             </button>
             <button
               onClick={() => router.push('/finance')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="المالية"
             >
-              💰 <span className="hidden xs:inline">المالية</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">💰</span>
+                <span className="text-[10px] sm:text-xs">المالية</span>
+              </div>
             </button>
             <button
               onClick={() => router.push('/expenses')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="المصروفات"
             >
-              📊 <span className="hidden xs:inline">المصروفات</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">📊</span>
+                <span className="text-[10px] sm:text-xs">المصروفات</span>
+              </div>
             </button>
             <button
               onClick={() => router.push('/history')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="السجل"
             >
-              📜 <span className="hidden xs:inline">السجل</span>
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">📜</span>
+                <span className="text-[10px] sm:text-xs">السجل</span>
+              </div>
             </button>
           </div>
         </div>
       </div>
 
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-3 sm:px-4 lg:px-8">
-        {/* Statistics Cards - Horizontal Scroll on Mobile */}
-        <div className="overflow-x-auto pb-2 mb-4 sm:mb-6">
-          <div className="flex sm:grid sm:grid-cols-5 gap-3 sm:gap-4 min-w-max sm:min-w-0">
-            <div className="bg-white rounded-xl shadow p-3 sm:p-4 md:p-6 min-w-[140px] sm:min-w-0">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">متوفر</h3>
-              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mt-1 sm:mt-2">{inStockCount}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">منتج</p>
-            </div>
-          
-            <div className="bg-white rounded-xl shadow p-3 sm:p-4 md:p-6 min-w-[140px] sm:min-w-0">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">مخزون منخفض</h3>
-              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-yellow-600 mt-1 sm:mt-2">{lowStockCount}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">يحتاج تجديد</p>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow p-3 sm:p-4 md:p-6 min-w-[140px] sm:min-w-0">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">نفذ من المخزون</h3>
-              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-red-600 mt-1 sm:mt-2">{outOfStockCount}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">عاجل!</p>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow p-3 sm:p-4 md:p-6 min-w-[140px] sm:min-w-0">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">غير متتبع</h3>
-              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-600 mt-1 sm:mt-2">{notTrackedCount}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">بدون تتبع</p>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow p-3 sm:p-4 md:p-6 min-w-[140px] sm:min-w-0">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-500">إجمالي المنتجات</h3>
-              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600 mt-1 sm:mt-2">{products.length}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1">{trackedProducts.length} متتبع</p>
-            </div>
-          </div>
-        </div>
-
         {/* Search Bar - Always Visible */}
         <div className="bg-white rounded-xl shadow mb-4 relative">
           <div className="p-3 sm:p-4">

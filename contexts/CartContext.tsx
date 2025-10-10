@@ -29,13 +29,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Calculate total price for an item based on quantity and unit type
   const calculateItemTotalPrice = (product: Product, quantity: number, unitQuantity?: number): number => {
-    // For unit-based items (each, item), the total is simply price * quantity
-    if (product.unit_type === 'item' || !unitQuantity) {
+    // For regular items (not weight/volume based)
+    if (product.unit_type === 'item') {
       return product.selling_price * quantity
     } 
-    // For weight/volume items, calculate based on unit quantity
+    // For weight/volume items (kg, g, l, ml)
     else {
-      return product.selling_price * quantity * unitQuantity
+      // If unitQuantity is provided, use it (e.g., 1.5 kg)
+      if (unitQuantity !== undefined && unitQuantity !== null) {
+        return product.selling_price * quantity * unitQuantity
+      }
+      // Otherwise, treat quantity as the weight/volume (backward compatibility)
+      // This handles cases where user enters 1.5 directly as quantity
+      else {
+        return product.selling_price * quantity
+      }
     }
   }
 

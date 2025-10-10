@@ -23,6 +23,8 @@ function POS() {
   const [success, setSuccess] = useState<string | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [processingCheckout, setProcessingCheckout] = useState(false)
+  const [showSizeSlider, setShowSizeSlider] = useState(false)
+  const [productSize, setProductSize] = useState(3) // 1-5 scale for product size
 
   useEffect(() => {
     checkAuthAndFetchProducts()
@@ -117,7 +119,7 @@ function POS() {
         profile.role.toString() : String(profile.role)
 
       if (userRole === 'business_user') {
-        router.push('/owner-dashboard')
+        router.push('/finance')
       } else {
         setError('Access denied. Not a business owner.')
       }
@@ -309,8 +311,42 @@ function POS() {
             </p>
           </div>
         ) : (
-          /* Product Grid */
-          <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <>
+            {/* Size Controls */}
+            <div className="mt-4 flex justify-end">
+              <button 
+                onClick={() => setShowSizeSlider(!showSizeSlider)}
+                className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs transition"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                </svg>
+                <span>حجم المنتجات</span>
+              </button>
+            </div>
+            
+            {showSizeSlider && (
+              <div className="mt-2 bg-white p-4 rounded-lg shadow">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-gray-500">صغير</span>
+                  <input 
+                    type="range" 
+                    min="1" 
+                    max="5" 
+                    value={productSize} 
+                    onChange={(e) => setProductSize(parseInt(e.target.value))} 
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-gray-500">كبير</span>
+                </div>
+              </div>
+            )}
+
+            {/* Product Grid */}
+            <div className="mt-4 grid gap-4 transition-all duration-300"
+                 style={{
+                   gridTemplateColumns: `repeat(auto-fill, minmax(${70 + productSize * 30}px, 1fr))`
+                 }}>
             {products
               .filter(product => !selectedCategory || product.category_id === selectedCategory)
               .map((product) => (
@@ -319,7 +355,8 @@ function POS() {
                   className="bg-white p-4 rounded-lg shadow hover:shadow-md transition flex flex-col relative group"
                 >
                   {/* Product image */}
-                  <div className="w-full h-32 bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                  <div className="w-full bg-gray-100 rounded-lg mb-3 flex items-center justify-center overflow-hidden transition-all duration-300"
+                       style={{ height: `${80 + productSize * 20}px` }}>
                     {product.image_url ? (
                       <div className="relative w-full h-full">
                         <Image 
@@ -386,13 +423,6 @@ function POS() {
 
             {products.length > 0 && 
               selectedCategory && 
-              products.filter(product => product.category_id === selectedCategory).length === 0 && (
-                <div className="col-span-full text-center py-8 text-gray-500">
-                  لم يتم العثور على منتجات في هذه الفئة.
-                </div>
-              )
-            }
-          </div>
         )}
       </main>
 
