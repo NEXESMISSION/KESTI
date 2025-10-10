@@ -20,6 +20,24 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
     }
   }, [isOpen])
 
+  // Add keyboard listener for Enter key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && isOpen) {
+        e.preventDefault()
+        handleAdd()
+      }
+    }
+
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown)
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen, quantity])
+
   if (!isOpen || !product) return null
 
   const handleAdd = () => {
@@ -87,7 +105,7 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
                   const step = product.unit_type === 'item' ? 1 : 0.5
                   setQuantity(String(Math.max(step, currentQty - step)))
                 }}
-                className="bg-gray-200 hover:bg-gray-300 w-10 h-10 sm:w-12 sm:h-12 rounded-lg text-lg sm:text-xl font-bold active:scale-95 transition"
+                className="bg-gray-200 hover:bg-gray-300 w-14 h-14 sm:w-12 sm:h-12 rounded-lg text-2xl sm:text-xl font-bold active:scale-95 transition"
               >
                 −
               </button>
@@ -106,7 +124,7 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
                   const step = product.unit_type === 'item' ? 1 : 0.5
                   setQuantity(String(currentQty + step))
                 }}
-                className="bg-gray-200 hover:bg-gray-300 w-10 h-10 sm:w-12 sm:h-12 rounded-lg text-lg sm:text-xl font-bold active:scale-95 transition"
+                className="bg-gray-200 hover:bg-gray-300 w-14 h-14 sm:w-12 sm:h-12 rounded-lg text-2xl sm:text-xl font-bold active:scale-95 transition"
               >
                 +
               </button>

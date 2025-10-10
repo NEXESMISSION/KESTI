@@ -25,6 +25,11 @@ function POS() {
   const [processingCheckout, setProcessingCheckout] = useState(false)
   const [showSizeSlider, setShowSizeSlider] = useState(false)
   const [productSize, setProductSize] = useState(3) // 1-5 scale for product size
+  const [showLowStockModal, setShowLowStockModal] = useState(false)
+
+  // Calculate low stock items (products with stock < 10)
+  const lowStockProducts = products.filter(product => (product.stock_quantity ?? 0) < 10)
+  const lowStockCount = lowStockProducts.length
 
   useEffect(() => {
     checkAuthAndFetchProducts()
@@ -180,6 +185,34 @@ function POS() {
             <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-10 w-auto" priority />
             
             <div className="flex items-center gap-3">
+              {/* Low Stock Alert Button */}
+              <button
+                onClick={() => setShowLowStockModal(true)}
+                className="relative bg-orange-600 hover:bg-orange-700 text-white p-3 rounded-lg transition-all transform hover:scale-105"
+                aria-label="تنبيهات المخزون المنخفض"
+                title="تنبيهات المخزون المنخفض"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                  />
+                </svg>
+                {lowStockCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full min-w-[24px] h-6 flex items-center justify-center text-xs font-bold px-1.5 animate-pulse shadow-lg">
+                    {lowStockCount}
+                  </span>
+                )}
+              </button>
+              
               {/* Add Product Button */}
               <button
                 onClick={() => {
@@ -539,6 +572,136 @@ function POS() {
         }}
       />
 
+      {/* Low Stock Alert Modal */}
+      {showLowStockModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setShowLowStockModal(false)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="bg-orange-600 text-white px-6 py-4 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-7 w-7"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+                <h2 className="text-xl font-bold">تنبيه المخزون المنخفض</h2>
+              </div>
+              <button
+                onClick={() => setShowLowStockModal(false)}
+                className="text-white hover:text-gray-200 transition-colors"
+                aria-label="إغلاق"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
+              {lowStockCount === 0 ? (
+                <div className="text-center py-12">
+                  <svg
+                    className="w-20 h-20 mx-auto text-green-500 mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <p className="text-xl text-gray-600 font-semibold">لا توجد منتجات منخفضة المخزون</p>
+                  <p className="text-gray-500 mt-2">جميع المنتجات لديها مخزون كافٍ</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-orange-200">
+                    <p className="text-gray-700 font-semibold text-lg">
+                      المنتجات ذات المخزون المنخفض: <span className="text-orange-600">{lowStockCount}</span>
+                    </p>
+                  </div>
+                  
+                  {lowStockProducts.map((product) => (
+                    <div
+                      key={product.id}
+                      className="flex items-center gap-4 p-4 bg-red-50 border border-red-200 rounded-lg hover:shadow-md transition-shadow"
+                    >
+                      {/* Product Image */}
+                      <div className="flex-shrink-0">
+                        {product.image_url ? (
+                          <Image
+                            src={product.image_url}
+                            alt={product.name}
+                            width={64}
+                            height={64}
+                            className="rounded-lg object-cover w-16 h-16"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <svg
+                              className="w-8 h-8 text-gray-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                              />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Product Info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 text-lg truncate">{product.name}</h3>
+                        <p className="text-sm text-gray-600">
+                          {product.category?.name || 'بدون فئة'}
+                        </p>
+                      </div>
+
+                      {/* Stock Badge */}
+                      <div className="flex-shrink-0">
+                        <div className="bg-red-600 text-white px-4 py-2 rounded-lg text-center min-w-[80px]">
+                          <div className="text-2xl font-bold">{product.stock_quantity ?? 0}</div>
+                          <div className="text-xs">متبقي</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-gray-50 px-6 py-4 flex justify-end border-t">
+              <button
+                onClick={() => setShowLowStockModal(false)}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors font-semibold"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* PIN Modal with Number Pad */}
       {showPinModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -614,6 +777,66 @@ function POS() {
           </div>
         </div>
       )}
+
+      {/* Mobile Responsive Styles */}
+      <style jsx>{`
+        @media (max-width: 768px) {
+          /* Reduce alert button size on mobile */
+          .relative.bg-orange-600 {
+            padding: 0.625rem;
+          }
+          .relative.bg-orange-600 svg {
+            height: 1.25rem;
+            width: 1.25rem;
+          }
+          /* Adjust badge positioning for mobile */
+          .relative.bg-orange-600 .animate-pulse {
+            min-width: 20px;
+            height: 20px;
+            font-size: 0.65rem;
+            top: -0.375rem;
+            right: -0.375rem;
+          }
+          /* Modal adjustments for mobile */
+          .max-w-2xl {
+            max-width: calc(100vw - 2rem);
+          }
+          /* Low stock modal header on mobile */
+          .bg-orange-600.px-6 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+          }
+          .bg-orange-600 h2 {
+            font-size: 1.125rem;
+          }
+          .bg-orange-600 svg.h-7 {
+            height: 1.5rem;
+            width: 1.5rem;
+          }
+          /* Product cards in modal on mobile */
+          .p-4.bg-red-50 {
+            padding: 0.75rem;
+            gap: 0.75rem;
+          }
+          .p-4.bg-red-50 h3 {
+            font-size: 1rem;
+          }
+          .p-4.bg-red-50 .w-16.h-16 {
+            width: 3rem;
+            height: 3rem;
+          }
+          .min-w-\[80px\] {
+            min-width: 60px;
+            padding: 0.5rem;
+          }
+          .min-w-\[80px\] .text-2xl {
+            font-size: 1.5rem;
+          }
+          .min-w-\[80px\] .text-xs {
+            font-size: 0.625rem;
+          }
+        }
+      `}</style>
     </div>
   )
 }
