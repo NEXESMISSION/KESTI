@@ -420,9 +420,8 @@ function POS() {
                   </button>
                 </div>
               ))}
-
-            {products.length > 0 && 
-              selectedCategory && 
+            </div>
+          </>
         )}
       </main>
 

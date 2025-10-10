@@ -23,15 +23,15 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
   if (!isOpen || !product) return null
 
   const handleAdd = () => {
-    const qty = parseInt(quantity, 10)
+    const qty = parseFloat(quantity)
     
     if (isNaN(qty) || qty <= 0) {
       alert('Please enter a valid quantity')
       return
     }
     
-    // Each item is 1 unit (simplified - no separate unit quantity)
-    onAdd(qty, 1)
+    // For weight/volume products, quantity represents the weight/volume
+    onAdd(qty)
     onClose()
   }
 
@@ -82,7 +82,11 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
             </label>
             <div className="flex items-center gap-2 sm:gap-3">
               <button
-                onClick={() => setQuantity(String(Math.max(1, parseInt(quantity || '1') - 1)))}
+                onClick={() => {
+                  const currentQty = parseFloat(quantity || '1')
+                  const step = product.unit_type === 'item' ? 1 : 0.5
+                  setQuantity(String(Math.max(step, currentQty - step)))
+                }}
                 className="bg-gray-200 hover:bg-gray-300 w-10 h-10 sm:w-12 sm:h-12 rounded-lg text-lg sm:text-xl font-bold active:scale-95 transition"
               >
                 −
@@ -92,11 +96,16 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 onKeyPress={handleKeyPress}
+                step={product.unit_type === 'item' ? '1' : '0.1'}
                 className="flex-1 text-center text-xl sm:text-2xl font-bold border-2 border-gray-300 rounded-lg h-10 sm:h-12 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                min="1"
+                min="0.1"
               />
               <button
-                onClick={() => setQuantity(String(parseInt(quantity || '1') + 1))}
+                onClick={() => {
+                  const currentQty = parseFloat(quantity || '1')
+                  const step = product.unit_type === 'item' ? 1 : 0.5
+                  setQuantity(String(currentQty + step))
+                }}
                 className="bg-gray-200 hover:bg-gray-300 w-10 h-10 sm:w-12 sm:h-12 rounded-lg text-lg sm:text-xl font-bold active:scale-95 transition"
               >
                 +
@@ -116,7 +125,7 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
               <span className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">
                 {(
                   product.selling_price *
-                  parseInt(quantity || '1')
+                  parseFloat(quantity || '1')
                 ).toFixed(2)} TND
               </span>
             </div>
