@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
+import AutoClearWarning from '@/components/AutoClearWarning'
 
 interface SaleItem {
   quantity: number
@@ -75,9 +76,22 @@ function Finance() {
 
   useEffect(() => {
     checkAuthAndFetch()
+    triggerAutoClearCheck()
     document.title = 'KESTI - المالية'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeFilter, startDate, endDate])
+
+  const triggerAutoClearCheck = async () => {
+    try {
+      // Trigger the auto-clear check in background
+      await fetch('/api/check-and-auto-clear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+    } catch (error) {
+      console.error('Auto-clear check failed:', error)
+    }
+  }
 
   const checkAuthAndFetch = async () => {
     try {
@@ -285,6 +299,9 @@ function Finance() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Auto-Clear Warning Alert */}
+      <AutoClearWarning />
+      
       <header className="bg-white shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto py-3 sm:py-4 px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
@@ -513,33 +530,17 @@ function Finance() {
 
 
 
-        {/* Net Profit & Margin */}
+        {/* Net Profit */}
         <div className="mt-8 sm:mt-10 mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">الملخص المالي</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
-          {/* Net Profit */}
+        <div className="max-w-2xl mx-auto">
           <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg p-4 sm:p-6 md:p-8 text-white">
             <h3 className="text-base sm:text-lg font-medium opacity-90">صافي الربح</h3>
             <p className="text-2xl sm:text-3xl md:text-4xl font-bold mt-2 sm:mt-3">{formatCurrency(metrics.netProfit)}</p>
             <p className="text-xs sm:text-sm mt-1 sm:mt-2 opacity-75">الربح الإجمالي - المصروفات</p>
             <div className="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-white/20">
               <p className="text-[10px] sm:text-xs opacity-75">هذا هو ربحك الفعلي بعد خصم جميع التكاليف والمصروفات</p>
-            </div>
-          </div>
-          
-          {/* Profit Margin */}
-          <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg p-4 sm:p-6 md:p-8 text-white">
-            <h3 className="text-base sm:text-lg font-medium opacity-90">هامش الربح</h3>
-            <p className="text-2xl sm:text-3xl md:text-4xl font-bold mt-2 sm:mt-3">{(metrics.profitMargin * 100).toFixed(1)}%</p>
-            <p className="text-xs sm:text-sm mt-1 sm:mt-2 opacity-75">صافي الربح / الإيرادات</p>
-            <div className="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-white/20">
-              <p className="text-[10px] sm:text-xs opacity-75">
-                {metrics.profitMargin > 0.20 ? 'ممتاز! 🎉' : 
-                 metrics.profitMargin > 0.10 ? 'هامش جيد 👍' : 
-                 metrics.profitMargin > 0 ? 'يحتاج تحسين 📊' : 
-                 'راجع الأسعار والتكاليف ⚠️'}
-              </p>
             </div>
           </div>
         </div>

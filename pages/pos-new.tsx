@@ -27,8 +27,11 @@ function POS() {
   const [productSize, setProductSize] = useState(3) // 1-5 scale for product size
   const [showLowStockModal, setShowLowStockModal] = useState(false)
 
-  // Calculate low stock items (products with stock < 10)
-  const lowStockProducts = products.filter(product => (product.stock_quantity ?? 0) < 10)
+  // Calculate low stock items (only products with stock tracking enabled)
+  const lowStockProducts = products.filter(product => 
+    product.stock_quantity !== null && 
+    product.stock_quantity <= (product.low_stock_threshold || 10)
+  )
   const lowStockCount = lowStockProducts.length
 
   useEffect(() => {

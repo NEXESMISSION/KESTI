@@ -1,168 +1,161 @@
-# Kesti POS - Phase 1 MVP
+# KESTI POS System
 
-A modern, cloud-based Point of Sale (POS) system built with Next.js and Supabase.
-
-## ⚠️ IMPORTANT: Before Starting
-
-**If you encounter the "Invalid API key" error when creating business accounts, follow these steps:**
-
-1. Run the setup script to configure environment variables:
-   ```
-   setup-env.bat
-   ```
-
-2. Restart your development server
-
-3. If problems persist, run the full quick fix script:
-   ```
-   QUICK_FIX.bat
-   ```
-
-Alternatively, use the direct business creation page at `/create-business-direct`
-
-For detailed instructions, see [ENV_SETUP.md](ENV_SETUP.md)
+Modern Point of Sale (POS) system built with Next.js, React, TypeScript, and Supabase.
 
 ## 🚀 Features
 
-### Super Admin Module
-- Secure login and authentication
-- Dashboard to view all business accounts
-- Create new business accounts with subscription management
-- Extend subscriptions by adding days
-- Suspend/unsuspend accounts with a toggle
-
-### Business User & POS Module
-- Unified login for business owners and cashiers
-- Automatic redirect to suspended page if subscription expired
-- Core Cashier POS Interface with product grid
-- Functional shopping cart (add, remove, update quantities)
-- Complete sales transactions
-- PIN-protected Owner Admin Panel
-- Product Management (add, edit, delete products)
-
-## 🛠️ Technology Stack
-
-- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
-- **Backend & Database**: Supabase (PostgreSQL, Auth, RPC)
-- **State Management**: React Context API
+- **Point of Sale**: Fast checkout with product search, barcode scanning
+- **Inventory Management**: Stock tracking with low stock alerts
+- **Financial Analytics**: Revenue, expenses, and profit tracking
+- **Super Admin Dashboard**: Manage business accounts and subscriptions
+- **History & Reports**: Sales and expenses history with export to CSV
+- **Auto-Clear History**: Automated data cleanup based on subscription tier
+- **Expense Templates**: Save and reuse common expenses
+- **Multi-User Support**: Role-based access (Super Admin, Business Users)
+- **Mobile Responsive**: Works seamlessly on phones, tablets, and desktop
 
 ## 📋 Prerequisites
 
-- Node.js 18+ installed
-- A Supabase account and project
+- Node.js 16+ and npm
+- Supabase account
+- Vercel account (for deployment)
 
-## 🔧 Installation & Setup
+## ⚙️ Quick Setup
 
-### 1. Install Dependencies
+### 1. Clone and Install
 
 ```bash
+git clone <your-repo>
+cd kesti
 npm install
 ```
 
-### 2. Set Up Supabase
+### 2. Environment Variables
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Copy your project URL and anon key
-3. Create a `.env.local` file in the root directory:
+Create `.env.local` file in the root directory:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ```
 
-### 3. Set Up Database
+### 3. Database Setup
 
-Execute the SQL schema in the Supabase SQL Editor. You can find the complete setup script in `supabase-setup.sql`.
+Run these SQL scripts in Supabase SQL Editor (in order):
 
-The schema includes:
-- `profiles` table for user management
-- `products` table for inventory
-- `sales` and `sale_items` tables for transactions
-- Row Level Security (RLS) policies
-- RPC functions for business logic
+1. **`scripts/1_COMPLETE_RESET_AND_SETUP.sql`** - Initialize database
+2. **`scripts/2_SETUP_STORAGE.sql`** - Configure storage buckets
+3. **`scripts/3_CREATE_SUPER_ADMIN.sql`** - Create first super admin
+4. **`scripts/4_ADD_HISTORY_AUTO_CLEAR.sql`** - Add auto-clear feature
 
-### 4. Run the Development Server
+See `scripts/README.md` for detailed script documentation.
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000)
 
-## 📝 Usage Guide
-
-### For Super Admin
-
-1. **Login**: Use your super admin credentials
-2. **Create Business**: Click "Create New Business Account"
-   - Enter business name, email, password, and PIN
-   - Set initial subscription days
-3. **Manage Subscriptions**: Click "+30 Days" to extend a subscription
-4. **Suspend/Unsuspend**: Toggle account status with one click
-
-### For Business Users
-
-1. **Login**: Use your business credentials provided by the admin
-2. **POS Screen**: 
-   - Click on products to add them to cart
-   - View cart by clicking the cart button
-   - Adjust quantities or remove items
-   - Click "Confirm Sale" to complete transaction
-3. **Owner Panel**:
-   - Click "Owner Panel" button
-   - Enter your PIN code
-   - Add, edit, or delete products
-
-## 🗂️ Project Structure
+## 📂 Project Structure
 
 ```
-kesti-pos-mvp/
-├── components/          # Reusable React components
-├── contexts/           # React Context providers
-│   └── CartContext.tsx # Shopping cart state management
-├── lib/                # Utility functions
-│   └── supabase.ts     # Supabase client and types
-├── pages/              # Next.js pages
-│   ├── api/            # API routes
-│   ├── owner/          # Owner-specific pages
-│   ├── index.tsx       # Landing/redirect page
-│   ├── login.tsx       # Login page
-│   ├── pos.tsx         # POS cashier interface
-│   ├── super-admin.tsx # Super admin dashboard
-│   └── suspended.tsx   # Account suspended page
-├── styles/             # Global styles
-├── middleware.ts       # Authentication & authorization
-└── supabase-setup.sql  # Database setup script
+kesti/
+├── components/        # React components
+├── contexts/         # React contexts
+├── hooks/            # Custom hooks
+├── lib/              # Utilities and Supabase client
+├── pages/            # Next.js pages and API routes
+│   ├── api/         # API endpoints
+│   ├── pos.tsx      # Point of Sale page
+│   ├── stock.tsx    # Inventory management
+│   ├── finance.tsx  # Financial analytics
+│   └── ...
+├── public/           # Static assets
+├── scripts/          # SQL database scripts
+└── styles/          # Global styles
 ```
 
-## 🔒 Security Features
+## 🔑 Default Credentials
 
-- Row Level Security (RLS) on all tables
-- JWT-based authentication
-- Middleware for route protection
-- PIN protection for owner panel
-- Secure API routes for user creation
-- Automatic session management
+**Super Admin:**
+- Email: `admin@kesti.com`
+- Password: `admin123`
 
-## 🚧 Phase 2 Features (Coming Soon)
+**Test Business User:**
+- Email: `test@business.com`
+- Password: `test123`
+- PIN: `1234`
 
-- Financial reporting and analytics
-- Inventory tracking and alerts
-- Real-time updates
-- Multi-cashier support
-- Receipt printing
-- Customer management
-- Advanced product categories
+⚠️ **Change these in production!**
+
+## 🛠️ Key Technologies
+
+- **Frontend**: Next.js 14, React 18, TypeScript, TailwindCSS
+- **Backend**: Supabase (PostgreSQL + Auth + Storage)
+- **Deployment**: Vercel
+- **Testing**: Jest, React Testing Library
+
+## 📱 Pages Overview
+
+| Page | Route | Description |
+|------|-------|-------------|
+| Login | `/login` | User authentication |
+| POS | `/pos` | Point of sale checkout |
+| Stock | `/stock` | Inventory management |
+| Finance | `/finance` | Financial dashboard |
+| Expenses | `/expenses` | Expense tracking |
+| History | `/history` | Transaction history |
+| Super Admin | `/super-admin` | Business account management |
+
+## 🔐 Security Features
+
+- Row Level Security (RLS) enabled on all tables
+- PIN code protection for sensitive operations
+- Account suspension system
+- Subscription-based access control
+
+## 📦 Deployment
+
+### Vercel Deployment
+
+1. Push code to GitHub
+2. Import project to Vercel
+3. Add environment variables
+4. Deploy
+
+### Environment Variables (Production)
+
+Add these in Vercel dashboard:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+## 📖 Documentation
+
+- [Database Scripts Guide](scripts/README.md) - SQL scripts documentation
+- [API Routes](pages/api/README.md) - API endpoints reference
+
+## 🐛 Troubleshooting
+
+### Database Issues
+- Run `scripts/1_COMPLETE_RESET_AND_SETUP.sql` to reset database
+- Check RLS policies are enabled
+
+### Authentication Issues
+- Verify `.env.local` has correct Supabase keys
+- Clear browser cookies and try again
+
+### Image Upload Issues
+- Run `scripts/2_SETUP_STORAGE.sql`
+- Check storage bucket permissions
 
 ## 📄 License
 
-This project is proprietary software for Kesti POS system.
+Private Project - All Rights Reserved
 
-## 🤝 Support
+## 👨‍💻 Support
 
-For support and questions, please contact your system administrator.
-
----
-
-Built with ❤️ using Next.js and Supabase
+For issues or questions, contact the development team.

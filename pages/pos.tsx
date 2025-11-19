@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { supabase, Product, ProductCategory } from '@/lib/supabase'
@@ -30,14 +30,38 @@ function POS() {
   // Low stock alert state
   const [showLowStockModal, setShowLowStockModal] = useState(false)
   
-  // Calculate low stock items (products with stock < 10)
-  const lowStockProducts = products.filter(product => (product.stock_quantity ?? 0) < 10)
+  // Auto-clear warning state
+  const [showAutoClearWarning, setShowAutoClearWarning] = useState(false)
+  const [autoClearTimeLeft, setAutoClearTimeLeft] = useState<string | null>(null)
+  
+  // Calculate low stock items (only products with stock tracking enabled)
+  const lowStockProducts = products.filter(product => 
+    product.stock_quantity !== null && 
+    product.stock_quantity <= (product.low_stock_threshold || 10)
+  )
   const lowStockCount = lowStockProducts.length
+  
+  // Calculate total alerts (low stock + auto-clear warning)
+  const totalAlerts = lowStockCount + (showAutoClearWarning ? 1 : 0)
 
   useEffect(() => {
     checkAuthAndFetchProducts()
+    checkAutoClearStatus()
+    triggerAutoClearCheck()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const triggerAutoClearCheck = async () => {
+    try {
+      // Trigger the auto-clear check in background
+      await fetch('/api/check-and-auto-clear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+    } catch (error) {
+      console.error('Auto-clear check failed:', error)
+    }
+  }
 
   // Prevent autofill in PIN fields
   useEffect(() => {
@@ -74,6 +98,62 @@ function POS() {
     } catch (err) {
       console.error('Error:', err)
       router.push('/login')
+    }
+  }
+
+  const checkAutoClearStatus = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+
+      if (!profile) return
+
+      const useMinutes = profile.history_auto_clear_minutes && profile.history_auto_clear_minutes > 0
+      const useDays = profile.history_auto_clear_days && profile.history_auto_clear_days > 0
+
+      if (!useMinutes && !useDays) {
+        setShowAutoClearWarning(false)
+        return
+      }
+
+      const lastClear = profile.last_history_clear ? new Date(profile.last_history_clear) : new Date()
+      const now = new Date()
+
+      let nextClear: Date
+      let hoursLeft = 0
+
+      if (useMinutes) {
+        nextClear = new Date(lastClear.getTime() + profile.history_auto_clear_minutes * 60 * 1000)
+        hoursLeft = (nextClear.getTime() - now.getTime()) / (1000 * 60 * 60)
+      } else {
+        nextClear = new Date(lastClear.getTime() + profile.history_auto_clear_days * 24 * 60 * 60 * 1000)
+        hoursLeft = (nextClear.getTime() - now.getTime()) / (1000 * 60 * 60)
+      }
+
+      // Show warning if less than 3 days (72 hours) left
+      if (hoursLeft < 72 && hoursLeft > 0) {
+        setShowAutoClearWarning(true)
+        if (hoursLeft < 1) {
+          const minutesLeft = Math.ceil(hoursLeft * 60)
+          setAutoClearTimeLeft(`${minutesLeft}min`)
+        } else if (hoursLeft < 24) {
+          const hours = Math.ceil(hoursLeft)
+          setAutoClearTimeLeft(`${hours}h`)
+        } else {
+          const days = Math.ceil(hoursLeft / 24)
+          setAutoClearTimeLeft(`${days}d`)
+        }
+      } else {
+        setShowAutoClearWarning(false)
+      }
+    } catch (error) {
+      console.error('Error checking auto-clear status:', error)
     }
   }
 
@@ -278,12 +358,12 @@ function POS() {
             
             {/* Right: Icons */}
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* Low Stock Alert Button */}
+              {/* Alerts Button (Low Stock + Auto-Clear Warning) */}
               <button
                 onClick={() => setShowLowStockModal(true)}
                 className="relative bg-orange-600 hover:bg-orange-700 text-white p-2 sm:p-2.5 rounded-lg transition-all transform hover:scale-105"
-                aria-label="تنبيهات المخزون المنخفض"
-                title="تنبيهات المخزون المنخفض"
+                aria-label="تنبيهات"
+                title="Alerts & Notifications"
                 type="button"
               >
                 <svg
@@ -300,9 +380,9 @@ function POS() {
                     d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
                   />
                 </svg>
-                {lowStockCount > 0 && (
+                {totalAlerts > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full min-w-[24px] h-6 flex items-center justify-center text-xs font-bold px-1.5 animate-pulse shadow-lg">
-                    {lowStockCount}
+                    {totalAlerts}
                   </span>
                 )}
               </button>
@@ -648,7 +728,7 @@ function POS() {
         }}
       />
 
-      {/* Low Stock Alert Modal */}
+      {/* Alerts Modal (Low Stock + Auto-Clear Warning) */}
       {showLowStockModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setShowLowStockModal(false)}>
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
@@ -669,7 +749,7 @@ function POS() {
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                   />
                 </svg>
-                <h2 className="text-lg sm:text-xl font-bold">تنبيه المخزون المنخفض</h2>
+                <h2 className="text-lg sm:text-xl font-bold">التنبيهات ({totalAlerts})</h2>
               </div>
               <button
                 onClick={() => setShowLowStockModal(false)}
@@ -681,6 +761,40 @@ function POS() {
                 </svg>
               </button>
             </div>
+
+            {/* Auto-Clear Warning Section */}
+            {showAutoClearWarning && (
+              <div className="bg-red-50 border-b-4 border-red-500 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-red-800 mb-2">⚠️ Data Will Be Deleted Soon!</h3>
+                    <p className="text-red-700 mb-2">
+                      Your sales and expenses history will be <strong>automatically deleted</strong> in <span className="text-2xl font-bold">{autoClearTimeLeft}</span>
+                    </p>
+                    <p className="text-sm text-red-600 mb-3">
+                      All your transaction history will be permanently lost!
+                    </p>
+                    <button
+                      onClick={() => {
+                        setShowLowStockModal(false)
+                        router.push('/history')
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Download My Data Now
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Modal Body */}
             <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(80vh-120px)]">

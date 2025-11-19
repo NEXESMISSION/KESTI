@@ -1,6 +1,7 @@
 -- ============================================================================
 -- KESTI POS - COMPLETE DATABASE RESET AND SETUP
 -- ============================================================================
+-- Version: 2.0 (Updated: November 2025)
 -- This script completely wipes the database and rebuilds it from scratch
 -- 
 -- WARNING: THIS WILL DELETE ALL DATA!
@@ -10,10 +11,13 @@
 -- 
 -- Use this when you want a completely fresh start
 -- 
--- ✅ IMPROVEMENTS IN THIS VERSION:
--- - Auto-profile trigger now has error handling (won't block user creation)
+-- ✅ FEATURES IN THIS VERSION:
+-- - Auto-profile trigger with error handling
+-- - Auto-clear history feature (days/minutes configurable)
+-- - Last history clear timestamp tracking
 -- - SET search_path for better security
 -- - Graceful failure handling
+-- - Row Level Security (RLS) on all tables
 -- ============================================================================
 
 -- ============================================================================
@@ -119,12 +123,15 @@ CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT,
   email TEXT UNIQUE NOT NULL,
-  role user_role NOT NULL,
+  role user_role NOT NULL DEFAULT 'business_user',
   subscription_ends_at TIMESTAMPTZ,
-  is_suspended BOOLEAN DEFAULT false,
+  is_suspended BOOLEAN DEFAULT FALSE,
   suspension_message TEXT,
   pin_code TEXT,
-  created_at TIMESTAMPTZ DEFAULT now(),
+  history_auto_clear_days INTEGER DEFAULT NULL,
+  history_auto_clear_minutes INTEGER DEFAULT NULL,
+  last_history_clear TIMESTAMPTZ DEFAULT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -191,6 +198,18 @@ CREATE TABLE expenses (
 );
 
 SELECT '✅ TABLES CREATED' AS status;
+
+-- 2.8: Add comments to profile columns for documentation
+COMMENT ON COLUMN profiles.history_auto_clear_days IS 
+'Number of days between automatic history clears. NULL means auto-clear is disabled. Use for production (e.g., 30, 90, 180 days).';
+
+COMMENT ON COLUMN profiles.history_auto_clear_minutes IS 
+'Number of minutes between automatic history clears. NULL means disabled. For testing only - overrides days if set.';
+
+COMMENT ON COLUMN profiles.last_history_clear IS 
+'Timestamp of the last automatic or manual history clear. NULL means history has never been cleared.';
+
+SELECT '✅ COLUMN COMMENTS ADDED' AS status;
 
 -- ============================================================================
 -- PART 3: ENABLE ROW LEVEL SECURITY
@@ -543,16 +562,26 @@ SELECT '
 What was done:
 ✅ Deleted all old tables, policies, functions, and triggers
 ✅ Created user_role enum type
-✅ Created profiles, products, sales, and sale_items tables
+✅ Created profiles table with auto-clear history fields
+✅ Created products, sales, sale_items, and expenses tables  
 ✅ Enabled Row Level Security on all tables
 ✅ Created helper functions (is_super_admin, create_sale, verify_business_pin)
 ✅ Created auto-profile trigger (prevents missing profile issues!)
 ✅ Created RLS policies for data security
 ✅ Created indexes for better performance
 
+🆕 NEW FEATURES:
+✅ Auto-clear history (history_auto_clear_days/minutes)
+✅ Last clear timestamp tracking (last_history_clear)
+✅ 3-day warning alerts before auto-clear
+✅ Configurable per-business auto-clear intervals
+
 Your database is now fresh and ready to use!
 
-⚠️ IMPORTANT: You need to create your first super admin user.
-See the instructions above for 3 different methods.
+⚠️ IMPORTANT NEXT STEPS:
+1. Create your first super admin user (see instructions above)
+2. Run script 2_SETUP_STORAGE.sql for product images
+3. Run script 3_CREATE_SUPER_ADMIN.sql for default admin
+4. Optional: Run 4_ADD_HISTORY_AUTO_CLEAR.sql (already included in this script!)
 
 ' as final_summary;

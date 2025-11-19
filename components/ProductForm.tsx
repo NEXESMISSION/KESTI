@@ -295,8 +295,9 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
         lowStockThresh = parseFloat(lowStockThreshold)
       }
       
-      const userId = (await supabase.auth.getUser()).data.user?.id
-      if (!userId) throw new Error('Not authenticated')
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user?.id) throw new Error('Not authenticated')
+      const userId = session.user.id
 
       // Upload image if there's a new one or use existing URL
       let finalImageUrl = imageUrl

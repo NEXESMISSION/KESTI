@@ -6,5 +6,25 @@
   "installCommand": "npm install",
   "outputDirectory": ".next",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, max-age=0" }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/check-and-auto-clear",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }

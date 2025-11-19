@@ -247,6 +247,87 @@ function History() {
     setSortBy('date-desc')
   }
 
+  const downloadData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      // Get profile data
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+
+      // Get all products
+      const { data: products } = await supabase
+        .from('products')
+        .select('*')
+        .eq('owner_id', session.user.id)
+
+      // Prepare CSV content
+      let csvContent = "data:text/csv;charset=utf-8,"
+      
+      // Account Info Section
+      csvContent += "=== ACCOUNT INFORMATION ===\n"
+      csvContent += `Business Name,${profile?.full_name || 'N/A'}\n`
+      csvContent += `Email,${profile?.email || 'N/A'}\n`
+      csvContent += `Subscription Ends,${profile?.subscription_ends_at ? new Date(profile.subscription_ends_at).toLocaleDateString() : 'N/A'}\n`
+      csvContent += `Account Created,${profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}\n`
+      csvContent += "\n"
+
+      // Sales Section
+      csvContent += "=== SALES HISTORY ===\n"
+      csvContent += "Date,Time,Total Amount,Payment Method,Items,Quantities\n"
+      filteredSales.forEach(sale => {
+        const date = new Date(sale.created_at)
+        const items = sale.sale_items.map(item => item.product_name).join('; ')
+        const quantities = sale.sale_items.map(item => `${item.quantity}`).join('; ')
+        csvContent += `${date.toLocaleDateString()},${date.toLocaleTimeString()},${sale.total_amount},${sale.payment_method},"${items}","${quantities}"\n`
+      })
+      csvContent += `\nTotal Revenue,${totalRevenue}\n`
+      csvContent += "\n"
+
+      // Expenses Section
+      csvContent += "=== EXPENSES HISTORY ===\n"
+      csvContent += "Date,Time,Description,Category,Amount,Type\n"
+      filteredExpenses.forEach(expense => {
+        const date = new Date(expense.created_at)
+        csvContent += `${date.toLocaleDateString()},${date.toLocaleTimeString()},"${expense.description}",${expense.category || 'N/A'},${expense.amount},${expense.expense_type}\n`
+      })
+      csvContent += `\nTotal Expenses,${totalExpenses}\n`
+      csvContent += "\n"
+
+      // Products Section
+      csvContent += "=== PRODUCTS ===\n"
+      csvContent += "Name,Selling Price,Cost Price,Unit Type,Stock Quantity\n"
+      products?.forEach(product => {
+        csvContent += `"${product.name}",${product.selling_price},${product.cost_price},${product.unit_type},${product.stock_quantity || 'N/A'}\n`
+      })
+      csvContent += "\n"
+
+      // Summary Section
+      csvContent += "=== FINANCIAL SUMMARY ===\n"
+      csvContent += `Total Sales,${filteredSales.length}\n`
+      csvContent += `Total Revenue,${totalRevenue.toFixed(2)}\n`
+      csvContent += `Total Expenses,${totalExpenses.toFixed(2)}\n`
+      csvContent += `Net Profit,${netAmount.toFixed(2)}\n`
+      csvContent += `Total Products,${products?.length || 0}\n`
+
+      // Create download link
+      const encodedUri = encodeURI(csvContent)
+      const link = document.createElement("a")
+      link.setAttribute("href", encodedUri)
+      link.setAttribute("download", `KESTI_Data_${new Date().toISOString().split('T')[0]}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (error) {
+      console.error('Error downloading data:', error)
+      alert('Failed to download data')
+    }
+  }
+
   // Filter by search term (product name in items or expense description)
   const filteredSales = searchTerm
     ? sales.filter(sale =>
@@ -275,6 +356,18 @@ function History() {
             <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             <div className="flex items-center gap-2 sm:gap-3">
+              {/* Download Data */}
+              <button
+                onClick={downloadData}
+                className="bg-green-600 hover:bg-green-700 text-white p-2 sm:p-2.5 rounded-lg transition flex items-center gap-1 sm:gap-2"
+                title="Download All Data"
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <span className="hidden sm:inline text-sm">Download</span>
+              </button>
+              
               {/* Back to POS */}
               <button
                 onClick={() => router.push('/pos')}

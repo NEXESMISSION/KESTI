@@ -25,6 +25,8 @@ function SuperAdmin() {
   const [showSuspendModal, setShowSuspendModal] = useState(false)
   const [suspendingUserId, setSuspendingUserId] = useState<string | null>(null)
   const [suspensionMessage, setSuspensionMessage] = useState('')
+  const [confirmClearHistory, setConfirmClearHistory] = useState<string | null>(null)
+  const [clearingHistory, setClearingHistory] = useState(false)
 
   useEffect(() => {
     checkAuth()
@@ -35,20 +37,73 @@ function SuperAdmin() {
       .channel('profiles_changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'profiles', filter: 'role=eq.business_user' },
-        (payload) => {
-          console.log('Real-time update:', payload)
-          // Refresh the businesses list when any change occurs
+        () => {
           fetchBusinesses()
         }
       )
       .subscribe()
-    
-    // Cleanup subscription on unmount
+
     return () => {
       subscription.unsubscribe()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (businesses.length === 0) return
+
+    const checkAndClear = async () => {
+      // Check all businesses and auto-clear if needed
+      for (const business of businesses) {
+        const useMinutes = business.history_auto_clear_minutes && business.history_auto_clear_minutes > 0
+        const useDays = business.history_auto_clear_days && business.history_auto_clear_days > 0
+        
+        if (!useMinutes && !useDays) continue
+        
+        const lastClear = business.last_history_clear ? new Date(business.last_history_clear) : new Date()
+        const now = new Date()
+        
+        let nextClear: Date
+        let shouldClear = false
+        
+        if (useMinutes && business.history_auto_clear_minutes) {
+          nextClear = new Date(lastClear.getTime() + business.history_auto_clear_minutes * 60 * 1000)
+          const timeLeft = Math.ceil((nextClear.getTime() - now.getTime()) / (1000 * 60))
+          shouldClear = timeLeft <= 0
+        } else if (business.history_auto_clear_days) {
+          nextClear = new Date(lastClear.getTime() + business.history_auto_clear_days * 24 * 60 * 60 * 1000)
+          const timeLeft = Math.ceil((nextClear.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+          shouldClear = timeLeft <= 0
+        }
+        
+        if (shouldClear) {
+          console.log(`🗑️ AUTO-CLEARING history for ${business.full_name}`)
+          try {
+            const response = await fetch('/api/clear-history', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: business.id })
+            })
+
+            if (response.ok) {
+              // Update last_history_clear timestamp
+              await supabase
+                .from('profiles')
+                .update({ last_history_clear: new Date().toISOString() })
+                .eq('id', business.id)
+              
+              console.log(`✅ Auto-cleared successfully for ${business.full_name}`)
+              fetchBusinesses() // Refresh to show updated countdown
+            }
+          } catch (error) {
+            console.error('Auto-clear failed:', error)
+          }
+        }
+      }
+    }
+
+    // Check only when super admin opens dashboard
+    checkAndClear()
+  }, [businesses])
 
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession()
@@ -232,6 +287,8 @@ function SuperAdmin() {
           email: editingBusiness.email,
           pin_code: editingBusiness.pin_code,
           subscription_ends_at: editingBusiness.subscription_ends_at,
+          history_auto_clear_days: editingBusiness.history_auto_clear_days,
+          history_auto_clear_minutes: editingBusiness.history_auto_clear_minutes,
         })
         .eq('id', editingBusiness.id)
 
@@ -302,6 +359,38 @@ function SuperAdmin() {
     }
   }
 
+  const handleClearHistory = async (businessId: string) => {
+    setClearingHistory(true)
+    try {
+      const response = await fetch('/api/clear-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: businessId })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to clear history')
+      }
+
+      // Update last_history_clear timestamp
+      await supabase
+        .from('profiles')
+        .update({ last_history_clear: new Date().toISOString() })
+        .eq('id', businessId)
+
+      setSuccess('History cleared successfully! Products and saved expense templates retained.')
+      setConfirmClearHistory(null)
+      fetchBusinesses() // Refresh to show updated countdown
+    } catch (err: any) {
+      console.error('Error clearing history:', err)
+      setError(err.message || 'Failed to clear history')
+    } finally {
+      setClearingHistory(false)
+    }
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
@@ -318,6 +407,51 @@ function SuperAdmin() {
     if (daysLeft < 0) return { text: 'Expired', color: 'text-red-600' }
     if (daysLeft < 7) return { text: `${daysLeft} days left`, color: 'text-orange-600' }
     return { text: `${daysLeft} days left`, color: 'text-green-600' }
+  }
+
+  const getAutoClearStatus = (business: Profile) => {
+    // Use minutes if set (for testing), otherwise use days
+    const useMinutes = business.history_auto_clear_minutes && business.history_auto_clear_minutes > 0
+    const useDays = business.history_auto_clear_days && business.history_auto_clear_days > 0
+    
+    if (!useMinutes && !useDays) return null
+    
+    const lastClear = business.last_history_clear ? new Date(business.last_history_clear) : new Date()
+    const now = new Date()
+    
+    let nextClear: Date
+    let timeLeft: number
+    let unit: string
+    
+    if (useMinutes) {
+      // Calculate in minutes
+      nextClear = new Date(lastClear.getTime() + business.history_auto_clear_minutes! * 60 * 1000)
+      timeLeft = Math.ceil((nextClear.getTime() - now.getTime()) / (1000 * 60))
+      unit = 'min'
+    } else {
+      // Calculate in days
+      nextClear = new Date(lastClear.getTime() + business.history_auto_clear_days! * 24 * 60 * 60 * 1000)
+      timeLeft = Math.ceil((nextClear.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      unit = 'd'
+    }
+
+    if (timeLeft <= 0) {
+      return { text: 'Clear Now!', color: 'text-red-600', shouldClear: true }
+    } else if (useMinutes) {
+      // For minutes, warn at 5 min
+      if (timeLeft <= 5) {
+        return { text: `Clear in ${timeLeft}${unit}`, color: 'text-orange-600', shouldClear: false }
+      } else {
+        return { text: `Clear in ${timeLeft}${unit}`, color: 'text-blue-600', shouldClear: false }
+      }
+    } else {
+      // For days, warn at 3 days
+      if (timeLeft <= 3) {
+        return { text: `Clear in ${timeLeft}${unit}`, color: 'text-orange-600', shouldClear: false }
+      } else {
+        return { text: `Clear in ${timeLeft}${unit}`, color: 'text-blue-600', shouldClear: false }
+      }
+    }
   }
 
   return (
@@ -384,6 +518,9 @@ function SuperAdmin() {
                   Subscription
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Auto-Clear
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -394,25 +531,38 @@ function SuperAdmin() {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                     Loading...
                   </td>
                 </tr>
               ) : businesses.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                     No businesses found. Create your first one!
                   </td>
                 </tr>
               ) : (
                 businesses.map((business) => {
                   const subStatus = getSubscriptionStatus(business.subscription_ends_at)
+                  const autoClearStatus = getAutoClearStatus(business)
                   return (
                     <tr key={business.id}>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4">
                         <div className="text-sm font-medium text-gray-900">
                           {business.full_name || 'N/A'}
                         </div>
+                        {(business.history_auto_clear_days || business.history_auto_clear_minutes) && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Auto-clear: {business.history_auto_clear_minutes 
+                              ? `${business.history_auto_clear_minutes}min` 
+                              : `${business.history_auto_clear_days}d`}
+                            {business.last_history_clear && (
+                              <span className="ml-1">
+                                (Last: {new Date(business.last_history_clear).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">{business.email}</div>
@@ -421,6 +571,15 @@ function SuperAdmin() {
                         <span className={`text-sm font-semibold ${subStatus.color}`}>
                           {subStatus.text}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {autoClearStatus ? (
+                          <span className={`text-xs font-semibold ${autoClearStatus.color}`}>
+                            🗑️ {autoClearStatus.text}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">Off</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -461,6 +620,15 @@ function SuperAdmin() {
                               ✏️ Edit
                             </button>
                             <button
+                              onClick={() => setConfirmClearHistory(business.id)}
+                              className="text-orange-600 hover:text-orange-900 text-xs"
+                              title="Clear sales history (keeps products & expenses)"
+                            >
+                              🧹 Clear
+                            </button>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button
                               onClick={() => setConfirmDelete(business.id)}
                               className="text-red-600 hover:text-red-900 text-xs"
                             >
@@ -490,6 +658,7 @@ function SuperAdmin() {
           ) : (
             businesses.map((business) => {
               const subStatus = getSubscriptionStatus(business.subscription_ends_at)
+              const autoClearStatus = getAutoClearStatus(business)
               return (
                 <div key={business.id} className="bg-white rounded-lg shadow p-4">
                   {/* Business Info */}
@@ -498,6 +667,32 @@ function SuperAdmin() {
                       {business.full_name || 'N/A'}
                     </h3>
                     <p className="text-sm text-gray-500 mt-1">{business.email}</p>
+                    
+                    {/* Auto-Clear Countdown Info */}
+                    {(business.history_auto_clear_days || business.history_auto_clear_minutes) && (
+                      <div className="mt-2 bg-gray-50 border border-gray-200 rounded-lg p-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-gray-600">Auto-Clear:</span>
+                            <span className="text-xs text-gray-700">
+                              Every {business.history_auto_clear_minutes 
+                                ? `${business.history_auto_clear_minutes} min` 
+                                : `${business.history_auto_clear_days} days`}
+                            </span>
+                          </div>
+                          {autoClearStatus && (
+                            <span className={`text-xs font-bold ${autoClearStatus.color}`}>
+                              {autoClearStatus.text}
+                            </span>
+                          )}
+                        </div>
+                        {business.last_history_clear && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Last cleared: {new Date(business.last_history_clear).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Status Badges */}
@@ -505,6 +700,11 @@ function SuperAdmin() {
                     <span className={`text-xs font-semibold px-2 py-1 rounded ${subStatus.color}`}>
                       {subStatus.text}
                     </span>
+                    {autoClearStatus && (
+                      <span className={`text-xs font-semibold px-2 py-1 rounded ${autoClearStatus.color} bg-gray-100`}>
+                        🗑️ {autoClearStatus.text}
+                      </span>
+                    )}
                     <span
                       className={`px-2 py-1 text-xs font-semibold rounded-full ${
                         business.is_suspended
@@ -544,10 +744,19 @@ function SuperAdmin() {
                         ✏️ Edit
                       </button>
                       <button
+                        onClick={() => setConfirmClearHistory(business.id)}
+                        className="text-xs bg-orange-50 text-orange-600 hover:bg-orange-100 px-3 py-2 rounded-lg font-medium transition"
+                        title="Clear sales history"
+                      >
+                        🧹 Clear History
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      <button
                         onClick={() => setConfirmDelete(business.id)}
                         className="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg font-medium transition"
                       >
-                        🗑️ Delete
+                        🗑️ Delete Account
                       </button>
                     </div>
                   </div>
@@ -721,6 +930,46 @@ function SuperAdmin() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
                 />
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Auto-Clear (Days)
+                  </label>
+                  <input
+                    type="number"
+                    value={editingBusiness.history_auto_clear_days || ''}
+                    onChange={(e) => setEditingBusiness({ 
+                      ...editingBusiness, 
+                      history_auto_clear_days: e.target.value ? parseInt(e.target.value) : null,
+                      history_auto_clear_minutes: null // Clear minutes if setting days
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                    placeholder="e.g., 30"
+                    min="1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Auto-Clear (Minutes)
+                  </label>
+                  <input
+                    type="number"
+                    value={editingBusiness.history_auto_clear_minutes || ''}
+                    onChange={(e) => setEditingBusiness({ 
+                      ...editingBusiness, 
+                      history_auto_clear_minutes: e.target.value ? parseInt(e.target.value) : null,
+                      history_auto_clear_days: null // Clear days if setting minutes
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                    placeholder="e.g., 5"
+                    min="1"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 -mt-2">
+                Set either days OR minutes (for testing). Minutes overrides days.
+              </p>
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -814,6 +1063,43 @@ function SuperAdmin() {
                   setSuspensionMessage('')
                 }}
                 className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded-lg transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clear History Confirmation Modal */}
+      {confirmClearHistory && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full">
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-orange-600">Clear History</h2>
+            <p className="text-gray-700 mb-4">
+              Are you sure you want to clear all transaction history for this business?
+            </p>
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-3 mb-4">
+              <p className="text-sm text-blue-700">
+                <strong>What will be deleted:</strong> All sales and expenses from the database.
+              </p>
+              <p className="text-sm text-blue-700 mt-2">
+                <strong>What will be kept:</strong> Products, saved expense templates (localStorage), categories, and account settings.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleClearHistory(confirmClearHistory)}
+                disabled={clearingHistory}
+                className="flex-1 bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg transition disabled:opacity-50"
+              >
+                {clearingHistory ? 'Clearing...' : 'Yes, Clear History'}
+              </button>
+              <button
+                onClick={() => setConfirmClearHistory(null)}
+                disabled={clearingHistory}
+                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded-lg transition disabled:opacity-50"
               >
                 Cancel
               </button>

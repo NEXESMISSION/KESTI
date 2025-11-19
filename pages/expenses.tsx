@@ -46,11 +46,27 @@ function Expenses() {
   
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  
+  // Saved templates feature
+  const [savedTemplates, setSavedTemplates] = useState<Array<{description: string, amount: string, category: string}>>([])
+  const [showSavedTemplates, setShowSavedTemplates] = useState(false)
+  const [showSaveButton, setShowSaveButton] = useState(false)
+  const [loadedFromTemplate, setLoadedFromTemplate] = useState(false)
 
   useEffect(() => {
     checkAuthAndFetch()
     // Set document title
     document.title = 'KESTI - المصروفات'
+    
+    // Load saved templates from localStorage
+    const saved = localStorage.getItem('expense_templates')
+    if (saved) {
+      try {
+        setSavedTemplates(JSON.parse(saved))
+      } catch (e) {
+        console.error('Error loading templates:', e)
+      }
+    }
     
     // Process on load with duplicate checking
     // Wait a bit to ensure expenses are loaded
@@ -269,57 +285,7 @@ function Expenses() {
         description,
         amount: parseFloat(amount),
         category: category || null,
-        expense_type: expenseType,
-      }
-
-      if (expenseType === 'recurring') {
-        expenseData.recurring_frequency = recurringFrequency
-        expenseData.is_active = true
-        
-        // Calculate the NEXT occurrence date (not today, but after the interval)
-        const startDate = nextOccurrenceDate ? new Date(nextOccurrenceDate) : new Date()
-        let nextDate = new Date(startDate)
-        
-        if (recurringFrequency === 'custom') {
-          const amount = parseInt(customIntervalAmount)
-          const unit = customIntervalUnit
-          
-          if (unit === 'minutes') {
-            nextDate.setMinutes(startDate.getMinutes() + amount)
-          } else if (unit === 'hours') {
-            nextDate.setHours(startDate.getHours() + amount)
-          } else if (unit === 'days') {
-            nextDate.setDate(startDate.getDate() + amount)
-          } else if (unit === 'weeks') {
-            nextDate.setDate(startDate.getDate() + (amount * 7))
-          } else if (unit === 'months') {
-            nextDate.setMonth(startDate.getMonth() + amount)
-          } else if (unit === 'years') {
-            nextDate.setFullYear(startDate.getFullYear() + amount)
-          }
-          
-          // Save custom interval data
-          expenseData.custom_interval_amount = amount
-          expenseData.custom_interval_unit = unit
-        } else {
-          switch (recurringFrequency) {
-            case 'daily':
-              nextDate.setDate(startDate.getDate() + 1)
-              break
-            case 'weekly':
-              nextDate.setDate(startDate.getDate() + 7)
-              break
-            case 'monthly':
-              nextDate.setMonth(startDate.getMonth() + 1)
-              break
-            case 'yearly':
-              nextDate.setFullYear(startDate.getFullYear() + 1)
-              break
-          }
-        }
-        
-        // Set next occurrence to AFTER the first one
-        expenseData.next_occurrence_date = nextDate.toISOString()
+        expense_type: 'one_time', // Always one_time
       }
 
       if (editingExpense) {
@@ -330,28 +296,9 @@ function Expenses() {
           .eq('id', editingExpense.id)
 
         if (error) throw error
-        
-        // If editing a recurring expense and it's active, create a new occurrence
-        if (expenseType === 'recurring' && expenseData.is_active) {
-          const newOccurrence = {
-            owner_id: session.user.id,
-            description: `${description} (متكرر #${(editingExpense as any).occurrence_count || 1})`,
-            amount: parseFloat(amount),
-            category: category || null,
-            expense_type: 'one_time' as const,
-            created_at: new Date().toISOString()
-          }
-          
-          const { error: occurrenceError } = await supabase
-            .from('expenses')
-            .insert([newOccurrence])
-          
-          if (occurrenceError) {
-            console.error('Error creating occurrence after edit:', occurrenceError)
-          }
-        }
-        
         setSuccess('Expense updated successfully!')
+        resetForm()
+        setShowModal(false)
       } else {
         // Create new expense
         expenseData.owner_id = session.user.id
@@ -362,37 +309,63 @@ function Expenses() {
 
         if (error) throw error
         
-        // If it's a recurring expense, create the first occurrence immediately
-        if (expenseType === 'recurring') {
-          const firstExpense = {
-            owner_id: session.user.id,
-            description: `${description} (متكرر #1)`,
-            amount: parseFloat(amount),
-            category: category || null,
-            expense_type: 'one_time' as const,
-            created_at: new Date().toISOString()
-          }
-          
-          const { error: firstError } = await supabase
-            .from('expenses')
-            .insert([firstExpense])
-          
-          if (firstError) {
-            console.error('Error creating first recurring expense:', firstError)
-          }
+        // Only show save button if NOT loaded from template
+        if (!loadedFromTemplate) {
+          setShowSaveButton(true)
+        } else {
+          // If loaded from template, show success and close
+          setSuccess('Expense added successfully!')
+          resetForm()
+          setShowModal(false)
+          // Clear success after 3 seconds
+          setTimeout(() => setSuccess(null), 3000)
         }
-        
-        setSuccess('Expense added successfully!')
       }
 
-      // Reset form and refresh
-      resetForm()
-      setShowModal(false)
+      // Refresh expenses
       await fetchExpenses(session.user.id)
     } catch (err: any) {
       console.error('Error saving expense:', err)
       setError('Failed to save expense')
     }
+  }
+  
+  const handleSaveTemplate = () => {
+    const newTemplate = {
+      description,
+      amount,
+      category
+    }
+    const updatedTemplates = [...savedTemplates, newTemplate]
+    setSavedTemplates(updatedTemplates)
+    localStorage.setItem('expense_templates', JSON.stringify(updatedTemplates))
+    
+    // Show success message at top
+    setSuccess('Template saved successfully!')
+    
+    // Close and reset
+    setShowSaveButton(false)
+    resetForm()
+    setShowModal(false)
+    
+    // Clear success after 3 seconds
+    setTimeout(() => setSuccess(null), 3000)
+  }
+  
+  const handleLoadTemplate = (template: {description: string, amount: string, category: string}) => {
+    setDescription(template.description)
+    setAmount(template.amount)
+    setCategory(template.category)
+    setLoadedFromTemplate(true) // Mark as loaded from template
+    setSuccess(null) // Clear any previous success messages
+    setShowModal(true)
+    setShowSavedTemplates(false)
+  }
+  
+  const handleDeleteTemplate = (index: number) => {
+    const updatedTemplates = savedTemplates.filter((_, i) => i !== index)
+    setSavedTemplates(updatedTemplates)
+    localStorage.setItem('expense_templates', JSON.stringify(updatedTemplates))
   }
 
   const handleEdit = (expense: Expense) => {
@@ -455,6 +428,8 @@ function Expenses() {
     setNextOccurrenceDate('')
     setEditingExpense(null)
     setError(null)
+    setShowSaveButton(false)
+    setLoadedFromTemplate(false)
   }
 
   const handleLogout = async () => {
@@ -736,11 +711,23 @@ function Expenses() {
           </div>
         </div>
 
-        {/* Quick Add Button - Always visible */}
-        <div className="flex justify-end mb-4">
+        {/* Quick Add Button & Saved Templates - Always visible */}
+        <div className="flex justify-end gap-3 mb-4">
+          {savedTemplates.length > 0 && (
+            <button
+              onClick={() => setShowSavedTemplates(!showSavedTemplates)}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg transition font-medium flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              </svg>
+              <span>Saved ({savedTemplates.length})</span>
+            </button>
+          )}
           <button
             onClick={() => {
               resetForm()
+              setSuccess(null)
               setShowModal(true)
             }}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg transition font-medium flex items-center gap-2"
@@ -751,6 +738,47 @@ function Expenses() {
             <span>مصروف جديد</span>
           </button>
         </div>
+        
+        {/* Saved Templates List */}
+        {showSavedTemplates && savedTemplates.length > 0 && (
+          <div className="bg-white rounded-xl shadow mb-4 p-4">
+            <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+              <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              </svg>
+              Saved Expense Templates
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {savedTemplates.map((template, index) => (
+                <div
+                  key={index}
+                  className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition cursor-pointer bg-gradient-to-br from-purple-50 to-white"
+                  onClick={() => handleLoadTemplate(template)}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-semibold text-gray-900 text-sm">{template.description}</h4>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeleteTemplate(index)
+                      }}
+                      className="text-red-500 hover:text-red-700 p-1"
+                      title="Delete template"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p className="text-purple-600 font-bold text-lg">{parseFloat(template.amount).toFixed(2)} TND</p>
+                  {template.category && (
+                    <p className="text-xs text-gray-500 mt-1">{template.category}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Collapsible Filter Options */}
         <div className="bg-white rounded-xl shadow mb-4 overflow-hidden">
@@ -1098,23 +1126,7 @@ function Expenses() {
                   />
                 </div>
 
-                {/* Expense Type */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    نوع المصروف *
-                  </label>
-                  <select
-                    value={expenseType}
-                    onChange={(e) => setExpenseType(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="one_time">لمرة واحدة</option>
-                    <option value="recurring">متكرر</option>
-                  </select>
-                </div>
-
-                {/* Recurring Options */}
-                {expenseType === 'recurring' && (
+                {false && (
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1265,24 +1277,57 @@ function Expenses() {
                 )}
 
                 {/* Buttons */}
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="submit"
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition font-medium"
-                  >
-                    {editingExpense ? 'تحديث' : 'إضافة'} المصروف
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowModal(false)
-                      resetForm()
-                    }}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition font-medium"
-                  >
-                    إلغاء
-                  </button>
-                </div>
+                {!showSaveButton ? (
+                  // Normal form buttons (before adding expense)
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="submit"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition font-medium"
+                    >
+                      {editingExpense ? 'تحديث' : 'إضافة'} المصروف
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowModal(false)
+                        resetForm()
+                      }}
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition font-medium"
+                    >
+                      إلغاء
+                    </button>
+                  </div>
+                ) : (
+                  // After adding expense - show save template option
+                  <div className="flex flex-col gap-3 pt-4">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                      <p className="text-green-700 font-medium mb-2">✓ Expense added successfully!</p>
+                      <p className="text-sm text-gray-600">Would you like to save this as a template?</p>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={handleSaveTemplate}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition font-medium flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                      </svg>
+                      <span>Save as Template</span>
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowModal(false)
+                        resetForm()
+                      }}
+                      className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg transition font-medium"
+                    >
+                      No Thanks, Close
+                    </button>
+                  </div>
+                )}
               </form>
             </div>
           </div>
