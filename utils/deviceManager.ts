@@ -63,6 +63,7 @@ export function getDeviceInfo() {
 /**
  * Register the current device with the backend
  * Call this immediately after successful login
+ * Super admins skip device registration (no device limits)
  */
 export async function registerCurrentDevice(): Promise<{
   success: boolean
@@ -72,6 +73,26 @@ export async function registerCurrentDevice(): Promise<{
   kickedDevice?: string
 }> {
   try {
+    // Check if user is a super admin
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (session) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .maybeSingle()
+
+      // Super admins don't need device registration
+      if (profile && profile.role === 'super_admin') {
+        console.log('🔑 Super admin - skipping device registration')
+        return {
+          success: true,
+          message: 'Super admin - no device limits',
+        }
+      }
+    }
+
     const deviceId = getLocalDeviceId()
     const deviceInfo = getDeviceInfo()
 
@@ -111,9 +132,30 @@ export async function registerCurrentDevice(): Promise<{
 /**
  * Check if the current device is still authorized
  * Returns true if authorized, false if kicked out
+ * Super admins are always authorized (no device limits)
  */
 export async function isDeviceAuthorized(): Promise<boolean> {
   try {
+    // Check if user is logged in
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session) {
+      return true // Not logged in, nothing to check
+    }
+
+    // Check if user is a super admin
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .maybeSingle()
+
+    // Super admins bypass device limits
+    if (profile && profile.role === 'super_admin') {
+      console.log('🔑 Super admin detected - bypassing device limit check')
+      return true
+    }
+
     const deviceId = getLocalDeviceId()
     
     // Check if this device exists in the database
@@ -139,9 +181,26 @@ export async function isDeviceAuthorized(): Promise<boolean> {
 /**
  * Update the last active timestamp for this device
  * Call this periodically to keep the device "fresh"
+ * Super admins skip this since they don't have tracked devices
  */
 export async function updateDeviceActivity(): Promise<void> {
   try {
+    // Check if user is a super admin
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (session) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .maybeSingle()
+
+      // Super admins don't have tracked devices
+      if (profile && profile.role === 'super_admin') {
+        return
+      }
+    }
+
     const deviceId = getLocalDeviceId()
     
     await supabase
@@ -156,6 +215,7 @@ export async function updateDeviceActivity(): Promise<void> {
 /**
  * Enforce device limit - checks if current device is still authorized
  * If not authorized, logs out the user
+ * Super admins are exempt from device limits
  */
 export async function enforceDeviceLimit(): Promise<void> {
   try {
@@ -166,7 +226,20 @@ export async function enforceDeviceLimit(): Promise<void> {
       return // Not logged in, nothing to enforce
     }
 
-    // Check if device is authorized
+    // Check if user is a super admin - they bypass device limits
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .maybeSingle()
+
+    if (profile && profile.role === 'super_admin') {
+      // Super admins have no device limits
+      console.log('🔑 Super admin - skipping device limit enforcement')
+      return
+    }
+
+    // For business users, check if device is authorized
     const isAuthorized = await isDeviceAuthorized()
     
     if (!isAuthorized) {
