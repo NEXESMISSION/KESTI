@@ -515,10 +515,21 @@ function SuperAdmin() {
   }
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
-    document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
-    window.location.href = '/login?logout=true'
+    try {
+      await supabase.auth.signOut({ scope: 'local' })
+      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; domain=' + window.location.hostname
+      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; domain=' + window.location.hostname
+      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+      localStorage.clear()
+      sessionStorage.clear()
+      await new Promise(resolve => setTimeout(resolve, 100))
+      window.location.replace('/login?logout=true')
+    } catch (error) {
+      localStorage.clear()
+      sessionStorage.clear()
+      window.location.replace('/login?logout=true')
+    }
   }
 
   const getSubscriptionStatus = (endsAt: string | null) => {

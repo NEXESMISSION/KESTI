@@ -197,19 +197,31 @@ function POS() {
 
   const handleLogout = async () => {
     try {
-      // Sign out from Supabase
-      await supabase.auth.signOut()
+      // Sign out from Supabase (this clears localStorage)
+      await supabase.auth.signOut({ scope: 'local' })
       
-      // Clear cookies
+      // Clear all auth-related cookies
+      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; domain=' + window.location.hostname
+      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; domain=' + window.location.hostname
       document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       
-      // Use window.location.href with logout flag to prevent auto-redirect
-      window.location.href = '/login?logout=true'
+      // Clear localStorage manually as backup
+      localStorage.clear()
+      sessionStorage.clear()
+      
+      // Force a small delay to ensure everything is cleared
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Use replace instead of href to prevent back button issues
+      window.location.replace('/login?logout=true')
     } catch (error) {
       console.error('Error during logout:', error)
+      // Clear storage even on error
+      localStorage.clear()
+      sessionStorage.clear()
       // Force redirect even if there's an error
-      window.location.href = '/login?logout=true'
+      window.location.replace('/login?logout=true')
     }
   }
 
