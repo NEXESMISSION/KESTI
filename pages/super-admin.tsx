@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import { supabase, Profile } from '@/lib/supabase'
+import { supabase, Profile, ActiveDevice } from '@/lib/supabase'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 
 function SuperAdmin() {
@@ -27,6 +27,14 @@ function SuperAdmin() {
   const [suspensionMessage, setSuspensionMessage] = useState('')
   const [confirmClearHistory, setConfirmClearHistory] = useState<string | null>(null)
   const [clearingHistory, setClearingHistory] = useState(false)
+  
+  // Device management state
+  const [showDevicesModal, setShowDevicesModal] = useState(false)
+  const [viewingDevicesFor, setViewingDevicesFor] = useState<Profile | null>(null)
+  const [userDevices, setUserDevices] = useState<ActiveDevice[]>([])
+  const [deviceCounts, setDeviceCounts] = useState<Record<string, number>>({})
+  const [deviceLimits, setDeviceLimits] = useState<Record<string, number>>({})
+  const [loadingDevices, setLoadingDevices] = useState(false)
 
   useEffect(() => {
     checkAuth()
@@ -151,11 +159,109 @@ function SuperAdmin() {
 
       if (error) throw error
       setBusinesses(data || [])
+      
+      // Fetch device counts and limits for all users
+      if (data) {
+        fetchDeviceData(data.map(b => b.id))
+      }
     } catch (err: any) {
       console.error('Error fetching businesses:', err)
       setError('Failed to load businesses')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchDeviceData = async (userIds: string[]) => {
+    try {
+      // Fetch device counts
+      const { data: devicesData, error: devicesError } = await supabase
+        .from('active_devices')
+        .select('user_id')
+        .in('user_id', userIds)
+
+      if (!devicesError && devicesData) {
+        const counts: Record<string, number> = {}
+        devicesData.forEach(device => {
+          counts[device.user_id] = (counts[device.user_id] || 0) + 1
+        })
+        setDeviceCounts(counts)
+      }
+
+      // Fetch device limits
+      const { data: limitsData, error: limitsError } = await supabase
+        .from('user_limits')
+        .select('user_id, max_devices')
+        .in('user_id', userIds)
+
+      if (!limitsError && limitsData) {
+        const limits: Record<string, number> = {}
+        limitsData.forEach(limit => {
+          limits[limit.user_id] = limit.max_devices
+        })
+        setDeviceLimits(limits)
+      }
+    } catch (err) {
+      console.error('Error fetching device data:', err)
+    }
+  }
+
+  const fetchUserDevices = async (userId: string) => {
+    setLoadingDevices(true)
+    try {
+      const { data, error } = await supabase.rpc('get_user_devices', {
+        p_user_id: userId,
+      })
+
+      if (error) throw error
+      setUserDevices(data || [])
+    } catch (err: any) {
+      console.error('Error fetching user devices:', err)
+      setError('Failed to load devices')
+    } finally {
+      setLoadingDevices(false)
+    }
+  }
+
+  const handleViewDevices = async (business: Profile) => {
+    setViewingDevicesFor(business)
+    setShowDevicesModal(true)
+    await fetchUserDevices(business.id)
+  }
+
+  const handleRevokeDevice = async (deviceId: string) => {
+    try {
+      const { data, error } = await supabase.rpc('revoke_device', {
+        p_device_id: deviceId,
+      })
+
+      if (error) throw error
+
+      setSuccess('Device revoked successfully')
+      if (viewingDevicesFor) {
+        await fetchUserDevices(viewingDevicesFor.id)
+        fetchDeviceData([viewingDevicesFor.id])
+      }
+    } catch (err: any) {
+      console.error('Error revoking device:', err)
+      setError('Failed to revoke device')
+    }
+  }
+
+  const handleUpdateDeviceLimit = async (userId: string, newLimit: number) => {
+    try {
+      const { error } = await supabase.rpc('update_user_device_limit', {
+        p_user_id: userId,
+        p_max_devices: newLimit,
+      })
+
+      if (error) throw error
+
+      setSuccess(`Device limit updated to ${newLimit}`)
+      fetchDeviceData([userId])
+    } catch (err: any) {
+      console.error('Error updating device limit:', err)
+      setError(err.message || 'Failed to update device limit')
     }
   }
 
@@ -535,6 +641,9 @@ function SuperAdmin() {
                   Subscription
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Devices
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Auto-Clear
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -548,13 +657,13 @@ function SuperAdmin() {
             <tbody className="bg-white divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
                     Loading...
                   </td>
                 </tr>
               ) : businesses.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
                     No businesses found. Create your first one!
                   </td>
                 </tr>
@@ -596,6 +705,14 @@ function SuperAdmin() {
                         <span className={`text-sm font-semibold ${subStatus.color}`}>
                           {subStatus.text}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleViewDevices(business)}
+                          className="text-sm text-blue-600 hover:text-blue-900 font-medium"
+                        >
+                          📱 {deviceCounts[business.id] || 0}/{deviceLimits[business.id] || 3}
+                        </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {autoClearStatus ? (
@@ -692,6 +809,14 @@ function SuperAdmin() {
                       {business.full_name || 'N/A'}
                     </h3>
                     <p className="text-sm text-gray-500 mt-1">{business.email}</p>
+                    
+                    {/* Device Info */}
+                    <button
+                      onClick={() => handleViewDevices(business)}
+                      className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      📱 Devices: {deviceCounts[business.id] || 0}/{deviceLimits[business.id] || 3}
+                    </button>
                     
                     {/* Auto-Clear Countdown Info */}
                     {(business.history_auto_clear_days || business.history_auto_clear_minutes) && (
@@ -1138,6 +1263,144 @@ function SuperAdmin() {
                 className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded-lg transition disabled:opacity-50"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Device Management Modal */}
+      {showDevicesModal && viewingDevicesFor && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Device Management</h2>
+                <p className="text-sm text-gray-600 mt-1">{viewingDevicesFor.full_name}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowDevicesModal(false)
+                  setViewingDevicesFor(null)
+                  setUserDevices([])
+                }}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Device Limit Control */}
+            <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Device Limit for this User
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  defaultValue={deviceLimits[viewingDevicesFor.id] || 3}
+                  className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                  id={`device-limit-${viewingDevicesFor.id}`}
+                />
+                <button
+                  onClick={() => {
+                    const input = document.getElementById(`device-limit-${viewingDevicesFor.id}`) as HTMLInputElement
+                    const newLimit = parseInt(input.value)
+                    if (newLimit >= 1 && newLimit <= 10) {
+                      handleUpdateDeviceLimit(viewingDevicesFor.id, newLimit)
+                    } else {
+                      setError('Device limit must be between 1 and 10')
+                    }
+                  }}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-sm font-medium"
+                >
+                  Update Limit
+                </button>
+              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                Current: {deviceCounts[viewingDevicesFor.id] || 0}/{deviceLimits[viewingDevicesFor.id] || 3} devices
+              </p>
+            </div>
+
+            {/* Device List */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">Active Devices</h3>
+              
+              {loadingDevices ? (
+                <div className="text-center py-8 text-gray-500">Loading devices...</div>
+              ) : userDevices.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">No active devices</div>
+              ) : (
+                <div className="space-y-3">
+                  {userDevices.map((device) => (
+                    <div key={device.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">📱</span>
+                            <h4 className="font-semibold text-gray-900">
+                              {device.device_name || 'Unknown Device'}
+                            </h4>
+                          </div>
+                          
+                          <div className="space-y-1 text-sm text-gray-600">
+                            <p>
+                              <span className="font-medium">Last Active:</span>{' '}
+                              {new Date(device.last_active_at).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                            <p>
+                              <span className="font-medium">Registered:</span>{' '}
+                              {new Date(device.created_at).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                            {device.user_agent && (
+                              <p className="text-xs text-gray-500 truncate" title={device.user_agent}>
+                                <span className="font-medium">Browser:</span> {device.user_agent}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <button
+                          onClick={() => {
+                            if (confirm('Are you sure you want to revoke this device? The user will be logged out.')) {
+                              handleRevokeDevice(device.id)
+                            }
+                          }}
+                          className="ml-4 px-3 py-1 bg-red-50 text-red-600 hover:bg-red-100 rounded text-sm font-medium transition"
+                        >
+                          Revoke
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => {
+                  setShowDevicesModal(false)
+                  setViewingDevicesFor(null)
+                  setUserDevices([])
+                }}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg transition"
+              >
+                Close
               </button>
             </div>
           </div>

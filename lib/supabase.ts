@@ -25,6 +25,24 @@ export type Profile = {
   last_history_clear: string | null
 }
 
+export type UserLimit = {
+  user_id: string
+  max_devices: number
+  created_at: string
+  updated_at: string
+}
+
+export type ActiveDevice = {
+  id: string
+  user_id: string
+  device_identifier: string
+  device_name: string | null
+  user_agent: string | null
+  ip_address: string | null
+  last_active_at: string
+  created_at: string
+}
+
 export type ProductCategory = {
   id: string
   owner_id: string

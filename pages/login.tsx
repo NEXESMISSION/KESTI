@@ -2,6 +2,7 @@ import { useState, FormEvent, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
+import { registerCurrentDevice } from '@/utils/deviceManager'
 
 export default function Login() {
   // State variables
@@ -11,10 +12,16 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null)
   const [sessionInfo, setSessionInfo] = useState<any>(null)
   const [profileInfo, setProfileInfo] = useState<any>(null)
+  const [kickedDeviceMessage, setKickedDeviceMessage] = useState<string | null>(null)
   const router = useRouter()
   
-  // Check if user is already logged in
+  // Check if user is already logged in and handle device limit messages
   useEffect(() => {
+    // Check for device limit exceeded reason
+    if (router.query.reason === 'device_limit_exceeded') {
+      setError('تم تسجيل الخروج: تم تجاوز حد الأجهزة. تم تسجيل دخول جهاز آخر.')
+    }
+    
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       
@@ -106,6 +113,20 @@ export default function Login() {
       // Save profile info
       setProfileInfo(profile)
       
+      // Step 3: Register device session
+      const deviceResult = await registerCurrentDevice()
+      
+      if (deviceResult.kicked && deviceResult.kickedDevice) {
+        setKickedDeviceMessage(
+          `⚠️ تم تسجيل دخول جهاز جديد. تم إخراج: ${deviceResult.kickedDevice}`
+        )
+      }
+      
+      if (!deviceResult.success) {
+        console.warn('Device registration failed:', deviceResult.error)
+        // Continue login even if device registration fails
+      }
+      
       // Get the role
       const userRole = typeof profile.role === 'object' ? 
         profile.role.toString() : String(profile.role)
@@ -153,6 +174,12 @@ export default function Login() {
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
+            </div>
+          )}
+
+          {kickedDeviceMessage && (
+            <div className="bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
+              {kickedDeviceMessage}
             </div>
           )}
 
