@@ -20,6 +20,15 @@ export default function Login() {
     // Check for device limit exceeded reason
     if (router.query.reason === 'device_limit_exceeded') {
       setError('تم تسجيل الخروج: تم تجاوز حد الأجهزة. تم تسجيل دخول جهاز آخر.')
+      // Clear any lingering session data to prevent auto-redirect loop
+      // But preserve device ID to maintain device identity
+      const deviceId = localStorage.getItem('kesti_device_id')
+      localStorage.clear()
+      sessionStorage.clear()
+      if (deviceId) {
+        localStorage.setItem('kesti_device_id', deviceId)
+      }
+      return // Don't auto-redirect when kicked out due to device limit
     }
     
     // If user just logged out, don't auto-redirect

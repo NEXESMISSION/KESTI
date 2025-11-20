@@ -219,6 +219,11 @@ export async function updateDeviceActivity(): Promise<void> {
  */
 export async function enforceDeviceLimit(): Promise<void> {
   try {
+    // Prevent multiple simultaneous enforcement checks (loop prevention)
+    if (typeof window !== 'undefined' && (window as any).__enforcingDeviceLimit) {
+      return
+    }
+
     // Check if user is logged in
     const { data: { session } } = await supabase.auth.getSession()
     
@@ -243,14 +248,45 @@ export async function enforceDeviceLimit(): Promise<void> {
     const isAuthorized = await isDeviceAuthorized()
     
     if (!isAuthorized) {
-      console.warn('Device session revoked. Logging out...')
+      console.warn('🚫 Device session revoked. Logging out...')
       
-      // Sign out the user
-      await supabase.auth.signOut()
-      
-      // Redirect to login with a message
+      // Set flag to prevent multiple enforcement loops
       if (typeof window !== 'undefined') {
-        window.location.href = '/login?reason=device_limit_exceeded'
+        (window as any).__enforcingDeviceLimit = true
+      }
+      
+      // Fully clear the session (same as logout)
+      try {
+        await supabase.auth.signOut({ scope: 'local' })
+      } catch (e) {
+        console.error('Error signing out:', e)
+      }
+      
+      // Clear all storage and cookies
+      if (typeof window !== 'undefined') {
+        // Save device ID before clearing (to maintain device identity)
+        const deviceId = localStorage.getItem(STORAGE_KEY)
+        
+        // Clear cookies
+        document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; domain=' + window.location.hostname
+        document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; domain=' + window.location.hostname
+        document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+        document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+        
+        // Clear storage
+        localStorage.clear()
+        sessionStorage.clear()
+        
+        // Restore device ID (preserve device identity)
+        if (deviceId) {
+          localStorage.setItem(STORAGE_KEY, deviceId)
+        }
+        
+        // Small delay to ensure cleanup completes
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
+        // Redirect to login with device limit message
+        window.location.replace('/login?reason=device_limit_exceeded')
       }
     } else {
       // Update activity timestamp to keep this device fresh
