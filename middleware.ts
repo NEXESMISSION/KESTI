@@ -65,9 +65,15 @@ export async function middleware(request: NextRequest) {
         
         const { data } = await supabase
           .from('profiles')
-          .select('is_suspended, subscription_ends_at')
+          .select('is_suspended, subscription_ends_at, role')
           .eq('id', user.id)
           .single()
+
+        // Super admins bypass all checks
+        if (data?.role === 'super_admin') {
+          console.log('Super admin detected - bypassing all checks')
+          return NextResponse.next()
+        }
 
         // Check suspension first (higher priority)
         if (data?.is_suspended === true && pathname !== '/suspended') {
@@ -75,7 +81,7 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/suspended', request.url))
         }
         
-        // Then check subscription status
+        // Then check subscription status (only for business users)
         let subscriptionExpired = false
         if (data?.subscription_ends_at) {
           const now = new Date()
