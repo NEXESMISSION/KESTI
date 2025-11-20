@@ -240,7 +240,11 @@ function POS() {
         profile.role.toString() : String(profile.role)
 
       if (userRole === 'business_user') {
-        router.push('/finance')
+        // Close modal and clear PIN
+        setShowPinModal(false)
+        setPin('')
+        // Use window.location.href for full page reload to prevent redirect loop
+        window.location.href = '/finance'
       } else {
         setError('Access denied. Not a business owner.')
       }
