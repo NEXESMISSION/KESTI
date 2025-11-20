@@ -43,8 +43,15 @@ function SuperAdmin() {
       )
       .subscribe()
 
+    // Refresh businesses every 30 seconds to update countdown and check auto-clear
+    const refreshInterval = setInterval(() => {
+      console.log('🔄 Auto-refreshing businesses for countdown update...')
+      fetchBusinesses()
+    }, 30000) // 30 seconds
+
     return () => {
       subscription.unsubscribe()
+      clearInterval(refreshInterval)
     }
   }, [])
 
@@ -52,27 +59,35 @@ function SuperAdmin() {
     if (businesses.length === 0) return
 
     const checkAndClear = async () => {
+      console.log('🔍 Checking auto-clear for', businesses.length, 'businesses...')
+      
       // Check all businesses and auto-clear if needed
       for (const business of businesses) {
         const useMinutes = business.history_auto_clear_minutes && business.history_auto_clear_minutes > 0
         const useDays = business.history_auto_clear_days && business.history_auto_clear_days > 0
         
-        if (!useMinutes && !useDays) continue
+        if (!useMinutes && !useDays) {
+          console.log(`⏭️ Skipping ${business.full_name} - no auto-clear configured`)
+          continue
+        }
         
         const lastClear = business.last_history_clear ? new Date(business.last_history_clear) : new Date()
         const now = new Date()
         
         let nextClear: Date
         let shouldClear = false
+        let timeLeft: number
         
         if (useMinutes && business.history_auto_clear_minutes) {
           nextClear = new Date(lastClear.getTime() + business.history_auto_clear_minutes * 60 * 1000)
-          const timeLeft = Math.ceil((nextClear.getTime() - now.getTime()) / (1000 * 60))
+          timeLeft = Math.ceil((nextClear.getTime() - now.getTime()) / (1000 * 60))
           shouldClear = timeLeft <= 0
+          console.log(`⏰ ${business.full_name}: ${timeLeft} minutes left (clear every ${business.history_auto_clear_minutes}min)`)
         } else if (business.history_auto_clear_days) {
           nextClear = new Date(lastClear.getTime() + business.history_auto_clear_days * 24 * 60 * 60 * 1000)
-          const timeLeft = Math.ceil((nextClear.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+          timeLeft = Math.ceil((nextClear.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
           shouldClear = timeLeft <= 0
+          console.log(`⏰ ${business.full_name}: ${timeLeft} days left (clear every ${business.history_auto_clear_days}d)`)
         }
         
         if (shouldClear) {
@@ -93,15 +108,17 @@ function SuperAdmin() {
               
               console.log(`✅ Auto-cleared successfully for ${business.full_name}`)
               fetchBusinesses() // Refresh to show updated countdown
+            } else {
+              console.error(`❌ Auto-clear failed for ${business.full_name}:`, response.statusText)
             }
           } catch (error) {
-            console.error('Auto-clear failed:', error)
+            console.error(`❌ Auto-clear error for ${business.full_name}:`, error)
           }
         }
       }
     }
 
-    // Check only when super admin opens dashboard
+    // Check when businesses data changes
     checkAndClear()
   }, [businesses])
 
@@ -552,13 +569,21 @@ function SuperAdmin() {
                           {business.full_name || 'N/A'}
                         </div>
                         {(business.history_auto_clear_days || business.history_auto_clear_minutes) && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            Auto-clear: {business.history_auto_clear_minutes 
-                              ? `${business.history_auto_clear_minutes}min` 
-                              : `${business.history_auto_clear_days}d`}
+                          <div className="text-xs mt-1">
+                            <span className="text-gray-600">Auto-clear: </span>
+                            <span className="font-medium text-blue-600">
+                              {business.history_auto_clear_minutes 
+                                ? `${business.history_auto_clear_minutes}min` 
+                                : `${business.history_auto_clear_days}d`}
+                            </span>
+                            {autoClearStatus && (
+                              <span className={`ml-2 font-semibold ${autoClearStatus.color}`}>
+                                ({autoClearStatus.text})
+                              </span>
+                            )}
                             {business.last_history_clear && (
-                              <span className="ml-1">
-                                (Last: {new Date(business.last_history_clear).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})
+                              <span className="ml-1 text-gray-400">
+                                (Last: {new Date(business.last_history_clear).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })})
                               </span>
                             )}
                           </div>
@@ -670,25 +695,36 @@ function SuperAdmin() {
                     
                     {/* Auto-Clear Countdown Info */}
                     {(business.history_auto_clear_days || business.history_auto_clear_minutes) && (
-                      <div className="mt-2 bg-gray-50 border border-gray-200 rounded-lg p-2">
-                        <div className="flex items-center justify-between">
+                      <div className={`mt-2 border-2 rounded-lg p-3 ${
+                        autoClearStatus?.color === 'text-red-600' 
+                          ? 'bg-red-50 border-red-300' 
+                          : autoClearStatus?.color === 'text-orange-600'
+                          ? 'bg-orange-50 border-orange-300'
+                          : 'bg-blue-50 border-blue-200'
+                      }`}>
+                        <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-gray-600">Auto-Clear:</span>
-                            <span className="text-xs text-gray-700">
+                            <span className="text-xs font-medium text-gray-700">🗑️ Auto-Clear:</span>
+                            <span className="text-xs font-semibold text-gray-900">
                               Every {business.history_auto_clear_minutes 
                                 ? `${business.history_auto_clear_minutes} min` 
                                 : `${business.history_auto_clear_days} days`}
                             </span>
                           </div>
                           {autoClearStatus && (
-                            <span className={`text-xs font-bold ${autoClearStatus.color}`}>
+                            <span className={`text-sm font-bold ${autoClearStatus.color}`}>
                               {autoClearStatus.text}
                             </span>
                           )}
                         </div>
                         {business.last_history_clear && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Last cleared: {new Date(business.last_history_clear).toLocaleDateString()}
+                          <p className="text-xs text-gray-600">
+                            Last cleared: {new Date(business.last_history_clear).toLocaleString('en-US', { 
+                              month: 'short', 
+                              day: 'numeric', 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
                           </p>
                         )}
                       </div>
