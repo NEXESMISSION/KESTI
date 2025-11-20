@@ -22,6 +22,11 @@ export default function Login() {
       setError('تم تسجيل الخروج: تم تجاوز حد الأجهزة. تم تسجيل دخول جهاز آخر.')
     }
     
+    // If user just logged out, don't auto-redirect
+    if (router.query.logout === 'true') {
+      return
+    }
+    
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       

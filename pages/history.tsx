@@ -211,10 +211,12 @@ function History() {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut()
-      window.location.href = '/login'
+      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
+      window.location.href = '/login?logout=true'
     } catch (error) {
-      console.error('Error during logout:', error)
-      window.location.href = '/login'
+      console.error('Error logging out:', error)
+      window.location.href = '/login?logout=true'
     }
   }
 

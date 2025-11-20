@@ -204,12 +204,12 @@ function POS() {
       document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       
-      // Use window.location.href for full page reload to clear all state
-      window.location.href = '/login'
+      // Use window.location.href with logout flag to prevent auto-redirect
+      window.location.href = '/login?logout=true'
     } catch (error) {
       console.error('Error during logout:', error)
       // Force redirect even if there's an error
-      window.location.href = '/login'
+      window.location.href = '/login?logout=true'
     }
   }
 

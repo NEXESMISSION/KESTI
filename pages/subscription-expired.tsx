@@ -99,7 +99,7 @@ export default function SubscriptionExpired() {
     await supabase.auth.signOut()
     document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
     document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
-    window.location.href = '/login'
+    window.location.href = '/login?logout=true'
   }
 
   return (
