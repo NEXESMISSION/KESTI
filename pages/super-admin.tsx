@@ -108,7 +108,7 @@ function SuperAdmin() {
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
-      router.push('/login')
+      window.location.href = '/login'
       return
     }
 
@@ -119,7 +119,7 @@ function SuperAdmin() {
       .single()
 
     if (profile?.role !== 'super_admin') {
-      router.push('/pos')
+      window.location.href = '/pos'
     }
   }
 
@@ -395,7 +395,7 @@ function SuperAdmin() {
     await supabase.auth.signOut()
     document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
     document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
-    router.push('/login')
+    window.location.href = '/login'
   }
 
   const getSubscriptionStatus = (endsAt: string | null) => {

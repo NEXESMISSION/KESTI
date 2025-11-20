@@ -16,7 +16,7 @@ export default function Home() {
       const { data: { session } } = await supabase.auth.getSession()
 
       if (!session) {
-        router.push('/login')
+        window.location.href = '/login'
         return
       }
 
@@ -27,7 +27,7 @@ export default function Home() {
         .single()
 
       if (!profile || !profile.role) {
-        router.push('/login')
+        window.location.href = '/login'
         return
       }
 
@@ -45,7 +45,7 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Error checking user:', error)
-      router.push('/login')
+      window.location.href = '/login'
     } finally {
       setLoading(false)
     }

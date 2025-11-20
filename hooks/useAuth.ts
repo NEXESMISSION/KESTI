@@ -103,9 +103,9 @@ export default function useAuth() {
         
         // Redirect based on role
         if (profile.role === 'super_admin') {
-          router.push('/super-admin')
+          window.location.href = '/super-admin'
         } else if (profile.role === 'business_user') {
-          router.push('/pos')
+          window.location.href = '/pos'
         }
         
         return { success: true }
@@ -130,7 +130,7 @@ export default function useAuth() {
       document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       
-      router.push('/login')
+      window.location.href = '/login'
       return { success: true }
     } catch (err) {
       console.error('Sign out error:', err)

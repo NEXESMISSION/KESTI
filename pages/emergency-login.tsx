@@ -76,19 +76,19 @@ export default function EmergencyLogin() {
 
   // Navigation functions
   const goToSuperAdmin = () => {
-    router.push('/super-admin')
+    window.location.href = '/super-admin'
   }
   
   const goToPos = () => {
-    router.push('/pos')
+    window.location.href = '/pos'
   }
   
   const goToLogin = () => {
-    router.push('/login')
+    window.location.href = '/login'
   }
   
   const goToSimpleLogin = () => {
-    router.push('/simple-login')
+    window.location.href = '/simple-login'
   }
   
   const signOut = async () => {

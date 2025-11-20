@@ -87,14 +87,14 @@ function Expenses() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        router.push('/login')
+        window.location.href = '/login'
         return
       }
 
       await fetchExpenses(session.user.id)
     } catch (err) {
       console.error('Error:', err)
-      router.push('/login')
+      window.location.href = '/login'
     }
   }
 
@@ -435,10 +435,10 @@ function Expenses() {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut()
-      router.push('/login')
+      window.location.href = '/login'
     } catch (error) {
       console.error('Error during logout:', error)
-      router.push('/login')
+      window.location.href = '/login'
     }
   }
 

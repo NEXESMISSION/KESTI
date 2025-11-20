@@ -26,7 +26,7 @@ export default function OwnerProducts() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        router.push('/login')
+        window.location.href = '/login'
         return
       }
 
@@ -37,7 +37,7 @@ export default function OwnerProducts() {
         .single()
 
       if (profile?.role !== 'business_user') {
-        router.push('/super-admin')
+        window.location.href = '/super-admin'
         return
       }
 
@@ -45,7 +45,7 @@ export default function OwnerProducts() {
       await fetchProducts(session.user.id)
     } catch (err) {
       console.error('Error:', err)
-      router.push('/login')
+      window.location.href = '/login'
     }
   }
 

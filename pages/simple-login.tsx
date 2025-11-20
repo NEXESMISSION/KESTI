@@ -30,16 +30,16 @@ export default function SimpleLogin() {
           
           if (redirectUrl && !redirectUrl.includes('/login')) {
             // Redirect to the original URL the user was trying to access
-            router.push(redirectUrl)
+            window.location.href = redirectUrl
           } else {
             // Default redirect based on user role
             const userRole = typeof profile.role === 'object' ? 
               profile.role.toString() : String(profile.role)
             
             if (userRole === 'super_admin') {
-              router.push('/super-admin')
+              window.location.href = '/super-admin'
             } else if (userRole === 'business_user') {
-              router.push('/pos')
+              window.location.href = '/pos'
             }
           }
         }
@@ -102,13 +102,13 @@ export default function SimpleLogin() {
       
       if (redirectUrl && !redirectUrl.includes('/login')) {
         // Redirect to the original URL the user was trying to access
-        router.push(redirectUrl)
+        window.location.href = redirectUrl
       } else {
         // Default navigation based on role
         if (userRole === 'super_admin') {
-          router.push('/super-admin')
+          window.location.href = '/super-admin'
         } else if (userRole === 'business_user') {
-          router.push('/pos')
+          window.location.href = '/pos'
         } else {
           setError(`Unknown role: ${userRole}`)
         }
