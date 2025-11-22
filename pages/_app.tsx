@@ -12,10 +12,17 @@ export default function App({ Component, pageProps }: AppProps) {
 
   // Add navigation handling and device limit enforcement
   useEffect(() => {
+    // Public pages that don't need authentication
+    const publicPages = ['/', '/landing', '/login', '/login-emergency', '/simple-login', '/suspended', '/subscription-expired']
+    
+    const isPublicPage = (path: string) => {
+      return publicPages.some(page => path === page || path.startsWith(page))
+    }
+
     const handleRouteChange = (url: string) => {
       console.log('App is changing routes to:', url)
-      // Enforce device limit on every route change (except login)
-      if (!url.includes('/login')) {
+      // Enforce device limit on every route change (except public pages)
+      if (!isPublicPage(url)) {
         enforceDeviceLimit()
       }
     }
@@ -30,17 +37,20 @@ export default function App({ Component, pageProps }: AppProps) {
       const { data: { session } } = await supabase.auth.getSession()
       console.log('Current session in _app.tsx:', session ? 'Authenticated' : 'Not authenticated')
       
-      // Enforce device limit if user is logged in (skip on login page)
-      if (session && !router.pathname.includes('/login')) {
+      // Enforce device limit if user is logged in (skip on public pages)
+      if (session && !isPublicPage(router.pathname)) {
         await enforceDeviceLimit()
       }
     }
 
-    checkAuth()
+    // Only check auth if not on public page
+    if (!isPublicPage(router.pathname)) {
+      checkAuth()
+    }
 
     // Periodic device limit check (every 30 seconds)
     const deviceCheckInterval = setInterval(() => {
-      if (!router.pathname.includes('/login')) {
+      if (!isPublicPage(router.pathname)) {
         enforceDeviceLimit()
       }
     }, 30000) // 30 seconds

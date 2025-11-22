@@ -9,9 +9,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: '#4F46E5',
-        secondary: '#10B981',
+        primary: '#0063BD',      // Logo blue
+        secondary: '#6FC605',    // Logo green
         danger: '#EF4444',
+        accent: {
+          blue: '#0063BD',
+          green: '#6FC605',
+        },
+      },
+      keyframes: {
+        'scroll-infinite': {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+      },
+      animation: {
+        'scroll-infinite': 'scroll-infinite 20s linear infinite',
+        'scroll-infinite-slow': 'scroll-infinite 40s linear infinite',
       },
     },
   },

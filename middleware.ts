@@ -4,6 +4,8 @@ import { createClient } from '@supabase/supabase-js'
 
 // Public paths that don't require authentication checks
 const PUBLIC_PATHS = [
+  '/',
+  '/landing',
   '/login',
   '/login-emergency',
   '/simple-login',

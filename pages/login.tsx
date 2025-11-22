@@ -2,6 +2,7 @@ import { useState, FormEvent, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
+import Link from 'next/link'
 import { registerCurrentDevice } from '@/utils/deviceManager'
 
 export default function Login() {
@@ -174,14 +175,28 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary to-secondary p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-blue-700 to-secondary p-4 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(111,198,5,0.15),transparent_50%),radial-gradient(circle_at_70%_50%,rgba(0,99,189,0.15),transparent_50%)]"></div>
+      
+      {/* Back to home link */}
+      <Link 
+        href="/"
+        className="absolute top-6 right-6 text-white hover:text-secondary transition-colors flex items-center gap-2 font-semibold backdrop-blur-sm bg-white/10 px-4 py-2 rounded-lg"
+      >
+        <span>→</span>
+        <span>الرجوع للرئيسية</span>
+      </Link>
+      
+      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <Image src="/logo/KESTi.png" alt="KESTI" width={180} height={60} className="h-14 w-auto" priority />
+          <div className="flex justify-center mb-6">
+            <Image src="/logo/KESTi.png" alt="KESTI" width={200} height={80} className="h-16 w-auto" priority />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">نقطة البيع</h2>
-          <p className="text-gray-600">سجل الدخول إلى حسابك</p>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
+            مرحباً بك
+          </h2>
+          <p className="text-gray-600 text-lg">سجل الدخول إلى Kesti Pro</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -232,7 +247,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-xl text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
           >
             {loading ? (
               <span className="flex items-center justify-center">
@@ -248,8 +263,16 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <p>KESTI - نقطة البيع - المرحلة الأولى</p>
+        <div className="mt-6 text-center">
+          <div className="border-t border-gray-200 pt-6">
+            <p className="text-sm text-gray-600 mb-3">ليس لديك حساب؟</p>
+            <Link 
+              href="/#pricing"
+              className="inline-block text-primary hover:text-secondary font-semibold transition-colors"
+            >
+              ابدأ تجربتك المجانية لمدة 15 يوم 🚀
+            </Link>
+          </div>
         </div>
       </div>
     </div>
