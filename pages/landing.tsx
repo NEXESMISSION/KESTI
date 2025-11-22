@@ -348,7 +348,7 @@ export default function Landing() {
         <section className="py-20 bg-white">
           <div className="container mx-auto px-4">
             <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-gray-800">
-              ماذا يقول عملاؤنا السعداء؟
+              ماذا يقول عملاؤنا؟
             </h2>
             
             <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
