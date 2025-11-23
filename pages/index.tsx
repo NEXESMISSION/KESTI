@@ -918,7 +918,7 @@ export default function Home() {
                 <div className="flex flex-col gap-2 text-xs md:text-sm">
                   <a href="#features" className="text-gray-400 hover:text-secondary transition py-1">المميزات</a>
                   <a href="#pricing" className="text-gray-400 hover:text-secondary transition py-1">الأسعار</a>
-                  <a href="/login" onClick={handleLoginClick} className="text-gray-400 hover:text-secondary transition py-1 cursor-pointer">تسجيل الدخول</a>
+                  <Link href="/login" className="text-gray-400 hover:text-secondary transition py-1 cursor-pointer">تسجيل الدخول</Link>
                   <button onClick={() => setShowContact(true)} className="text-gray-400 hover:text-secondary transition py-1">تواصل معنا</button>
                 </div>
               </div>

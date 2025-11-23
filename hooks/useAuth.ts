@@ -101,11 +101,11 @@ export default function useAuth() {
         
         setUser(profile)
         
-        // Redirect based on role
+        // Redirect based on role using Next.js router for proper client-side navigation
         if (profile.role === 'super_admin') {
-          window.location.href = '/super-admin'
+          router.push('/super-admin')
         } else if (profile.role === 'business_user') {
-          window.location.href = '/pos'
+          router.push('/pos')
         }
         
         return { success: true }
@@ -130,7 +130,8 @@ export default function useAuth() {
       document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
       
-      window.location.href = '/login'
+      // Use router.replace for logout to prevent back button navigation
+      router.replace('/login')
       return { success: true }
     } catch (err) {
       console.error('Sign out error:', err)

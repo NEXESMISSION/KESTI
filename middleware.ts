@@ -42,8 +42,13 @@ export async function middleware(request: NextRequest) {
   // Check if user is suspended
   try {
     // Create a Supabase client for middleware
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://kmkscflwnuubnbzddnvy.supabase.co'
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtta3NjZmx3bnV1Ym5iemRkbnZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk3NjAwODYsImV4cCI6MjA3NTMzNjA4Nn0.B3GXpMfUG1csU7_x6Ew9eiulQhX_4UOxBMEMfnMDgQU'
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('Missing Supabase environment variables')
+      return NextResponse.next()
+    }
     
     if (supabaseUrl && supabaseAnonKey) {
       const supabase = createClient(supabaseUrl, supabaseAnonKey, {

@@ -11,8 +11,6 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [sessionInfo, setSessionInfo] = useState<any>(null)
-  const [profileInfo, setProfileInfo] = useState<any>(null)
   const [kickedDeviceMessage, setKickedDeviceMessage] = useState<string | null>(null)
   const router = useRouter()
   
@@ -72,7 +70,7 @@ export default function Login() {
     }
     
     checkSession()
-  }, [router.isReady, router.query])
+  }, [router])
 
 
 
@@ -80,8 +78,6 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     setError(null)
-    setSessionInfo(null)
-    setProfileInfo(null)
     
     try {
       // Step 1: Sign in with Supabase Auth
@@ -102,9 +98,6 @@ export default function Login() {
         return
       }
       
-      // Save session info
-      setSessionInfo(data.session)
-      
       // Step 2: Get user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -123,9 +116,6 @@ export default function Login() {
         setLoading(false)
         return
       }
-      
-      // Save profile info
-      setProfileInfo(profile)
       
       // Step 3: Register device session
       const deviceResult = await registerCurrentDevice()
