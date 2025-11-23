@@ -60,8 +60,6 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
         return { suspended: false, subscriptionExpired: false }
       }
 
-      console.log('User status check result:', data)
-
       // Check if suspended
       const suspended = !!data.is_suspended
       setIsSuspended(suspended)
@@ -73,11 +71,9 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
         const now = new Date()
         const expiryDate = new Date(data.subscription_ends_at)
         subscriptionExpired = expiryDate < now
-        console.log('Subscription expires:', expiryDate, 'Is expired:', subscriptionExpired)
       } else {
         // If subscription_ends_at is null, treat as NOT expired (valid)
         subscriptionExpired = false
-        console.log('Subscription date is null, treating as valid (not expired)')
       }
       
       setIsSubscriptionExpired(subscriptionExpired)
@@ -91,26 +87,34 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
 
   // Check suspension status when route changes or component mounts
   useEffect(() => {
+    // Wait for router to be ready
+    if (!router.isReady) return
+
     // Don't check on public paths
     if (PUBLIC_PATHS.some(path => router.pathname.startsWith(path))) {
       return
     }
 
+    let isNavigating = false
+
     // Check suspension and subscription status
     const handleStatusCheck = async () => {
+      // Prevent duplicate navigation attempts
+      if (isNavigating) return
+
       const { suspended, subscriptionExpired } = await checkSuspension()
       
       // Check suspension status first (higher priority)
       if (suspended && router.pathname !== '/suspended') {
-        console.log('User is suspended, redirecting to suspended page')
-        router.push('/suspended')
+        isNavigating = true
+        await router.replace('/suspended')
         return
       }
       
       // Then check subscription status
       if (subscriptionExpired && router.pathname !== '/subscription-expired' && !suspended) {
-        console.log('Subscription expired, redirecting to subscription-expired page')
-        router.push('/subscription-expired')
+        isNavigating = true
+        await router.replace('/subscription-expired')
         return
       }
     }
@@ -122,8 +126,11 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
     const intervalId = setInterval(handleStatusCheck, 30000)
     
     // Clean up interval on unmount
-    return () => clearInterval(intervalId)
-  }, [router.pathname])
+    return () => {
+      clearInterval(intervalId)
+      isNavigating = false
+    }
+  }, [router.isReady, router.pathname])
 
   return (
     <SuspensionContext.Provider value={{

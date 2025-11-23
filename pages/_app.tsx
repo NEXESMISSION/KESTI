@@ -12,6 +12,9 @@ export default function App({ Component, pageProps }: AppProps) {
 
   // Add navigation handling and device limit enforcement
   useEffect(() => {
+    // Wait for router to be ready
+    if (!router.isReady) return
+
     // Public pages that don't need authentication
     const publicPages = ['/', '/landing', '/login', '/login-emergency', '/simple-login', '/suspended', '/subscription-expired']
     
@@ -20,22 +23,26 @@ export default function App({ Component, pageProps }: AppProps) {
     }
 
     const handleRouteChange = (url: string) => {
-      console.log('App is changing routes to:', url)
       // Enforce device limit on every route change (except public pages)
       if (!isPublicPage(url)) {
         enforceDeviceLimit()
       }
     }
 
+    const handleRouteError = (err: Error) => {
+      // Ignore route cancellation errors (they're expected when navigating quickly)
+      if (err.message !== 'Route Cancelled') {
+        console.error('Route change error:', err)
+      }
+    }
+
     // Subscribe to router events
     router.events.on('routeChangeStart', handleRouteChange)
-    router.events.on('routeChangeComplete', () => console.log('Route change complete'))
-    router.events.on('routeChangeError', (err) => console.error('Route change error:', err))
+    router.events.on('routeChangeError', handleRouteError)
 
     // Check authentication and device limit
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      console.log('Current session in _app.tsx:', session ? 'Authenticated' : 'Not authenticated')
       
       // Enforce device limit if user is logged in (skip on public pages)
       if (session && !isPublicPage(router.pathname)) {
@@ -58,11 +65,10 @@ export default function App({ Component, pageProps }: AppProps) {
     return () => {
       // Clean up event listeners
       router.events.off('routeChangeStart', handleRouteChange)
-      router.events.off('routeChangeComplete', () => console.log('Route change complete'))
-      router.events.off('routeChangeError', (err) => console.error('Route change error:', err))
+      router.events.off('routeChangeError', handleRouteError)
       clearInterval(deviceCheckInterval)
     }
-  }, [router])
+  }, [router.isReady, router.pathname])
 
   return (
     <SuspensionProvider>

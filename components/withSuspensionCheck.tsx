@@ -14,19 +14,24 @@ export function withSuspensionCheck<P extends object>(
     const [isSubscriptionExpired, setIsSubscriptionExpired] = useState(false)
 
     useEffect(() => {
+      // Wait for router to be ready
+      if (!router.isReady) return
+
+      let isNavigating = false
+
       const checkUserStatus = async () => {
+        // Prevent duplicate navigation attempts
+        if (isNavigating) return
+
         try {
-          console.log('Checking user status...')
           const { data: { session } } = await supabase.auth.getSession()
           
           if (!session) {
-            console.log('No session found, not checking user status')
             setLoading(false)
             return
           }
           
           // Check user status (suspension and subscription)
-          console.log('Session found, checking user status...')
           const { data, error } = await supabase
             .from('profiles')
             .select('is_suspended, subscription_ends_at')
@@ -40,13 +45,12 @@ export function withSuspensionCheck<P extends object>(
           }
           
           // Check suspension status
-          console.log('User suspension status:', data?.is_suspended)
           if (data?.is_suspended === true) {
-            console.log('User is suspended, redirecting to /suspended')
             setIsSuspended(true)
             // Only redirect if not already on the suspended page
             if (router.pathname !== '/suspended') {
-              router.push('/suspended')
+              isNavigating = true
+              await router.replace('/suspended')
             }
             return
           }
@@ -57,19 +61,17 @@ export function withSuspensionCheck<P extends object>(
             const now = new Date()
             const expiryDate = new Date(data.subscription_ends_at)
             subscriptionExpired = expiryDate < now
-            console.log('Subscription expires:', expiryDate, 'Is expired:', subscriptionExpired)
           } else {
             // If subscription_ends_at is null, treat as NOT expired (valid)
             subscriptionExpired = false
-            console.log('Subscription date is null, treating as valid (not expired)')
           }
           
           if (subscriptionExpired) {
-            console.log('Subscription expired, redirecting to /subscription-expired')
             setIsSubscriptionExpired(true)
             // Only redirect if not already on the subscription-expired page
             if (router.pathname !== '/subscription-expired') {
-              router.push('/subscription-expired')
+              isNavigating = true
+              await router.replace('/subscription-expired')
             }
             return
           }
@@ -87,8 +89,11 @@ export function withSuspensionCheck<P extends object>(
       // Set up interval to check user status every 30 seconds
       const intervalId = setInterval(checkUserStatus, 30000)
       
-      return () => clearInterval(intervalId)
-    }, [router])
+      return () => {
+        clearInterval(intervalId)
+        isNavigating = false
+      }
+    }, [router.isReady, router.pathname])
     
     // If checking suspension status, show nothing
     if (loading) {
