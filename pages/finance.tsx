@@ -348,7 +348,7 @@ function Finance() {
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="grid grid-cols-5 gap-1 sm:gap-2 md:gap-3 py-3">
             <button
-              onClick={() => window.location.href = '/owner-dashboard'}
+              onClick={() => router.push('/owner-dashboard')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               title="لوحة التحكم"
             >
@@ -358,7 +358,7 @@ function Finance() {
               </div>
             </button>
             <button
-              onClick={() => window.location.href = '/stock'}
+              onClick={() => router.push('/stock')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               title="المخزون"
             >
@@ -368,7 +368,7 @@ function Finance() {
               </div>
             </button>
             <button
-              onClick={() => window.location.href = '/finance'}
+              onClick={() => router.push('/finance')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
               title="المالية"
             >
@@ -378,7 +378,7 @@ function Finance() {
               </div>
             </button>
             <button
-              onClick={() => window.location.href = '/expenses'}
+              onClick={() => router.push('/expenses')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               title="المصروفات"
             >
@@ -388,7 +388,7 @@ function Finance() {
               </div>
             </button>
             <button
-              onClick={() => window.location.href = '/history'}
+              onClick={() => router.push('/history')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               title="السجل"
             >
@@ -537,7 +537,88 @@ function Finance() {
           </div>
         </div>
 
+        {/* Statistics Bars - Period Comparisons */}
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">الإحصائيات الزمنية</h2>
+          <div className="bg-white rounded-xl shadow p-4 sm:p-6 space-y-6">
+            {/* Today */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-medium text-gray-700">اليوم</h3>
+                <span className={`text-sm font-bold ${metrics.todayNetProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatCurrency(metrics.todayNetProfit)}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div 
+                  className={`h-full ${metrics.todayNetProfit >= 0 ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-red-500 to-red-600'} transition-all duration-500`}
+                  style={{ width: `${Math.min(Math.abs(metrics.todayNetProfit) / (Math.max(metrics.weekNetProfit, metrics.monthNetProfit, 1) || 1) * 100, 100)}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between mt-1 text-xs text-gray-500">
+                <span>إيرادات: {formatCurrency(metrics.todayRevenue)}</span>
+                <span>مصروفات: {formatCurrency(metrics.todayExpenses + metrics.todayCosts)}</span>
+              </div>
+            </div>
 
+            {/* Week */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-medium text-gray-700">آخر 7 أيام</h3>
+                <span className={`text-sm font-bold ${metrics.weekNetProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatCurrency(metrics.weekNetProfit)}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div 
+                  className={`h-full ${metrics.weekNetProfit >= 0 ? 'bg-gradient-to-r from-blue-500 to-blue-600' : 'bg-gradient-to-r from-red-500 to-red-600'} transition-all duration-500`}
+                  style={{ width: `${Math.min(Math.abs(metrics.weekNetProfit) / (Math.max(metrics.monthNetProfit, 1) || 1) * 100, 100)}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between mt-1 text-xs text-gray-500">
+                <span>إيرادات: {formatCurrency(metrics.weekRevenue)}</span>
+                <span>مصروفات: {formatCurrency(metrics.weekExpenses + metrics.weekCosts)}</span>
+              </div>
+            </div>
+
+            {/* Month */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-medium text-gray-700">آخر 30 يوم</h3>
+                <span className={`text-sm font-bold ${metrics.monthNetProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatCurrency(metrics.monthNetProfit)}
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div 
+                  className={`h-full ${metrics.monthNetProfit >= 0 ? 'bg-gradient-to-r from-purple-500 to-purple-600' : 'bg-gradient-to-r from-red-500 to-red-600'} transition-all duration-500`}
+                  style={{ width: '100%' }}
+                ></div>
+              </div>
+              <div className="flex justify-between mt-1 text-xs text-gray-500">
+                <span>إيرادات: {formatCurrency(metrics.monthRevenue)}</span>
+                <span>مصروفات: {formatCurrency(metrics.monthExpenses + metrics.monthCosts)}</span>
+              </div>
+            </div>
+
+            {/* Profit Margin Bar */}
+            <div className="pt-4 border-t border-gray-200">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-sm font-medium text-gray-700">هامش الربح</h3>
+                <span className={`text-sm font-bold ${metrics.profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {metrics.profitMargin.toFixed(1)}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div 
+                  className={`h-full ${metrics.profitMargin >= 0 ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-gradient-to-r from-red-500 to-red-600'} transition-all duration-500`}
+                  style={{ width: `${Math.min(Math.abs(metrics.profitMargin), 100)}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">نسبة الربح من إجمالي الإيرادات</p>
+            </div>
+          </div>
+        </div>
 
         {/* Net Profit */}
         <div className="mt-8 sm:mt-10 mb-6">

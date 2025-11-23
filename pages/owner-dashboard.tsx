@@ -159,7 +159,7 @@ function OwnerDashboard() {
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="grid grid-cols-5 gap-1 sm:gap-2 md:gap-3 py-3">
             <button
-              onClick={() => window.location.href = '/owner-dashboard'}
+              onClick={() => router.push('/owner-dashboard')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
               title="لوحة التحكم"
             >
@@ -169,7 +169,7 @@ function OwnerDashboard() {
               </div>
             </button>
             <button
-              onClick={() => window.location.href = '/stock'}
+              onClick={() => router.push('/stock')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               title="المخزون"
             >
@@ -179,7 +179,7 @@ function OwnerDashboard() {
               </div>
             </button>
             <button
-              onClick={() => window.location.href = '/finance'}
+              onClick={() => router.push('/finance')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               title="المالية"
             >
@@ -189,7 +189,7 @@ function OwnerDashboard() {
               </div>
             </button>
             <button
-              onClick={() => window.location.href = '/expenses'}
+              onClick={() => router.push('/expenses')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               title="المصروفات"
             >
@@ -199,7 +199,7 @@ function OwnerDashboard() {
               </div>
             </button>
             <button
-              onClick={() => window.location.href = '/history'}
+              onClick={() => router.push('/history')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               title="السجل"
             >

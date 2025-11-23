@@ -622,7 +622,7 @@ function POS() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end z-40">
           <div className="bg-gray-50 w-full max-w-md h-full overflow-y-auto shadow-xl flex flex-col">
             <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-bold">Your Cart</h2>
+              <h2 className="text-xl font-bold">عربة التسوق</h2>
               <button
                 onClick={() => setShowCart(false)}
                 className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
@@ -638,13 +638,13 @@ function POS() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Your cart is empty</h3>
-                <p className="text-sm text-gray-500 mb-6">Add some products to get started</p>
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">عربة التسوق فارغة</h3>
+                <p className="text-sm text-gray-500 mb-6">أضف بعض المنتجات للبدء</p>
                 <button 
                   onClick={() => setShowCart(false)}
                   className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-lg"
                 >
-                  Continue Shopping
+                  متابعة التسوق
                 </button>
               </div>
             ) : (
@@ -658,11 +658,11 @@ function POS() {
                 <div className="border-t border-gray-200 p-4 bg-white">
                   <div className="bg-blue-50 rounded-lg p-4 mb-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-700 font-medium">Subtotal</span>
+                      <span className="text-gray-700 font-medium">المجموع الفرعي</span>
                       <span className="text-2xl font-bold text-blue-600">{getTotalPrice().toFixed(2)} TND</span>
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {getTotalItems()} item{getTotalItems() !== 1 ? 's' : ''} in cart
+                      {getTotalItems()} {getTotalItems() !== 1 ? 'عناصر' : 'عنصر'} في العربة
                     </div>
                   </div>
                   
@@ -677,10 +677,10 @@ function POS() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Processing...
+                        جاري المعالجة...
                       </>
                     ) : (
-                      <>Checkout ({getTotalPrice().toFixed(2)} TND)</>
+                      <>إتمام الشراء ({getTotalPrice().toFixed(2)} دينار)</>
                     
                     )}
                   </button>
@@ -689,7 +689,7 @@ function POS() {
                     onClick={clearCart}
                     className="w-full mt-2 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg transition text-sm"
                   >
-                    Clear Cart
+                    تفريغ العربة
                   </button>
                 </div>
               </div>
