@@ -15,6 +15,7 @@ function SuperAdmin() {
   const [newBusiness, setNewBusiness] = useState({
     fullName: '',
     email: '',
+    phoneNumber: '',
     password: '',
     pin: '',
     subscriptionDays: 30,
@@ -269,7 +270,7 @@ function SuperAdmin() {
     setError(null)
     setSuccess(null)
 
-    if (!newBusiness.fullName || !newBusiness.email || !newBusiness.password || !newBusiness.pin) {
+    if (!newBusiness.fullName || !newBusiness.email || !newBusiness.phoneNumber || !newBusiness.password || !newBusiness.pin) {
       setError('All fields are required')
       return
     }
@@ -288,6 +289,7 @@ function SuperAdmin() {
           email: newBusiness.email,
           password: newBusiness.password,
           fullName: newBusiness.fullName,
+          phoneNumber: newBusiness.phoneNumber,
           pin: newBusiness.pin,
           subscriptionEndsAt: subscriptionEndsAt.toISOString(),
         }),
@@ -308,6 +310,7 @@ function SuperAdmin() {
       setNewBusiness({
         fullName: '',
         email: '',
+        phoneNumber: '',
         password: '',
         pin: '',
         subscriptionDays: 30,
@@ -408,6 +411,7 @@ function SuperAdmin() {
         .update({
           full_name: editingBusiness.full_name,
           email: editingBusiness.email,
+          phone_number: (editingBusiness as any).phone_number,
           pin_code: editingBusiness.pin_code,
           subscription_ends_at: editingBusiness.subscription_ends_at,
           history_auto_clear_days: editingBusiness.history_auto_clear_days,
@@ -646,7 +650,7 @@ function SuperAdmin() {
                   Business Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
+                  Contact
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Subscription
@@ -709,8 +713,9 @@ function SuperAdmin() {
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{business.email}</div>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-900">{business.email}</div>
+                        <div className="text-sm text-gray-500">{(business as any).phone_number || 'No phone'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`text-sm font-semibold ${subStatus.color}`}>
@@ -819,7 +824,8 @@ function SuperAdmin() {
                     <h3 className="text-lg font-semibold text-gray-900">
                       {business.full_name || 'N/A'}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">{business.email}</p>
+                    <p className="text-sm text-gray-900 mt-1">{business.email}</p>
+                    <p className="text-sm text-gray-500">{(business as any).phone_number || 'No phone'}</p>
                     
                     {/* Device Info */}
                     <button
@@ -974,6 +980,19 @@ function SuperAdmin() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={newBusiness.phoneNumber}
+                  onChange={(e) => setNewBusiness({ ...newBusiness, phoneNumber: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                  placeholder="+216 12 345 678"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Password
                 </label>
                 <input
@@ -1062,6 +1081,19 @@ function SuperAdmin() {
                   value={editingBusiness.email || ''}
                   onChange={(e) => setEditingBusiness({ ...editingBusiness, email: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={(editingBusiness as any).phone_number || ''}
+                  onChange={(e) => setEditingBusiness({ ...editingBusiness, phone_number: e.target.value } as any)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+                  placeholder="+216 12 345 678"
                 />
               </div>
 

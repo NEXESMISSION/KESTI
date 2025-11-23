@@ -255,10 +255,10 @@ export default function Login() {
           <div className="border-t border-gray-200 pt-6">
             <p className="text-sm text-gray-600 mb-3">ليس لديك حساب؟</p>
             <Link 
-              href="/#pricing"
-              className="inline-block text-primary hover:text-secondary font-semibold transition-colors"
+              href="/signup"
+              className="inline-block bg-gradient-to-r from-primary to-secondary text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition-all"
             >
-              ابدأ تجربتك المجانية لمدة 15 يوم 🚀
+              إنشاء حساب - تجربة مجانية 15 يوم 🚀
             </Link>
           </div>
         </div>

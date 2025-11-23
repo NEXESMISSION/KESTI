@@ -6,6 +6,7 @@ import { useCart } from '@/contexts/CartContext'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 import CartItem from '@/components/CartItem'
 import QuantityModal from '@/components/QuantityModal'
+import WelcomeModal from '@/components/WelcomeModal'
 
 function POS() {
   const router = useRouter()
@@ -45,6 +46,11 @@ function POS() {
   // Product box size control
   const [productBoxSize, setProductBoxSize] = useState<'small' | 'large'>('small')
   
+  // Welcome modal state
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false)
+  const [businessName, setBusinessName] = useState('')
+  const [daysRemaining, setDaysRemaining] = useState(0)
+  
   // Calculate low stock items (only products with stock tracking enabled)
   const lowStockProducts = products.filter(product => 
     product.stock_quantity !== null && 
@@ -59,6 +65,7 @@ function POS() {
     checkAuthAndFetchProducts()
     checkAutoClearStatus()
     triggerAutoClearCheck()
+    checkFirstLogin()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -134,38 +141,69 @@ function POS() {
         return
       }
 
-      const lastClear = profile.last_history_clear ? new Date(profile.last_history_clear) : new Date()
-      const now = new Date()
-
-      let nextClear: Date
-      let hoursLeft = 0
-
-      if (useMinutes) {
-        nextClear = new Date(lastClear.getTime() + profile.history_auto_clear_minutes * 60 * 1000)
-        hoursLeft = (nextClear.getTime() - now.getTime()) / (1000 * 60 * 60)
-      } else {
-        nextClear = new Date(lastClear.getTime() + profile.history_auto_clear_days * 24 * 60 * 60 * 1000)
-        hoursLeft = (nextClear.getTime() - now.getTime()) / (1000 * 60 * 60)
+      const lastClearTime = profile.last_history_clear_at
+      if (!lastClearTime) {
+        setShowAutoClearWarning(true)
+        return
       }
 
-      // Show warning if less than 3 days (72 hours) left
-      if (hoursLeft < 72 && hoursLeft > 0) {
-        setShowAutoClearWarning(true)
-        if (hoursLeft < 1) {
-          const minutesLeft = Math.ceil(hoursLeft * 60)
-          setAutoClearTimeLeft(`${minutesLeft}min`)
-        } else if (hoursLeft < 24) {
-          const hours = Math.ceil(hoursLeft)
-          setAutoClearTimeLeft(`${hours}h`)
-        } else {
-          const days = Math.ceil(hoursLeft / 24)
-          setAutoClearTimeLeft(`${days}d`)
+      const lastClear = new Date(lastClearTime)
+      const now = new Date()
+      const timeDiffMs = now.getTime() - lastClear.getTime()
+
+      if (useMinutes) {
+        const minutesPassed = Math.floor(timeDiffMs / (1000 * 60))
+        if (minutesPassed >= (profile.history_auto_clear_minutes || 0)) {
+          setShowAutoClearWarning(true)
+          setAutoClearTimeLeft(`${minutesPassed} دقيقة`)
         }
-      } else {
-        setShowAutoClearWarning(false)
+      } else if (useDays) {
+        const daysPassed = Math.floor(timeDiffMs / (1000 * 60 * 60 * 24))
+        if (daysPassed >= (profile.history_auto_clear_days || 0)) {
+          setShowAutoClearWarning(true)
+          setAutoClearTimeLeft(`${daysPassed} يوم`)
+        }
       }
     } catch (error) {
       console.error('Error checking auto-clear status:', error)
+    }
+  }
+
+  const checkFirstLogin = async () => {
+    try {
+      // Check if this is the first time user is logging in
+      const hasSeenWelcome = localStorage.getItem('hasSeenWelcome')
+      if (hasSeenWelcome) return
+
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, subscription_ends_at')
+        .eq('id', session.user.id)
+        .single()
+
+      if (!profile) return
+
+      // Calculate days remaining in trial
+      if (profile.subscription_ends_at) {
+        const expiryDate = new Date(profile.subscription_ends_at)
+        const now = new Date()
+        const daysLeft = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+        
+        if (daysLeft > 0 && daysLeft <= 15) {
+          // Show welcome modal for users with active trial
+          setBusinessName(profile.full_name || 'عزيزي العميل')
+          setDaysRemaining(daysLeft)
+          setShowWelcomeModal(true)
+          
+          // Mark as seen
+          localStorage.setItem('hasSeenWelcome', 'true')
+        }
+      }
+    } catch (error) {
+      console.error('Error checking first login:', error)
     }
   }
 
@@ -1205,6 +1243,14 @@ function POS() {
           </div>
         </div>
       )}
+
+      {/* Welcome Modal for First-Time Users */}
+      <WelcomeModal 
+        show={showWelcomeModal}
+        onClose={() => setShowWelcomeModal(false)}
+        businessName={businessName}
+        daysRemaining={daysRemaining}
+      />
     </div>
   )
 }

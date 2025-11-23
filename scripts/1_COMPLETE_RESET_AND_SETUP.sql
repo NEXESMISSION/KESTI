@@ -123,6 +123,7 @@ CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT,
   email TEXT UNIQUE NOT NULL,
+  phone_number TEXT,
   role user_role NOT NULL DEFAULT 'business_user',
   subscription_ends_at TIMESTAMPTZ,
   is_suspended BOOLEAN DEFAULT FALSE,

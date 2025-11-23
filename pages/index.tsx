@@ -171,19 +171,18 @@ export default function Home() {
                 >
                   الأسعار
                 </Link>
-                <a
+                <Link
                   href="/login"
-                  onClick={handleLoginClick}
-                  className="text-gray-700 hover:text-primary transition px-3 py-1.5 font-medium text-sm border border-gray-300 rounded-lg cursor-pointer"
+                  className="text-gray-700 hover:text-primary transition px-3 py-1.5 font-medium text-sm border border-gray-300 rounded-lg"
                 >
                   دخول
-                </a>
-                <button
-                  onClick={() => setShowContact(true)}
-                  className="bg-gradient-to-r from-secondary to-green-400 text-gray-900 px-4 lg:px-5 py-1.5 rounded-lg font-bold text-sm hover:scale-105 transition-transform"
+                </Link>
+                <Link
+                  href="/signup"
+                  className="bg-gradient-to-r from-primary to-blue-600 text-white px-4 lg:px-5 py-1.5 rounded-lg font-bold text-sm hover:scale-105 transition-transform"
                 >
-                  تواصل معنا
-                </button>
+                  تجربة مجانية 🚀
+                </Link>
               </div>
               
               {/* Mobile Menu Button */}
@@ -294,13 +293,20 @@ export default function Home() {
 
                   {/* CTA Buttons */}
                   <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center pt-4">
+                    <Link
+                      href="/signup"
+                      className="group relative bg-gradient-to-r from-primary via-blue-600 to-blue-500 text-white px-8 md:px-12 py-4 md:py-5 rounded-xl md:rounded-2xl text-base md:text-xl lg:text-2xl font-black transition-all shadow-2xl hover:shadow-primary/50 hover:scale-105 w-full sm:w-auto flex items-center justify-center gap-2 md:gap-3 overflow-hidden"
+                    >
+                      <span className="relative z-10">ابدأ تجربتك المجانية</span>
+                      <span className="text-3xl group-hover:translate-x-2 transition-transform relative z-10">🚀</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </Link>
                     <button
                       onClick={() => setShowContact(true)}
-                      className="group relative bg-gradient-to-r from-secondary via-green-500 to-green-400 text-gray-900 px-8 md:px-12 py-4 md:py-5 rounded-xl md:rounded-2xl text-base md:text-xl lg:text-2xl font-black transition-all shadow-2xl hover:shadow-secondary/50 hover:scale-105 w-full sm:w-auto flex items-center justify-center gap-2 md:gap-3 overflow-hidden"
+                      className="group relative bg-white border-2 border-gray-300 text-gray-900 px-8 md:px-12 py-4 md:py-5 rounded-xl md:rounded-2xl text-base md:text-xl lg:text-2xl font-black transition-all shadow-lg hover:shadow-xl hover:scale-105 w-full sm:w-auto flex items-center justify-center gap-2 md:gap-3"
                     >
-                      <span className="relative z-10">تواصل معنا الآن</span>
-                      <span className="text-3xl group-hover:translate-x-2 transition-transform relative z-10">�</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-secondary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <span className="relative z-10">تواصل معنا</span>
+                      <span className="text-3xl group-hover:translate-x-2 transition-transform relative z-10">💬</span>
                     </button>
                     <button
                       onClick={() => setShowVideo(true)}
@@ -747,24 +753,32 @@ export default function Home() {
                     </li>
                       </ul>
 
+                      <div className="mt-6 space-y-3">
+                      <Link
+                        href="/signup"
+                        className="w-full bg-gradient-to-r from-primary to-secondary text-white text-lg md:text-xl font-black py-5 px-10 rounded-2xl hover:shadow-2xl transition transform hover:scale-105 flex items-center justify-center gap-2"
+                      >
+                        <span>ابدأ تجربتك المجانية</span>
+                        <span className="text-2xl">🚀</span>
+                      </Link>
                       <button
                         onClick={() => setShowContact(true)}
-                        className="w-full bg-gradient-to-r from-primary to-secondary text-white text-lg md:text-xl font-black py-5 px-10 rounded-2xl hover:shadow-2xl transition transform hover:scale-105"
+                        className="w-full bg-white border-2 border-gray-300 text-gray-900 text-lg md:text-xl font-black py-5 px-10 rounded-2xl hover:shadow-xl transition transform hover:scale-105"
                       >
-                        تواصل معنا للبدء 📞
+                        تواصل معنا 📞
                       </button>
-                      <a
+                      <Link
                         href="/login"
-                        onClick={handleLoginClick}
-                        className="block mt-4 text-center text-gray-600 hover:text-primary text-sm font-medium transition cursor-pointer"
+                        className="block text-center text-primary hover:text-secondary font-semibold"
                       >
-                        لديك حساب بالفعل؟ سجل الدخول
-                      </a>
+                        لديك حساب؟ تسجيل الدخول ←
+                      </Link>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
           </div>
         </section>
 

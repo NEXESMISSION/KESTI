@@ -20,6 +20,7 @@ Stores user account information and settings.
 | `id` | UUID | No | - | Primary key, references auth.users |
 | `full_name` | TEXT | Yes | NULL | User's full name |
 | `email` | TEXT | No | - | User's email (unique) |
+| `phone_number` | TEXT | Yes | NULL | User's phone number |
 | `role` | user_role | No | 'business_user' | User role (super_admin or business_user) |
 | `subscription_ends_at` | TIMESTAMPTZ | Yes | NULL | Subscription expiration date |
 | `is_suspended` | BOOLEAN | No | FALSE | Account suspension status |
@@ -263,6 +264,7 @@ Performance indexes on:
 2. **2_SETUP_STORAGE.sql** - Product image storage
 3. **3_CREATE_SUPER_ADMIN.sql** - First admin user
 4. **4_ADD_HISTORY_AUTO_CLEAR.sql** - Only if upgrading old database
+5. **5_ADD_PHONE_NUMBER.sql** - Add phone number field (run if upgrading existing database)
 
 ---
 

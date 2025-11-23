@@ -34,3 +34,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Sensitive/Development files
+DEV_COST_REPORT.md
+INVESTOR_PITCH.md
+TECH_STACK_AND_AGENCY_PRICING.md
+*_FIX*.md
+*_SUMMARY.md
+COMPREHENSIVE_FIXES.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
