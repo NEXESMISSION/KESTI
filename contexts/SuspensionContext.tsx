@@ -114,15 +114,15 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
       // Check suspension status first (higher priority)
       if (suspended && router.pathname !== '/suspended') {
         isNavigating = true
-        // Use shallow navigation for faster client-side routing
-        await router.replace('/suspended', undefined, { shallow: false })
+        // Use replace to prevent back button navigation to restricted pages
+        await router.replace('/suspended')
         return
       }
       
       // Then check subscription status
       if (subscriptionExpired && router.pathname !== '/subscription-expired' && !suspended) {
         isNavigating = true
-        await router.replace('/subscription-expired', undefined, { shallow: false })
+        await router.replace('/subscription-expired')
         return
       }
     }

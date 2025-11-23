@@ -1,9 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Disable aggressive route prefetching in production
+  // Production optimizations
+  swcMinify: true,
+  compress: true,
+  poweredByHeader: false,
+  // Improve navigation in production
   experimental: {
-    optimisticClientCache: false,
+    scrollRestoration: true,
   },
   images: {
     remotePatterns: [
@@ -31,7 +35,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Add headers to prevent caching of redirects
+  // Add headers to prevent caching of redirects and improve performance
   async headers() {
     return [
       {
@@ -41,9 +45,29 @@ const nextConfig = {
             key: 'X-DNS-Prefetch-Control',
             value: 'on'
           },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY'
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin'
+          },
         ],
       },
     ]
+  },
+  // Ensure proper page routing
+  async rewrites() {
+    return []
   },
 }
 

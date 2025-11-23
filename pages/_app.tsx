@@ -2,13 +2,14 @@ import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { CartProvider } from '@/contexts/CartContext'
 import { SuspensionProvider } from '@/contexts/SuspensionContext'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabase'
 import { enforceDeviceLimit } from '@/utils/deviceManager'
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter()
+  const [isNavigating, setIsNavigating] = useState(false)
 
   // Add navigation handling and device limit enforcement
   useEffect(() => {
@@ -22,7 +23,12 @@ export default function App({ Component, pageProps }: AppProps) {
       return publicPages.some(page => path === page || path.startsWith(page))
     }
 
+    const handleRouteChangeStart = () => {
+      setIsNavigating(true)
+    }
+
     const handleRouteChangeComplete = (url: string) => {
+      setIsNavigating(false)
       // Enforce device limit AFTER route change completes (except public pages)
       // This prevents interrupting navigation
       if (!isPublicPage(url)) {
@@ -31,13 +37,15 @@ export default function App({ Component, pageProps }: AppProps) {
     }
 
     const handleRouteError = (err: Error) => {
+      setIsNavigating(false)
       // Ignore route cancellation errors (they're expected when navigating quickly)
       if (err.message !== 'Route Cancelled') {
         console.error('Route change error:', err)
       }
     }
 
-    // Subscribe to router events
+    // Subscribe to router events for loading state and device enforcement
+    router.events.on('routeChangeStart', handleRouteChangeStart)
     router.events.on('routeChangeComplete', handleRouteChangeComplete)
     router.events.on('routeChangeError', handleRouteError)
 
@@ -65,6 +73,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
     return () => {
       // Clean up event listeners
+      router.events.off('routeChangeStart', handleRouteChangeStart)
       router.events.off('routeChangeComplete', handleRouteChangeComplete)
       router.events.off('routeChangeError', handleRouteError)
       clearInterval(deviceCheckInterval)
@@ -72,10 +81,19 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [router.isReady, router.pathname])
 
   return (
-    <SuspensionProvider>
-      <CartProvider>
-        <Component {...pageProps} />
-      </CartProvider>
-    </SuspensionProvider>
+    <>
+      {/* Global loading bar for route transitions */}
+      {isNavigating && (
+        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-pulse">
+          <div className="h-full bg-white opacity-50 animate-[shimmer_1s_infinite]"></div>
+        </div>
+      )}
+      
+      <SuspensionProvider>
+        <CartProvider>
+          <Component {...pageProps} />
+        </CartProvider>
+      </SuspensionProvider>
+    </>
   )
 }

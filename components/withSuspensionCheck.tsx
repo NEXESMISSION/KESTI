@@ -57,7 +57,7 @@ export function withSuspensionCheck<P extends object>(
             // Only redirect if not already on the suspended page
             if (router.pathname !== '/suspended') {
               isNavigating = true
-              await router.replace('/suspended', undefined, { shallow: false })
+              await router.replace('/suspended')
             }
             return
           }
@@ -78,7 +78,7 @@ export function withSuspensionCheck<P extends object>(
             // Only redirect if not already on the subscription-expired page
             if (router.pathname !== '/subscription-expired') {
               isNavigating = true
-              await router.replace('/subscription-expired', undefined, { shallow: false })
+              await router.replace('/subscription-expired')
             }
             return
           }
