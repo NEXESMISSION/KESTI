@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import { supabase } from '@/lib/supabase'
+import { supabase, CreditSale } from '@/lib/supabase'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 
 interface SaleItem {
@@ -19,6 +19,17 @@ interface Sale {
   sale_items: SaleItem[]
 }
 
+interface CreditSaleItem {
+  id: string
+  product_name: string
+  quantity: number
+  price_at_sale: number
+}
+
+interface CreditSaleWithItems extends CreditSale {
+  credit_sale_items: CreditSaleItem[]
+}
+
 interface Expense {
   id: string
   description: string
@@ -31,10 +42,11 @@ interface Expense {
 function History() {
   const router = useRouter()
   const [sales, setSales] = useState<Sale[]>([])
+  const [creditSales, setCreditSales] = useState<CreditSaleWithItems[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedSale, setExpandedSale] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<'all' | 'sales' | 'expenses'>('all')
+  const [viewMode, setViewMode] = useState<'all' | 'sales' | 'expenses' | 'credits'>('all')
   
   // Filter states
   const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month' | 'all'>('all')
@@ -63,6 +75,7 @@ function History() {
 
       await Promise.all([
         fetchSales(session.user.id),
+        fetchCreditSales(session.user.id),
         fetchExpenses(session.user.id)
       ])
     } catch (err) {
@@ -146,6 +159,74 @@ function History() {
       console.error('Error fetching sales:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchCreditSales = async (ownerId: string) => {
+    try {
+      let query = supabase
+        .from('credit_sales')
+        .select(`
+          *,
+          customer:customer_id (id, name, phone),
+          credit_sale_items (
+            id,
+            product_name,
+            quantity,
+            price_at_sale
+          )
+        `)
+        .eq('owner_id', ownerId)
+
+      // Apply time filters
+      const now = new Date()
+      if (timeFilter === 'today') {
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        query = query.gte('created_at', today.toISOString())
+      } else if (timeFilter === 'week') {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+        query = query.gte('created_at', weekAgo.toISOString())
+      } else if (timeFilter === 'month') {
+        const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate())
+        query = query.gte('created_at', monthAgo.toISOString())
+      }
+
+      // Apply custom date range
+      if (startDate) {
+        query = query.gte('created_at', new Date(startDate).toISOString())
+      }
+      if (endDate) {
+        const endDateTime = new Date(endDate)
+        endDateTime.setHours(23, 59, 59, 999)
+        query = query.lte('created_at', endDateTime.toISOString())
+      }
+
+      // Apply amount filters
+      if (minAmount) {
+        query = query.gte('total_amount', parseFloat(minAmount))
+      }
+      if (maxAmount) {
+        query = query.lte('total_amount', parseFloat(maxAmount))
+      }
+
+      // Apply sorting
+      if (sortBy === 'date-desc') {
+        query = query.order('created_at', { ascending: false })
+      } else if (sortBy === 'date-asc') {
+        query = query.order('created_at', { ascending: true })
+      } else if (sortBy === 'amount-desc') {
+        query = query.order('total_amount', { ascending: false })
+      } else if (sortBy === 'amount-asc') {
+        query = query.order('total_amount', { ascending: true })
+      }
+
+      const { data, error } = await query
+
+      if (error) throw error
+
+      setCreditSales(data || [])
+    } catch (err: any) {
+      console.error('Error fetching credit sales:', err)
     }
   }
 
@@ -406,7 +487,7 @@ function History() {
       {/* Page Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-5 gap-1 sm:gap-2 md:gap-3 py-3">
+          <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3 py-3">
             <button
               onClick={() => router.push('/owner-dashboard')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
@@ -435,6 +516,16 @@ function History() {
               <div className="flex flex-col items-center justify-center gap-1">
                 <span className="text-lg">💰</span>
                 <span className="text-[10px] sm:text-xs">المالية</span>
+              </div>
+            </button>
+            <button
+              onClick={() => router.push('/credits')}
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="الديون"
+            >
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">💳</span>
+                <span className="text-[10px] sm:text-xs">الديون</span>
               </div>
             </button>
             <button
@@ -489,6 +580,16 @@ function History() {
             }`}
           >
             المبيعات فقط
+          </button>
+          <button
+            onClick={() => setViewMode('credits')}
+            className={`flex-1 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition ${
+              viewMode === 'credits'
+                ? 'bg-orange-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            الديون
           </button>
           <button
             onClick={() => setViewMode('expenses')}
@@ -683,7 +784,7 @@ function History() {
           
           {/* Results Count */}
           <div className="border-t border-gray-200 p-2 sm:p-3 text-xs sm:text-sm text-gray-600 text-center bg-gray-50">
-            إظهار {filteredSales.length + filteredExpenses.length} معاملة
+            إظهار {filteredSales.length + creditSales.length + filteredExpenses.length} معاملة
           </div>
         </div>
 
@@ -692,8 +793,9 @@ function History() {
           <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
             <h3 className="text-base sm:text-lg font-semibold">سجل المعاملات</h3>
             <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              {viewMode === 'all' && `إظهار ${filteredSales.length + filteredExpenses.length} معاملة`}
+              {viewMode === 'all' && `إظهار ${filteredSales.length + creditSales.length + filteredExpenses.length} معاملة`}
               {viewMode === 'sales' && `إظهار ${filteredSales.length} مبيعات`}
+              {viewMode === 'credits' && `إظهار ${creditSales.length} ديون`}
               {viewMode === 'expenses' && `إظهار ${filteredExpenses.length} مصروفات`}
             </p>
           </div>
@@ -703,8 +805,9 @@ function History() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               <p className="mt-2 text-gray-500">تحميل السجل المالي...</p>
             </div>
-          ) : (viewMode === 'all' && filteredSales.length === 0 && filteredExpenses.length === 0) ||
+          ) : (viewMode === 'all' && filteredSales.length === 0 && creditSales.length === 0 && filteredExpenses.length === 0) ||
              (viewMode === 'sales' && filteredSales.length === 0) ||
+             (viewMode === 'credits' && creditSales.length === 0) ||
              (viewMode === 'expenses' && filteredExpenses.length === 0) ? (
             <div className="p-8 text-center text-gray-500">
               <p className="text-lg font-medium">لم يتم العثور على معاملات</p>
@@ -795,6 +898,68 @@ function History() {
                 </div>
               ))}
               
+              {/* Credit Sales */}
+              {(viewMode === 'all' || viewMode === 'credits') && creditSales.map((credit) => (
+                <div key={`credit-${credit.id}`} className="hover:bg-orange-50 transition">
+                  <div
+                    className="px-6 py-4 cursor-pointer"
+                    onClick={() => toggleSaleExpansion(`credit-${credit.id}`)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">💳</span>
+                          <div>
+                            <p className="font-semibold text-gray-900">{credit.customer?.name || 'عميل'}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {new Date(credit.created_at).toLocaleDateString('ar-TN', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-left mr-4">
+                        <p className="text-lg font-bold text-orange-600">{credit.total_amount.toFixed(2)} دينار</p>
+                        {credit.is_paid ? (
+                          <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full mt-1">
+                            ✓ مدفوع
+                          </span>
+                        ) : (
+                          <span className="inline-block bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full mt-1">
+                            متبقي: {credit.remaining_amount.toFixed(2)} د
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Expandable Items */}
+                  {expandedSale === `credit-${credit.id}` && credit.credit_sale_items && (
+                    <div className="px-6 pb-4 bg-orange-50/30">
+                      <div className="border-t border-orange-200 pt-3">
+                        <h4 className="text-sm font-semibold mb-2 text-gray-700">المنتجات:</h4>
+                        <div className="space-y-2">
+                          {credit.credit_sale_items.map((item) => (
+                            <div key={item.id} className="flex justify-between text-sm bg-white p-2 rounded">
+                              <span className="text-gray-700">{item.product_name}</span>
+                              <div className="text-left">
+                                <span className="text-gray-600 mr-2">x{item.quantity}</span>
+                                <span className="font-semibold text-gray-900">{(item.price_at_sale * item.quantity).toFixed(2)} د</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+
               {/* Expenses */}
               {(viewMode === 'all' || viewMode === 'expenses') && filteredExpenses.map((expense) => (
                 <div key={`expense-${expense.id}`} className="hover:bg-red-50 transition">

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import { supabase, Product, ProductCategory } from '@/lib/supabase'
+import { supabase, Product, ProductCategory, CreditCustomer } from '@/lib/supabase'
 import { useCart } from '@/contexts/CartContext'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 import CartItem from '@/components/CartItem'
@@ -33,6 +33,17 @@ function POS() {
   // Auto-clear warning state
   const [showAutoClearWarning, setShowAutoClearWarning] = useState(false)
   const [autoClearTimeLeft, setAutoClearTimeLeft] = useState<string | null>(null)
+  
+  // Credit system state
+  const [isCredit, setIsCredit] = useState(false)
+  const [creditCustomers, setCreditCustomers] = useState<CreditCustomer[]>([])
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>('')
+  const [newCustomerName, setNewCustomerName] = useState('')
+  const [newCustomerPhone, setNewCustomerPhone] = useState('')
+  const [showAddCustomer, setShowAddCustomer] = useState(false)
+  
+  // Product box size control
+  const [productBoxSize, setProductBoxSize] = useState<'small' | 'large'>('small')
   
   // Calculate low stock items (only products with stock tracking enabled)
   const lowStockProducts = products.filter(product => 
@@ -95,6 +106,7 @@ function POS() {
 
       setUserId(session.user.id)
       await fetchProducts(session.user.id)
+      await fetchCreditCustomers(session.user.id)
     } catch (err) {
       console.error('Error:', err)
       window.location.href = '/login'
@@ -195,6 +207,54 @@ function POS() {
     }
   }
 
+  const fetchCreditCustomers = async (ownerId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('credit_customers')
+        .select('*')
+        .eq('owner_id', ownerId)
+        .order('name')
+
+      if (error) throw error
+      setCreditCustomers(data || [])
+    } catch (err: any) {
+      console.error('Error fetching credit customers:', err)
+    }
+  }
+
+  const addCreditCustomer = async () => {
+    if (!newCustomerName.trim()) {
+      setError('يرجى إدخال اسم العميل')
+      return
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('credit_customers')
+        .insert([{
+          owner_id: userId,
+          name: newCustomerName.trim(),
+          phone: newCustomerPhone.trim() || null
+        }])
+        .select()
+        .single()
+
+      if (error) throw error
+
+      setCreditCustomers([...creditCustomers, data])
+      setSelectedCustomerId(data.id)
+      setNewCustomerName('')
+      setNewCustomerPhone('')
+      setShowAddCustomer(false)
+      setSuccess('تمت إضافة العميل بنجاح')
+      setTimeout(() => setSuccess(null), 3000)
+    } catch (err: any) {
+      console.error('Error adding customer:', err)
+      setError('فشل في إضافة العميل')
+      setTimeout(() => setError(null), 3000)
+    }
+  }
+
   const handleLogout = async () => {
     try {
       // Sign out from Supabase (this clears localStorage)
@@ -269,58 +329,101 @@ function POS() {
   const handleCheckout = async () => {
     if (cart.length === 0) return
 
+    // Check if credit is selected and customer is chosen
+    if (isCredit && !selectedCustomerId) {
+      setError('يرجى اختيار عميل للبيع بالأجل')
+      return
+    }
+
     setProcessingCheckout(true)
     setError(null)
     try {
-      // Create a sale record
-      const { data: sale, error: saleError } = await supabase
-        .from('sales')
-        .insert([
-          {
-            owner_id: userId,
-            total_amount: getTotalPrice(),
-          },
-        ])
-        .select()
-        .single()
+      if (isCredit) {
+        // Handle Credit Sale
+        const { data: creditSale, error: creditSaleError } = await supabase
+          .from('credit_sales')
+          .insert([
+            {
+              owner_id: userId,
+              customer_id: selectedCustomerId,
+              total_amount: getTotalPrice(),
+              paid_amount: 0,
+              remaining_amount: getTotalPrice(),
+              is_paid: false,
+            },
+          ])
+          .select()
+          .single()
 
-      if (saleError) throw saleError
+        if (creditSaleError) throw creditSaleError
 
-      // Create sale items
-      const saleItems = cart.map((item) => ({
-        sale_id: sale.id,
-        product_id: item.product.id,
-        product_name: item.product.name,
-        quantity: item.quantity,
-        price_at_sale: item.product.selling_price,
-        cost_price_at_sale: item.product.cost_price || 0,
-      }))
+        // Create credit sale items
+        const creditSaleItems = cart.map((item) => ({
+          credit_sale_id: creditSale.id,
+          product_id: item.product.id,
+          product_name: item.product.name,
+          quantity: item.quantity,
+          price_at_sale: item.product.selling_price,
+          cost_price_at_sale: item.product.cost_price || 0,
+        }))
 
-      const { error: itemsError } = await supabase.from('sale_items').insert(saleItems)
+        const { error: itemsError } = await supabase.from('credit_sale_items').insert(creditSaleItems)
 
-      if (itemsError) throw itemsError
+        if (itemsError) throw itemsError
 
-      // Deduct stock for products with stock tracking enabled
+        setSuccess('تم تسجيل البيع بالأجل بنجاح!')
+      } else {
+        // Handle Regular Sale
+        const { data: sale, error: saleError } = await supabase
+          .from('sales')
+          .insert([
+            {
+              owner_id: userId,
+              total_amount: getTotalPrice(),
+            },
+          ])
+          .select()
+          .single()
+
+        if (saleError) throw saleError
+
+        // Create sale items
+        const saleItems = cart.map((item) => ({
+          sale_id: sale.id,
+          product_id: item.product.id,
+          product_name: item.product.name,
+          quantity: item.quantity,
+          price_at_sale: item.product.selling_price,
+          cost_price_at_sale: item.product.cost_price || 0,
+        }))
+
+        const { error: itemsError } = await supabase.from('sale_items').insert(saleItems)
+
+        if (itemsError) throw itemsError
+
+        setSuccess('تم إتمام الدفع بنجاح!')
+      }
+
+      // Deduct stock for products with stock tracking enabled (for both regular and credit sales)
       for (const item of cart) {
-        // Only update if product has stock tracking (stock_quantity is not null)
         if (item.product.stock_quantity !== null) {
           const newStock = item.product.stock_quantity - item.quantity
           
           const { error: stockError } = await supabase
             .from('products')
-            .update({ stock_quantity: Math.max(0, newStock) }) // Ensure never negative
+            .update({ stock_quantity: Math.max(0, newStock) })
             .eq('id', item.product.id)
           
           if (stockError) {
             console.error('Error updating stock for product:', item.product.name, stockError)
-            // Don't throw - sale is complete, just log the error
           }
         }
       }
 
-      setSuccess('Checkout complete!')
       clearCart()
       setShowCart(false)
+      setIsCredit(false)
+      setSelectedCustomerId('')
       
       // Refresh products to show updated stock
       const { data: { session } } = await supabase.auth.getSession()
@@ -329,7 +432,7 @@ function POS() {
       }
     } catch (err: any) {
       console.error('Error during checkout:', err)
-      setError('Failed to process checkout')
+      setError('فشل في إتمام العملية')
     } finally {
       setProcessingCheckout(false)
     }
@@ -491,6 +594,38 @@ function POS() {
       </div>
 
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-3 sm:px-6 lg:px-8">
+        {/* Product Size Controls */}
+        {!loading && products.length > 0 && (
+          <div className="flex justify-end gap-2 mb-4">
+            <button
+              onClick={() => setProductBoxSize('small')}
+              className={`px-3 py-2 rounded-lg font-medium transition ${
+                productBoxSize === 'small'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              title="حجم صغير"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setProductBoxSize('large')}
+              className={`px-3 py-2 rounded-lg font-medium transition ${
+                productBoxSize === 'large'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              title="حجم كبير"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </button>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -568,10 +703,14 @@ function POS() {
                             setShowQuantityModal(true)
                           }
                         }}
-                        className="flex-shrink-0 w-48 sm:w-56 md:w-72 bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 cursor-pointer"
+                        className={`flex-shrink-0 bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300 cursor-pointer ${
+                          productBoxSize === 'small' ? 'w-36 sm:w-40' : 'w-56 sm:w-64 md:w-80'
+                        }`}
                       >
                         {/* Product Image */}
-                        <div className="relative w-full h-32 sm:h-36 md:h-40">
+                        <div className={`relative w-full ${
+                          productBoxSize === 'small' ? 'h-24 sm:h-28' : 'h-40 sm:h-44 md:h-48'
+                        }`}>
                           <Image
                             src={product.image_url || 'https://placehold.co/300x200/e5e7eb/6b7280?text=No+Image'}
                             alt={product.name}
@@ -656,6 +795,89 @@ function POS() {
                 </div>
                 
                 <div className="border-t border-gray-200 p-4 bg-white">
+                  {/* Credit System */}
+                  <div className="mb-4 bg-white rounded-lg border border-gray-200 p-3">
+                    <div className="flex items-center mb-3">
+                      <input
+                        type="checkbox"
+                        id="credit-checkbox"
+                        checked={isCredit}
+                        onChange={(e) => {
+                          setIsCredit(e.target.checked)
+                          if (!e.target.checked) {
+                            setSelectedCustomerId('')
+                          }
+                        }}
+                        className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                      />
+                      <label htmlFor="credit-checkbox" className="mr-2 text-sm font-medium text-gray-700">
+                        💳 بيع بالأجل (دين)
+                      </label>
+                    </div>
+
+                    {isCredit && (
+                      <div className="space-y-2">
+                        {!showAddCustomer ? (
+                          <div className="flex gap-2">
+                            <select
+                              value={selectedCustomerId}
+                              onChange={(e) => setSelectedCustomerId(e.target.value)}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
+                            >
+                              <option value="">اختر العميل</option>
+                              {creditCustomers.map((customer) => (
+                                <option key={customer.id} value={customer.id}>
+                                  {customer.name} {customer.phone ? `(${customer.phone})` : ''}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              onClick={() => setShowAddCustomer(true)}
+                              className="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-sm whitespace-nowrap"
+                            >
+                              + جديد
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="space-y-2 bg-orange-50 p-3 rounded-lg">
+                            <input
+                              type="text"
+                              placeholder="اسم العميل *"
+                              value={newCustomerName}
+                              onChange={(e) => setNewCustomerName(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
+                            />
+                            <input
+                              type="tel"
+                              placeholder="رقم الهاتف (اختياري)"
+                              value={newCustomerPhone}
+                              onChange={(e) => setNewCustomerPhone(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={addCreditCustomer}
+                                className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
+                              >
+                                حفظ
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setShowAddCustomer(false)
+                                  setNewCustomerName('')
+                                  setNewCustomerPhone('')
+                                }}
+                                className="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm"
+                              >
+                                إلغاء
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="bg-blue-50 rounded-lg p-4 mb-4">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700 font-medium">المجموع الفرعي</span>
@@ -669,7 +891,7 @@ function POS() {
                   <button
                     onClick={handleCheckout}
                     disabled={processingCheckout}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg transition flex items-center justify-center font-medium"
+                    className={`w-full ${isCredit ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'} text-white py-3 rounded-lg transition flex items-center justify-center font-medium`}
                   >
                     {processingCheckout ? (
                       <>
@@ -680,7 +902,7 @@ function POS() {
                         جاري المعالجة...
                       </>
                     ) : (
-                      <>إتمام الشراء ({getTotalPrice().toFixed(2)} دينار)</>
+                      <>{isCredit ? '💳 تسجيل كدين' : '💰 إتمام الشراء'} ({getTotalPrice().toFixed(2)} دينار)</>
                     
                     )}
                   </button>

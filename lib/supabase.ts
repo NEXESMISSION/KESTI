@@ -79,3 +79,35 @@ export type SaleItem = {
   quantity: number
   price_at_sale: number
 }
+
+export type CreditCustomer = {
+  id: string
+  owner_id: string
+  name: string
+  phone: string | null
+  created_at: string
+}
+
+export type CreditSale = {
+  id: string
+  owner_id: string
+  customer_id: string
+  total_amount: number
+  paid_amount: number
+  remaining_amount: number
+  is_paid: boolean
+  created_at: string
+  paid_at: string | null
+  customer?: CreditCustomer
+}
+
+export type CreditSaleItem = {
+  id: string
+  credit_sale_id: string
+  product_id: string
+  product_name: string
+  quantity: number
+  price_at_sale: number
+  cost_price_at_sale: number
+  created_at: string
+}

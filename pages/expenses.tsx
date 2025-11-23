@@ -569,7 +569,7 @@ function Expenses() {
       {/* Page Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-5 gap-1 sm:gap-2 md:gap-3 py-3">
+          <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3 py-3">
             <button
               onClick={() => router.push('/owner-dashboard')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
@@ -598,6 +598,16 @@ function Expenses() {
               <div className="flex flex-col items-center justify-center gap-1">
                 <span className="text-lg">💰</span>
                 <span className="text-[10px] sm:text-xs">المالية</span>
+              </div>
+            </button>
+            <button
+              onClick={() => router.push('/credits')}
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="الديون"
+            >
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">💳</span>
+                <span className="text-[10px] sm:text-xs">الديون</span>
               </div>
             </button>
             <button
@@ -649,74 +659,31 @@ function Expenses() {
         )}
 
 
-        {/* Expense Summary - Grid Layout for Mobile */}
-        <div className="mb-4 sm:mb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
-            <div className="bg-white rounded-xl shadow p-3 sm:p-6">
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="text-xs font-medium text-gray-500">مصروفات لمرة واحدة</h3>
-                <span className="text-base sm:text-xl bg-blue-50 text-blue-600 p-1 rounded-full">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </span>
+        {/* Main Total Card - Simple & Clean */}
+        <div className="mb-6">
+          <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-2xl p-6 sm:p-8 text-white">
+            <div className="text-center">
+              <p className="text-sm sm:text-base opacity-90 mb-2">💸 إجمالي المصروفات</p>
+              <p className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">{formatCurrency(totalExpenses)}</p>
+              <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-2">
+                <span className="text-xs sm:text-sm">{timeFilteredExpenses.length} مصروف</span>
               </div>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">{formatCurrency(totalOneTime)}</p>
-              <p className="text-[9px] sm:text-xs text-gray-500 mt-0.5">
-                {timeFilteredExpenses.filter(e => e.expense_type === 'one_time').length} مصروف
-                {timeFilter !== 'all' && (
-                  <span className="mr-1.5 inline-block bg-blue-100 text-blue-800 text-[8px] px-1 py-0.5 rounded-full">
-                    {timeFilter === 'today' ? 'اليوم' : 
-                     timeFilter === 'week' ? '7 أيام' : 
-                     timeFilter === 'month' ? '30 يوم' : ''}
-                  </span>
-                )}
-              </p>
             </div>
-            
-            <div className="bg-white rounded-xl shadow p-3 sm:p-6">
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="text-xs font-medium text-gray-500">مصروفات متكررة</h3>
-                <span className="text-base sm:text-xl bg-red-50 text-red-600 p-1 rounded-full">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </span>
-              </div>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600">{activeRecurringCount}</p>
-              <p className="text-[9px] sm:text-xs text-gray-500 mt-0.5">
-                قوالب نشطة
-                {timeFilter !== 'all' && (
-                  <span className="mr-1.5 inline-block bg-blue-100 text-blue-800 text-[8px] px-1 py-0.5 rounded-full">
-                    {timeFilter === 'today' ? 'اليوم' : 
-                     timeFilter === 'week' ? '7 أيام' : 
-                     timeFilter === 'month' ? '30 يوم' : ''}
-                  </span>
-                )}
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow p-3 sm:p-6">
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="text-xs font-medium text-gray-500">إجمالي المصروفات</h3>
-                <span className="text-base sm:text-xl bg-gray-100 text-gray-700 p-1 rounded-full">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </span>
-              </div>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">{formatCurrency(totalExpenses)}</p>
-              <p className="text-[9px] sm:text-xs text-gray-500 mt-0.5">
-                {timeFilteredExpenses.filter(e => e.expense_type === 'one_time').length} مصروف
-                {timeFilter !== 'all' && (
-                  <span className="mr-1.5 inline-block bg-blue-100 text-blue-800 text-[8px] px-1 py-0.5 rounded-full">
-                    {timeFilter === 'today' ? 'اليوم' : 
-                     timeFilter === 'week' ? '7 أيام' : 
-                     timeFilter === 'month' ? '30 يوم' : ''}
-                  </span>
-                )}
-              </p>
-            </div>
+          </div>
+        </div>
+
+        {/* Quick Stats - Simple 2 Cards */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+          <div className="bg-white rounded-xl shadow p-4 text-center">
+            <p className="text-2xl mb-2">💵</p>
+            <p className="text-lg sm:text-2xl font-bold text-gray-900">{formatCurrency(totalOneTime)}</p>
+            <p className="text-xs text-gray-500 mt-1">لمرة واحدة</p>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow p-4 text-center">
+            <p className="text-2xl mb-2">🔄</p>
+            <p className="text-lg sm:text-2xl font-bold text-gray-900">{activeRecurringCount}</p>
+            <p className="text-xs text-gray-500 mt-1">متكررة</p>
           </div>
         </div>
 
@@ -789,93 +756,48 @@ function Expenses() {
           </div>
         )}
 
-        {/* Collapsible Filter Options */}
-        <div className="bg-white rounded-xl shadow mb-4 overflow-hidden">
-          {/* Filter Header - Tap to expand */}
-          <div className="p-3 sm:p-4 flex justify-between items-center cursor-pointer" onClick={() => setFiltersExpanded(!filtersExpanded)}>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              <h3 className="font-medium text-sm sm:text-base">Filters</h3>
-              <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
-                {(filterType !== 'all' ? 1 : 0) + (filterCategory ? 1 : 0) + (timeFilter !== 'all' ? 1 : 0)}
-              </span>
+        {/* Simple Filters - Always visible, no collapse */}
+        <div className="bg-white rounded-xl shadow p-4 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">الفترة</label>
+              <select
+                value={timeFilter}
+                onChange={(e) => setTimeFilter(e.target.value as any)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-sm"
+              >
+                <option value="all">الكل</option>
+                <option value="today">اليوم</option>
+                <option value="week">7 أيام</option>
+                <option value="month">30 يوم</option>
+              </select>
+            </div>
+          
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">النوع</label>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value as any)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-sm"
+              >
+                <option value="all">الكل</option>
+                <option value="one_time">لمرة واحدة</option>
+                <option value="recurring">متكررة</option>
+              </select>
             </div>
             
-            <svg className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${filtersExpanded ? 'transform rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-
-          {/* Filter Options - Expandable */}
-          {filtersExpanded && (
-            <div className="border-t border-gray-200 p-3 sm:p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Time Period</label>
-                  <select
-                    value={timeFilter}
-                    onChange={(e) => setTimeFilter(e.target.value as any)}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                  >
-                    <option value="all">All Time</option>
-                    <option value="today">Today</option>
-                    <option value="week">Last 7 Days</option>
-                    <option value="month">Last 30 Days</option>
-                  </select>
-                </div>
-              
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Filter by Type</label>
-                  <select
-                    value={filterType}
-                    onChange={(e) => setFilterType(e.target.value as any)}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                  >
-                    <option value="all">All Expenses</option>
-                    <option value="one_time">One-Time Only</option>
-                    <option value="recurring">Recurring Only</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">Search Category</label>
-                  <input
-                    type="text"
-                    value={filterCategory}
-                    onChange={(e) => setFilterCategory(e.target.value)}
-                    placeholder="e.g., Rent, Utilities..."
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                    autoComplete="off"
-                  />
-                </div>
-
-                {/* Clear Filters */}
-                {(filterType !== 'all' || filterCategory || timeFilter !== 'all') && (
-                  <div className="sm:col-span-2">
-                    <button
-                      onClick={() => {
-                        setFilterType('all')
-                        setFilterCategory('')
-                        setTimeFilter('all')
-                      }}
-                      className="text-xs sm:text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      Clear filters
-                    </button>
-                  </div>
-                )}
-              </div>
+            <div className="flex items-end">
+              <button
+                onClick={() => {
+                  setFilterType('all')
+                  setFilterCategory('')
+                  setTimeFilter('all')
+                }}
+                className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium transition"
+              >
+                إعادة تعيين
+              </button>
             </div>
-          )}
-
-          {/* Results Count - Always Visible */}
-          <div className="border-t border-gray-200 p-2 sm:p-3 text-xs sm:text-sm text-gray-600 text-center bg-gray-50">
-            عرض <span className="font-semibold text-blue-600">{filteredExpenses.length}</span> من {expenses.length} مصروف
           </div>
         </div>
 

@@ -20,7 +20,7 @@ function OwnerDashboard() {
   useEffect(() => {
     checkAuthAndFetch()
     // Set document title
-    document.title = 'KESTI - لوحة التحكم'
+    document.title = 'KESTI - المنتجات'
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -157,15 +157,15 @@ function OwnerDashboard() {
       {/* Page Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-5 gap-1 sm:gap-2 md:gap-3 py-3">
+          <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3 py-3">
             <button
               onClick={() => router.push('/owner-dashboard')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
-              title="لوحة التحكم"
+              title="المنتجات"
             >
               <div className="flex flex-col items-center justify-center gap-1">
-                <span className="text-lg">🏦</span>
-                <span className="text-[10px] sm:text-xs">لوحة التحكم</span>
+                <span className="text-lg">📦</span>
+                <span className="text-[10px] sm:text-xs">المنتجات</span>
               </div>
             </button>
             <button
@@ -186,6 +186,16 @@ function OwnerDashboard() {
               <div className="flex flex-col items-center justify-center gap-1">
                 <span className="text-lg">💰</span>
                 <span className="text-[10px] sm:text-xs">المالية</span>
+              </div>
+            </button>
+            <button
+              onClick={() => router.push('/credits')}
+              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="الديون"
+            >
+              <div className="flex flex-col items-center justify-center gap-1">
+                <span className="text-lg">💳</span>
+                <span className="text-[10px] sm:text-xs">الديون</span>
               </div>
             </button>
             <button
@@ -215,7 +225,7 @@ function OwnerDashboard() {
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-3 sm:px-4 lg:px-8">
         {/* Page Title */}
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">لوحة التحكم</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">📦 المنتجات</h1>
           <p className="text-sm text-gray-600 mt-1">إنشاء وتعديل وتنظيم منتجاتك</p>
         </div>
 
