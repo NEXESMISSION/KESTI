@@ -47,14 +47,14 @@ function Stock() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        window.location.href = '/login'
+        router.push('/login')
         return
       }
 
       await fetchProducts(session.user.id)
     } catch (err) {
       console.error('Error:', err)
-      window.location.href = '/login'
+      router.push('/login')
     }
   }
 

@@ -45,8 +45,8 @@ export function withSuspensionCheck<P extends object>(
             console.log('User is suspended, redirecting to /suspended')
             setIsSuspended(true)
             // Only redirect if not already on the suspended page
-            if (typeof window !== 'undefined' && window.location.pathname !== '/suspended') {
-              window.location.href = '/suspended'
+            if (router.pathname !== '/suspended') {
+              router.push('/suspended')
             }
             return
           }
@@ -68,8 +68,8 @@ export function withSuspensionCheck<P extends object>(
             console.log('Subscription expired, redirecting to /subscription-expired')
             setIsSubscriptionExpired(true)
             // Only redirect if not already on the subscription-expired page
-            if (typeof window !== 'undefined' && window.location.pathname !== '/subscription-expired') {
-              window.location.href = '/subscription-expired'
+            if (router.pathname !== '/subscription-expired') {
+              router.push('/subscription-expired')
             }
             return
           }

@@ -52,20 +52,19 @@ export default function Login() {
           // Check if there's a redirectUrl in the query parameters
           const redirectUrl = router.query.redirectUrl as string
           
-          // Use hard navigation with window.location.href instead of router.push
-          // This ensures the browser fully reloads the page and middleware works correctly
+          // Use router.push for client-side navigation
           if (redirectUrl && !redirectUrl.includes('/login')) {
             // Redirect to the original URL the user was trying to access
-            window.location.href = redirectUrl
+            router.push(redirectUrl)
           } else {
             // Default redirect based on user role
             const userRole = typeof profile.role === 'object' ? 
               profile.role.toString() : String(profile.role)
             
             if (userRole === 'super_admin') {
-              window.location.href = '/super-admin'
+              router.push('/super-admin')
             } else if (userRole === 'business_user') {
-              window.location.href = '/pos'
+              router.push('/pos')
             }
           }
         }
@@ -149,17 +148,16 @@ export default function Login() {
       // Check if there's a redirectUrl in the query parameters
       const redirectUrl = router.query.redirectUrl as string
       
-      // Use hard navigation with window.location.href instead of router.push
-      // This ensures the browser fully reloads the page and middleware works correctly
+      // Use router.push for client-side navigation
       if (redirectUrl && !redirectUrl.includes('/login')) {
         // Redirect to the original URL the user was trying to access
-        window.location.href = redirectUrl
+        router.push(redirectUrl)
       } else {
         // Default navigation based on role
         if (userRole === 'super_admin') {
-          window.location.href = '/super-admin'
+          router.push('/super-admin')
         } else if (userRole === 'business_user') {
-          window.location.href = '/pos'
+          router.push('/pos')
         } else {
           setError(`Unknown role: ${userRole}`)
           setLoading(false)

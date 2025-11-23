@@ -28,7 +28,7 @@ function OwnerDashboard() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        window.location.href = '/login'
+        router.push('/login')
         return
       }
 
@@ -37,7 +37,7 @@ function OwnerDashboard() {
       await fetchCategories(session.user.id)
     } catch (err) {
       console.error('Error:', err)
-      window.location.href = '/login'
+      router.push('/login')
     }
   }
 

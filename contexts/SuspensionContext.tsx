@@ -103,20 +103,14 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
       // Check suspension status first (higher priority)
       if (suspended && router.pathname !== '/suspended') {
         console.log('User is suspended, redirecting to suspended page')
-        // Check if we're not already on the target page before redirecting
-        if (typeof window !== 'undefined' && window.location.pathname !== '/suspended') {
-          window.location.href = '/suspended'
-        }
+        router.push('/suspended')
         return
       }
       
       // Then check subscription status
       if (subscriptionExpired && router.pathname !== '/subscription-expired' && !suspended) {
         console.log('Subscription expired, redirecting to subscription-expired page')
-        // Check if we're not already on the target page before redirecting
-        if (typeof window !== 'undefined' && window.location.pathname !== '/subscription-expired') {
-          window.location.href = '/subscription-expired'
-        }
+        router.push('/subscription-expired')
         return
       }
     }

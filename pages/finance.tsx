@@ -97,7 +97,7 @@ function Finance() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        window.location.href = '/login'
+        router.push('/login')
         return
       }
 
@@ -107,7 +107,7 @@ function Finance() {
       ])
     } catch (err) {
       console.error('Error:', err)
-      window.location.href = '/login'
+      router.push('/login')
     }
   }
 

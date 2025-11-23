@@ -14,8 +14,8 @@ export default function Home() {
 
   const handleLoginClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    // Use hard navigation to force page reload
-    window.location.href = '/login'
+    // Use router for client-side navigation
+    router.push('/login')
   }
 
   const contactInfo = {

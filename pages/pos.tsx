@@ -100,7 +100,7 @@ function POS() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        window.location.href = '/login'
+        router.push('/login')
         return
       }
 
@@ -109,7 +109,7 @@ function POS() {
       await fetchCreditCustomers(session.user.id)
     } catch (err) {
       console.error('Error:', err)
-      window.location.href = '/login'
+      router.push('/login')
     }
   }
 
@@ -315,8 +315,8 @@ function POS() {
         // Close modal and clear PIN
         setShowPinModal(false)
         setPin('')
-        // Use window.location.href for full page reload to prevent redirect loop
-        window.location.href = '/finance'
+        // Navigate to finance page
+        router.push('/finance')
       } else {
         setError('Access denied. Not a business owner.')
       }
@@ -1020,7 +1020,7 @@ function POS() {
                     <button
                       onClick={() => {
                         setShowLowStockModal(false)
-                        window.location.href = '/history'
+                        router.push('/history')
                       }}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition flex items-center gap-2"
                     >

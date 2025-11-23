@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Head from 'next/head'
+import Link from 'next/link'
 
 export default function Landing() {
   const [showVideo, setShowVideo] = useState(false)
@@ -332,12 +333,12 @@ export default function Landing() {
                     </li>
                   </ul>
 
-                  <a
+                  <Link
                     href="/signup"
                     className="block bg-gradient-to-r from-orange-500 to-yellow-500 text-white text-2xl font-bold py-6 px-12 rounded-xl hover:shadow-2xl transition transform hover:scale-105"
                   >
                     ابدأ الآن مجاناً 🚀
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -405,12 +406,12 @@ export default function Landing() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
-              <a
+              <Link
                 href="/signup"
                 className="bg-white text-orange-600 px-12 py-6 rounded-xl text-2xl font-bold hover:bg-gray-100 transition shadow-2xl transform hover:scale-105 w-full sm:w-auto"
               >
                 ابدأ التجربة المجانية الآن 🎁
-              </a>
+              </Link>
             </div>
 
             <p className="text-xl opacity-90">
@@ -431,8 +432,8 @@ export default function Landing() {
             <div className="flex flex-wrap justify-center gap-8 mb-8">
               <a href="#" className="text-gray-400 hover:text-white transition">الرئيسية</a>
               <a href="#pricing" className="text-gray-400 hover:text-white transition">الأسعار</a>
-              <a href="/login" className="text-gray-400 hover:text-white transition">تسجيل الدخول</a>
-              <a href="/signup" className="text-gray-400 hover:text-white transition">إنشاء حساب</a>
+              <Link href="/login" className="text-gray-400 hover:text-white transition">تسجيل الدخول</Link>
+              <Link href="/signup" className="text-gray-400 hover:text-white transition">إنشاء حساب</Link>
               <a href="#" className="text-gray-400 hover:text-white transition">الدعم الفني</a>
             </div>
 

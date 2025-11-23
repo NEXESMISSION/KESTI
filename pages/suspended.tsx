@@ -18,7 +18,7 @@ export default function Suspended() {
         // If not logged in, redirect to login
         if (!session) {
           console.log('No session - redirecting to login')
-          window.location.href = '/login'
+          router.push('/login')
           return
         }
 
@@ -45,9 +45,9 @@ export default function Suspended() {
             data.role.toString() : String(data.role)
           
           if (userRole === 'super_admin') {
-            window.location.href = '/super-admin'
+            router.push('/super-admin')
           } else {
-            window.location.href = '/pos'
+            router.push('/pos')
           }
           return
         }
