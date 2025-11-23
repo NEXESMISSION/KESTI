@@ -388,8 +388,8 @@ export default function Home() {
               <div className="bg-gray-200 rounded-lg h-64 md:h-96 flex items-center justify-center">
                 <div className="text-center">
                   <div className="text-5xl md:text-6xl mb-3">🎥</div>
-                  <p className="text-lg text-gray-700">Video Placeholder</p>
-                  <p className="text-sm text-gray-500">(ضع رابط الفيديو هنا)</p>
+                  <p className="text-lg md:text-xl font-bold text-gray-700">جاري العمل عليه</p>
+                  <p className="text-sm text-gray-500">قريباً سيكون الفيديو التعريفي متاحاً</p>
                 </div>
               </div>
             </div>
