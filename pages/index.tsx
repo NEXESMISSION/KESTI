@@ -3,12 +3,19 @@ import Head from 'next/head'
 import Image from 'next/image'
 import ImageSlider from '@/components/ImageSlider'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 
 export default function Home() {
+  const router = useRouter()
   const [showVideo, setShowVideo] = useState(false)
   const [showContact, setShowContact] = useState(false)
   const [isYearly, setIsYearly] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const handleLoginClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    router.push('/login', undefined, { scroll: true })
+  }
 
   const contactInfo = {
     phone: '+216 53518337',
@@ -163,12 +170,13 @@ export default function Home() {
                 >
                   الأسعار
                 </Link>
-                <Link
+                <a
                   href="/login"
-                  className="text-gray-700 hover:text-primary transition px-3 py-1.5 font-medium text-sm border border-gray-300 rounded-lg"
+                  onClick={handleLoginClick}
+                  className="text-gray-700 hover:text-primary transition px-3 py-1.5 font-medium text-sm border border-gray-300 rounded-lg cursor-pointer"
                 >
                   دخول
-                </Link>
+                </a>
                 <button
                   onClick={() => setShowContact(true)}
                   className="bg-gradient-to-r from-secondary to-green-400 text-gray-900 px-4 lg:px-5 py-1.5 rounded-lg font-bold text-sm hover:scale-105 transition-transform"
@@ -209,13 +217,13 @@ export default function Home() {
                 >
                   الأسعار
                 </Link>
-                <Link
+                <a
                   href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block text-gray-700 hover:text-primary hover:bg-gray-50 transition px-3 py-2 rounded-lg text-sm font-medium"
+                  onClick={(e) => { handleLoginClick(e); setMobileMenuOpen(false); }}
+                  className="block text-gray-700 hover:text-primary hover:bg-gray-50 transition px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
                 >
                   تسجيل الدخول
-                </Link>
+                </a>
                 <button
                   onClick={() => { setShowContact(true); setMobileMenuOpen(false); }}
                   className="w-full bg-gradient-to-r from-secondary to-green-400 text-gray-900 px-4 py-2.5 rounded-lg font-bold text-sm"
@@ -744,12 +752,13 @@ export default function Home() {
                       >
                         تواصل معنا للبدء 📞
                       </button>
-                      <Link
+                      <a
                         href="/login"
-                        className="block mt-4 text-center text-gray-600 hover:text-primary text-sm font-medium transition"
+                        onClick={handleLoginClick}
+                        className="block mt-4 text-center text-gray-600 hover:text-primary text-sm font-medium transition cursor-pointer"
                       >
                         لديك حساب بالفعل؟ سجل الدخول
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -874,12 +883,13 @@ export default function Home() {
                 <span>تواصل معنا للبدء</span>
                 <span className="text-2xl">📞</span>
               </button>
-              <Link
+              <a
                 href="/login"
-                className="bg-white/80 text-gray-700 px-8 py-5 rounded-xl text-base md:text-lg font-bold hover:bg-white transition shadow-lg transform hover:scale-105 w-full sm:w-auto border-2 border-white"
+                onClick={handleLoginClick}
+                className="bg-white/80 text-gray-700 px-8 py-5 rounded-xl text-base md:text-lg font-bold hover:bg-white transition shadow-lg transform hover:scale-105 w-full sm:w-auto border-2 border-white cursor-pointer"
               >
                 تسجيل دخول للعملاء
-              </Link>
+              </a>
             </div>
 
             <p className="text-sm md:text-base opacity-90">
@@ -907,7 +917,7 @@ export default function Home() {
                 <div className="flex flex-col gap-2 text-xs md:text-sm">
                   <a href="#features" className="text-gray-400 hover:text-secondary transition py-1">المميزات</a>
                   <a href="#pricing" className="text-gray-400 hover:text-secondary transition py-1">الأسعار</a>
-                  <Link href="/login" className="text-gray-400 hover:text-secondary transition py-1">تسجيل الدخول</Link>
+                  <a href="/login" onClick={handleLoginClick} className="text-gray-400 hover:text-secondary transition py-1 cursor-pointer">تسجيل الدخول</a>
                   <button onClick={() => setShowContact(true)} className="text-gray-400 hover:text-secondary transition py-1">تواصل معنا</button>
                 </div>
               </div>
