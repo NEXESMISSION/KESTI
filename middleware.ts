@@ -63,8 +63,6 @@ export async function middleware(request: NextRequest) {
       const { data: { user } } = await supabase.auth.getUser(accessToken)
       
       if (user) {
-        console.log('Middleware checking status for user:', user.email)
-        
         const { data } = await supabase
           .from('profiles')
           .select('is_suspended, subscription_ends_at, role')
@@ -73,14 +71,15 @@ export async function middleware(request: NextRequest) {
 
         // Super admins bypass all checks
         if (data?.role === 'super_admin') {
-          console.log('Super admin detected - bypassing all checks')
           return NextResponse.next()
         }
 
         // Check suspension first (higher priority)
         if (data?.is_suspended === true && pathname !== '/suspended') {
-          console.log('User is suspended - redirecting to /suspended')
-          return NextResponse.redirect(new URL('/suspended', request.url))
+          const response = NextResponse.redirect(new URL('/suspended', request.url))
+          // Add header to prevent caching of redirect
+          response.headers.set('Cache-Control', 'no-store, must-revalidate')
+          return response
         }
         
         // Then check subscription status (only for business users)
@@ -89,16 +88,16 @@ export async function middleware(request: NextRequest) {
           const now = new Date()
           const expiryDate = new Date(data.subscription_ends_at)
           subscriptionExpired = expiryDate < now
-          console.log('Subscription expires:', expiryDate, 'Is expired:', subscriptionExpired)
         } else {
           // If subscription_ends_at is null, treat as NOT expired (valid)
           subscriptionExpired = false
-          console.log('Subscription date is null, treating as valid (not expired)')
         }
         
         if (subscriptionExpired && pathname !== '/subscription-expired' && pathname !== '/suspended') {
-          console.log('Subscription expired - redirecting to /subscription-expired')
-          return NextResponse.redirect(new URL('/subscription-expired', request.url))
+          const response = NextResponse.redirect(new URL('/subscription-expired', request.url))
+          // Add header to prevent caching of redirect
+          response.headers.set('Cache-Control', 'no-store, must-revalidate')
+          return response
         }
       }
     }

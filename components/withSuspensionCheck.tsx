@@ -18,10 +18,17 @@ export function withSuspensionCheck<P extends object>(
       if (!router.isReady) return
 
       let isNavigating = false
+      let lastCheckTime = 0
+      const CHECK_DEBOUNCE = 1000 // 1 second debounce
 
       const checkUserStatus = async () => {
         // Prevent duplicate navigation attempts
         if (isNavigating) return
+        
+        // Debounce checks to prevent rapid fire
+        const now = Date.now()
+        if (now - lastCheckTime < CHECK_DEBOUNCE) return
+        lastCheckTime = now
 
         try {
           const { data: { session } } = await supabase.auth.getSession()
@@ -50,7 +57,7 @@ export function withSuspensionCheck<P extends object>(
             // Only redirect if not already on the suspended page
             if (router.pathname !== '/suspended') {
               isNavigating = true
-              await router.replace('/suspended')
+              await router.replace('/suspended', undefined, { shallow: false })
             }
             return
           }
@@ -71,7 +78,7 @@ export function withSuspensionCheck<P extends object>(
             // Only redirect if not already on the subscription-expired page
             if (router.pathname !== '/subscription-expired') {
               isNavigating = true
-              await router.replace('/subscription-expired')
+              await router.replace('/subscription-expired', undefined, { shallow: false })
             }
             return
           }

@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Disable aggressive route prefetching in production
+  experimental: {
+    optimisticClientCache: false,
+  },
   images: {
     remotePatterns: [
       {
@@ -26,6 +30,20 @@ const nextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  // Add headers to prevent caching of redirects
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
+          },
+        ],
+      },
+    ]
   },
 }
 

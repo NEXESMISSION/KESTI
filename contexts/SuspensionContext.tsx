@@ -96,25 +96,33 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
     }
 
     let isNavigating = false
+    let lastCheckTime = 0
+    const CHECK_DEBOUNCE = 1000 // 1 second debounce
 
     // Check suspension and subscription status
     const handleStatusCheck = async () => {
       // Prevent duplicate navigation attempts
       if (isNavigating) return
+      
+      // Debounce checks to prevent rapid fire
+      const now = Date.now()
+      if (now - lastCheckTime < CHECK_DEBOUNCE) return
+      lastCheckTime = now
 
       const { suspended, subscriptionExpired } = await checkSuspension()
       
       // Check suspension status first (higher priority)
       if (suspended && router.pathname !== '/suspended') {
         isNavigating = true
-        await router.replace('/suspended')
+        // Use shallow navigation for faster client-side routing
+        await router.replace('/suspended', undefined, { shallow: false })
         return
       }
       
       // Then check subscription status
       if (subscriptionExpired && router.pathname !== '/subscription-expired' && !suspended) {
         isNavigating = true
-        await router.replace('/subscription-expired')
+        await router.replace('/subscription-expired', undefined, { shallow: false })
         return
       }
     }
