@@ -125,6 +125,10 @@ export default function Signup() {
           <p className="text-gray-600">
             احصل على 15 يوم تجريبي مجاناً
           </p>
+          <div className="mt-2 inline-flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-full animate-pulse">
+            <span className="text-xl">⚡</span>
+            <span className="font-black text-sm">عرض حصري للأول 50 مستخدم فقط!</span>
+          </div>
         </div>
 
         {/* Success Popup Modal - Prominent Center Screen */}
@@ -321,9 +325,15 @@ export default function Signup() {
         </div>
 
         {/* Trial Info */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800 text-center">
+        <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-300 relative overflow-hidden">
+          <div className="absolute top-0 right-0 bg-red-500 text-white text-xs px-3 py-1 font-black">
+            للأول 50 فقط
+          </div>
+          <p className="text-sm text-green-800 text-center font-bold">
             🎉 احصل على 15 يوم تجريبي مجاناً عند التسجيل
+          </p>
+          <p className="text-xs text-green-700 text-center mt-1 font-semibold">
+            ⚡ عرض حصري محدود • سارع بالتسجيل!
           </p>
         </div>
       </Card>

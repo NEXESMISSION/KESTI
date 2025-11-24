@@ -183,9 +183,10 @@ export default function Home() {
                 </Link>
                 <Link
                   href="/signup"
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 lg:px-6 py-2 rounded-lg font-black text-sm hover:scale-105 transition-all shadow-lg hover:shadow-green-500/50 border-2 border-green-400 animate-pulse hover:animate-none"
+                  className="relative bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 lg:px-6 py-2 rounded-lg font-black text-sm hover:scale-105 transition-all shadow-lg hover:shadow-green-500/50 border-2 border-green-400 animate-pulse hover:animate-none"
                 >
                   🚀 تجربة مجانية
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">50 فقط!</span>
                 </Link>
               </div>
               
@@ -224,9 +225,10 @@ export default function Home() {
                 <Link
                   href="/signup"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-3 rounded-lg font-black text-base text-center border-2 border-green-400 shadow-lg"
+                  className="relative block w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-3 rounded-lg font-black text-base text-center border-2 border-green-400 shadow-lg"
                 >
                   🚀 تجربة مجانية
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">50 فقط!</span>
                 </Link>
                 <a
                   href="/login"
@@ -319,6 +321,7 @@ export default function Home() {
                       <span className="relative z-10 flex items-center gap-3">
                         <span className="text-4xl">🚀</span>
                         <span>ابدأ الآن مجاناً - 15 يوم</span>
+                        <span className="bg-red-500 text-white text-sm px-3 py-1 rounded-full animate-pulse">للأول 50 فقط</span>
                       </span>
                       <div className="absolute -right-12 top-0 w-24 h-full bg-white/20 transform rotate-12 group-hover:right-full transition-all duration-700"></div>
                     </Link>
@@ -360,6 +363,7 @@ export default function Home() {
                       <p className="text-sm md:text-base font-black text-green-800 flex items-center gap-2">
                         <span className="animate-spin">✨</span>
                         <span>15 يوم مجاني</span>
+                        <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full animate-pulse">50 فقط</span>
                       </p>
                     </div>
                     <div className="bg-gradient-to-r from-blue-100 to-sky-100 px-4 py-2.5 rounded-full border-2 border-blue-300 shadow-md">
@@ -550,6 +554,9 @@ export default function Home() {
               <div className="mt-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-3 text-center">
                 <p className="text-sm md:text-base font-bold text-white">
                   🎉 ابدأ تجربتك المجانية 15 يوم
+                </p>
+                <p className="text-xs font-black text-yellow-300 mt-1">
+                  ⚡ عرض حصري للأول 50 مستخدم فقط!
                 </p>
                 <p className="text-xs text-white/90 mt-1">
                   تواصل الآن • تفعيل فوري
@@ -862,7 +869,10 @@ export default function Home() {
                         )}
                       </div>
 
-                      <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border-2 border-green-200">
+                      <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border-2 border-green-200 relative overflow-hidden">
+                        <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-black animate-pulse">
+                          للأول 50 فقط!
+                        </div>
                         <p className="text-xl font-black text-green-700 mb-2 text-center md:text-right">🎁 جرب مجاناً 15 يوم</p>
                         <p className="text-base text-gray-700 text-center md:text-right">لا حاجة لبطاقة بنكية</p>
                       </div>
@@ -1031,6 +1041,7 @@ export default function Home() {
                   <div className="flex flex-col items-center">
                     <div className="text-5xl font-black mb-2">15 يوم</div>
                     <p className="text-base opacity-90">تجربة مجانية كاملة</p>
+                    <p className="text-sm font-black text-yellow-300 mt-2">⚡ للأول 50 فقط</p>
                   </div>
                   <div className="flex flex-col items-center">
                     <div className="text-5xl font-black mb-2">⚡</div>
