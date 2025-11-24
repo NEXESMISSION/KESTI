@@ -5,6 +5,35 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { registerCurrentDevice } from '@/utils/deviceManager'
 
+// Function to translate error messages to Arabic
+function translateErrorToArabic(error: string): string {
+  const errorMap: { [key: string]: string } = {
+    'Invalid login credentials': 'بيانات تسجيل الدخول غير صحيحة',
+    'Email not confirmed': 'البريد الإلكتروني غير مؤكد',
+    'Invalid email': 'البريد الإلكتروني غير صحيح',
+    'Invalid password': 'كلمة المرور غير صحيحة',
+    'User not found': 'المستخدم غير موجود',
+    'Invalid credentials': 'بيانات تسجيل الدخول غير صحيحة',
+    'Email or password is incorrect': 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+    'Too many requests': 'محاولات كثيرة جداً، الرجاء المحاولة لاحقاً',
+    'Network error': 'خطأ في الاتصال بالشبكة',
+    'No session returned from authentication': 'فشل إنشاء الجلسة',
+    'No profile found for user': 'لم يتم العثور على ملف تعريف المستخدم',
+    'Failed to login': 'فشل تسجيل الدخول',
+    'Please check your credentials': 'الرجاء التحقق من بياناتك',
+  }
+
+  // Check if error contains known patterns
+  for (const [englishError, arabicError] of Object.entries(errorMap)) {
+    if (error.toLowerCase().includes(englishError.toLowerCase())) {
+      return arabicError
+    }
+  }
+
+  // Default Arabic error message for unknown errors
+  return 'حدث خطأ في تسجيل الدخول. الرجاء التحقق من بياناتك والمحاولة مرة أخرى.'
+}
+
 export default function Login() {
   // State variables
   const [email, setEmail] = useState('')
@@ -87,13 +116,13 @@ export default function Login() {
       })
       
       if (signInError) {
-        setError(signInError.message)
+        setError(translateErrorToArabic(signInError.message))
         setLoading(false)
         return
       }
       
       if (!data.session) {
-        setError('No session returned from authentication')
+        setError(translateErrorToArabic('No session returned from authentication'))
         setLoading(false)
         return
       }
@@ -106,13 +135,13 @@ export default function Login() {
         .single()
       
       if (profileError) {
-        setError(`Profile error: ${profileError.message}`)
+        setError(`خطأ في الملف الشخصي: ${translateErrorToArabic(profileError.message)}`)
         setLoading(false)
         return
       }
       
       if (!profile) {
-        setError('No profile found for user')
+        setError(translateErrorToArabic('No profile found for user'))
         setLoading(false)
         return
       }
@@ -149,13 +178,13 @@ export default function Login() {
         } else if (userRole === 'business_user') {
           router.push('/pos')
         } else {
-          setError(`Unknown role: ${userRole}`)
+          setError(`دور غير معروف: ${userRole}`)
           setLoading(false)
         }
       }
     } catch (err: any) {
       console.error('Login error:', err)
-      setError(err.message || 'Failed to login. Please check your credentials.')
+      setError(translateErrorToArabic(err.message || 'Failed to login. Please check your credentials.'))
       setLoading(false)
     } finally {
       setLoading(false)

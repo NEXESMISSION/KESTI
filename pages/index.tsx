@@ -146,7 +146,7 @@ export default function Home() {
       <SEO 
         title="Kesti Pro - نظام نقاط البيع الأول في تونس | POS System Tunisia"
         description="نظام Kesti Pro الاحترافي لإدارة المبيعات والمخزون في تونس. POS System متكامل للمحلات التجارية، المطاعم، والصيدليات. نظام كاشير ذكي، تقارير مفصلة، إدارة المخزون التلقائية. جرّب مجاناً 15 يوم!"
-        keywords="نظام نقاط البيع تونس, POS System Tunisia, Kesti Pro, KestiPro, Kesti TN, نظام كاشير تونس, برنامج محاسبة تونس, إدارة المبيعات تونس, نظام المخزون تونس, Point of Sale Tunisia, Caisse Enregistreuse Tunisie, logiciel de gestion Tunisie, système de caisse Tunisie, gestion stock Tunisie, kesti, kestipro.com, pos tunisia, cashier system tunisia, retail management tunisia"
+        keywords="kesti, KESTI, KestiPro, Kesti Pro, kestipro, kestipro.com, kesti tunisia, kesti tn, kesti تونس, نظام نقاط البيع تونس, POS System Tunisia, Kesti TN, نظام كاشير تونس, برنامج محاسبة تونس, إدارة المبيعات تونس, نظام المخزون تونس, Point of Sale Tunisia, Caisse Enregistreuse Tunisie, logiciel de gestion Tunisie, système de caisse Tunisie, gestion stock Tunisie, pos tunisia, cashier system tunisia, retail management tunisia, kesti pos, kesti system, كيستي, كيستي برو"
         canonicalUrl="/"
         ogType="website"
       />

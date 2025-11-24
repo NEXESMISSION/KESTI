@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- Homepage -->
+  <url>
+    <loc>https://kestipro.com/</loc>
+    <lastmod>2024-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://kestipro.com/logo/KESTi.png</image:loc>
+      <image:title>Kesti Pro Logo - نظام نقاط البيع</image:title>
+      <image:caption>Kesti Pro - نظام نقاط البيع الأول في تونس</image:caption>
+    </image:image>
+  </url>
+  
+  <!-- Signup Page -->
+  <url>
+    <loc>https://kestipro.com/signup</loc>
+    <lastmod>2024-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://kestipro.com/logo/KESTi.png</image:loc>
+      <image:title>Kesti Pro - تسجيل حساب جديد</image:title>
+    </image:image>
+  </url>
+  
+  <!-- Login Page -->
+  <url>
+    <loc>https://kestipro.com/login</loc>
+    <lastmod>2024-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://kestipro.com/logo/KESTi.png</image:loc>
+      <image:title>Kesti Pro - تسجيل الدخول</image:title>
+    </image:image>
+  </url>
+
+</urlset>
