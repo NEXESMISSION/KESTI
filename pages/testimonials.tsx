@@ -1,10 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/router'
 
 export default function Testimonials() {
   const [showContact, setShowContact] = useState(false)
+  const router = useRouter()
+
+  // Redirect to home page
+  useEffect(() => {
+    router.push('/')
+  }, [router])
 
   const contactInfo = {
     phone: '+216 53518337',
@@ -169,31 +176,58 @@ export default function Testimonials() {
       </Head>
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100" dir="rtl">
-        {/* Header */}
-        <header className="bg-gradient-to-r from-primary to-secondary text-white py-6 shadow-xl sticky top-0 z-50">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between">
-              <Link href="/" className="flex items-center gap-3">
-                <Image src="/logo/KESTi.png" alt="Kesti Pro" width={50} height={50} className="rounded-lg" />
-                <h1 className="text-2xl md:text-3xl font-black">Kesti Pro</h1>
+        {/* Navigation Header - From Landing Page */}
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md border-b border-gray-100">
+          <div className="container mx-auto px-3 md:px-4">
+            <div className="flex items-center justify-between h-14 md:h-16">
+              {/* Logo */}
+              <Link href="/" className="flex items-center">
+                <img src="/logo/KESTi.png" alt="Kesti Pro" className="h-7 md:h-9 w-auto" />
               </Link>
-              <div className="flex gap-4">
-                <Link href="/" className="bg-white/20 hover:bg-white/30 px-6 py-2 rounded-lg font-bold transition">
+              
+              {/* Desktop Menu */}
+              <div className="hidden md:flex items-center gap-2 lg:gap-3">
+                <Link
+                  href="/"
+                  className="text-gray-700 hover:text-primary transition px-2 lg:px-3 py-2 font-medium text-sm"
+                >
                   الرئيسية
                 </Link>
-                <button
-                  onClick={() => setShowContact(true)}
-                  className="bg-white text-primary px-6 py-2 rounded-lg font-bold hover:shadow-lg transition"
+                <Link
+                  href="/login"
+                  className="bg-gradient-to-r from-blue-600 to-primary text-white px-4 lg:px-6 py-2 font-bold text-sm border-2 border-blue-400 rounded-lg hover:scale-105 hover:shadow-lg transition-all"
                 >
-                  تواصل معنا
-                </button>
+                  🔐 دخول
+                </Link>
+                <Link
+                  href="/signup"
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 lg:px-6 py-2 rounded-lg font-black text-sm hover:scale-105 transition-all shadow-lg hover:shadow-green-500/50 border-2 border-green-400 animate-pulse hover:animate-none"
+                >
+                  🚀 تجربة مجانية
+                </Link>
+              </div>
+              
+              {/* Mobile Menu */}
+              <div className="flex md:hidden items-center gap-2">
+                <Link
+                  href="/login"
+                  className="bg-gradient-to-r from-blue-600 to-primary text-white px-3 py-1.5 font-bold text-xs border-2 border-blue-400 rounded-lg"
+                >
+                  🔐 دخول
+                </Link>
+                <Link
+                  href="/signup"
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1.5 rounded-lg font-black text-xs border-2 border-green-400"
+                >
+                  🚀 تجربة
+                </Link>
               </div>
             </div>
           </div>
-        </header>
+        </nav>
 
         {/* Hero Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-br from-primary/5 to-secondary/5">
+        <section className="pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-primary/5 to-secondary/5">
           <div className="container mx-auto px-4 text-center">
             <div className="inline-block bg-gradient-to-r from-primary to-secondary px-8 py-3 rounded-full mb-8">
               <p className="text-lg font-black text-white">⭐ قصص النجاح</p>
@@ -247,28 +281,73 @@ export default function Testimonials() {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-16 bg-gradient-to-r from-primary to-secondary text-white">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-black mb-6">
-              كن واحداً من عملائنا
+        {/* Enhanced CTA Section */}
+        <section className="py-16 md:py-20 bg-gradient-to-r from-primary to-secondary text-white relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_50%),radial-gradient(circle_at_70%_50%,rgba(255,255,255,0.1),transparent_50%)]"></div>
+          
+          <div className="container mx-auto px-4 text-center relative z-10">
+            <div className="inline-block bg-white/20 px-6 py-2 rounded-full mb-6">
+              <p className="text-sm font-bold">✨ انضم لأكثر من 500 عميل راضي</p>
+            </div>
+            
+            <h2 className="text-3xl md:text-5xl font-black mb-4">
+              جاهز لتحويل تجارتك؟
             </h2>
-            <p className="text-xl mb-8 max-w-2xl mx-auto">
-              جرب Kesti Pro مجاناً لمدة 15 يوم وشاهد الفرق بنفسك
+            <p className="text-lg md:text-2xl mb-10 max-w-3xl mx-auto opacity-90">
+              ابدأ تجربتك المجانية لمدة 15 يوم • لا حاجة لبطاقة ائتمان • تفعيل فوري
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+              <Link
+                href="/signup"
+                className="bg-white text-primary px-10 py-5 rounded-xl text-lg font-black hover:bg-gray-100 transition shadow-2xl transform hover:scale-105 hover:shadow-white/50"
+              >
+                🚀 ابدأ تجربتك المجانية الآن
+              </Link>
+              <Link
+                href="/login"
+                className="bg-blue-600 border-2 border-white text-white px-10 py-5 rounded-xl text-lg font-bold hover:bg-blue-700 transition shadow-xl"
+              >
+                🔐 تسجيل الدخول
+              </Link>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button
                 onClick={() => setShowContact(true)}
-                className="bg-white text-primary px-10 py-5 rounded-xl text-lg font-black hover:bg-gray-100 transition shadow-2xl transform hover:scale-105"
+                className="bg-white/10 backdrop-blur-sm border-2 border-white/30 text-white px-8 py-3 rounded-xl text-base font-bold hover:bg-white/20 transition"
               >
-                ابدأ الآن 🚀
+                📞 تواصل معنا للاستفسار
               </button>
               <Link
                 href="/"
-                className="bg-white/20 border-2 border-white text-white px-10 py-5 rounded-xl text-lg font-bold hover:bg-white/30 transition"
+                className="bg-transparent border-2 border-white/50 text-white px-8 py-3 rounded-xl text-base font-bold hover:bg-white/10 transition"
               >
-                العودة للرئيسية
+                ← العودة للرئيسية
               </Link>
+            </div>
+            
+            {/* Trust badges */}
+            <div className="mt-12 pt-8 border-t border-white/20">
+              <div className="flex flex-wrap justify-center gap-6 md:gap-10 items-center">
+                <div className="text-center">
+                  <p className="text-3xl font-black">500+</p>
+                  <p className="text-sm opacity-80">عميل راضي</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-black">⭐ 5.0</p>
+                  <p className="text-sm opacity-80">تقييم العملاء</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-black">15 يوم</p>
+                  <p className="text-sm opacity-80">تجربة مجانية</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-3xl font-black">24/7</p>
+                  <p className="text-sm opacity-80">دعم فني</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -364,55 +443,74 @@ export default function Testimonials() {
           </div>
         )}
 
-        {/* Footer */}
-        <footer className="bg-gray-900 text-white py-12">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-              {/* Brand */}
-              <div className="text-center md:text-right">
-                <div className="flex items-center justify-center md:justify-start gap-3 mb-3">
-                  <Image src="/logo/KESTi.png" alt="Kesti Pro" width={40} height={40} className="rounded-lg" />
-                  <h3 className="text-2xl font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Kesti Pro</h3>
-                </div>
-                <p className="text-gray-400 text-sm mb-3">نظام احترافي لإدارة المبيعات والمخزون</p>
-              </div>
-
-              {/* Quick Links */}
-              <div className="text-center">
-                <h4 className="text-lg font-bold mb-4 text-white">روابط سريعة</h4>
-                <div className="flex flex-col gap-2 text-sm">
-                  <Link href="/" className="text-gray-400 hover:text-secondary transition">الرئيسية</Link>
-                  <Link href="/testimonials" className="text-gray-400 hover:text-secondary transition">آراء العملاء</Link>
-                  <Link href="/login" className="text-gray-400 hover:text-secondary transition">تسجيل الدخول</Link>
-                </div>
-              </div>
-
-              {/* Contact Info */}
-              <div className="text-center md:text-left">
-                <h4 className="text-lg font-bold mb-4 text-white">تواصل معنا</h4>
-                <div className="space-y-3 text-sm">
-                  <a href={`tel:${contactInfo.phone}`} className="flex items-center justify-center md:justify-start gap-2 text-gray-400 hover:text-secondary transition">
-                    <span>📞</span>
-                    <span dir="ltr">{contactInfo.phone}</span>
-                  </a>
-                  <a href={`mailto:${contactInfo.email}`} className="flex items-center justify-center md:justify-start gap-2 text-gray-400 hover:text-secondary transition break-all">
-                    <span>📧</span>
-                    <span>{contactInfo.email}</span>
-                  </a>
-                  <div className="flex gap-3 justify-center md:justify-start pt-3">
-                    <a href={contactInfo.facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center transition">
-                      <span>👍</span>
-                    </a>
-                    <a href={contactInfo.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg flex items-center justify-center transition">
-                      <span>📷</span>
-                    </a>
+        {/* Footer - Modern & Simple */}
+        <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-12 md:py-16 relative overflow-hidden">
+          {/* Subtle background decoration */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
+          
+          <div className="container mx-auto px-4 relative z-10">
+            {/* Main Content */}
+            <div className="max-w-5xl mx-auto">
+              {/* Top Section - Logo & Description */}
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center gap-3 mb-4">
+                  <Image src="/logo/KESTi.png" alt="Kesti Pro" width={60} height={60} className="rounded-xl" />
+                  <div className="text-right">
+                    <h3 className="text-2xl font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Kesti Pro</h3>
+                    <p className="text-sm text-gray-400">نظام احترافي لإدارة المبيعات</p>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="border-t border-gray-800 pt-6 text-center">
-              <p className="text-gray-500 text-sm">© 2024 Kesti Pro. جميع الحقوق محفوظة.</p>
+              {/* Quick Actions - Centered */}
+              <div className="flex flex-wrap justify-center gap-4 mb-10">
+                <Link href="/" className="px-6 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-semibold transition-all border border-white/10 hover:border-primary/50">
+                  الرئيسية
+                </Link>
+                <Link href="/login" className="px-6 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-semibold transition-all border border-white/10 hover:border-primary/50">
+                  تسجيل الدخول
+                </Link>
+                <Link href="/signup" className="px-6 py-2.5 bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 rounded-xl text-sm font-black transition-all shadow-lg">
+                  ابدأ الآن
+                </Link>
+              </div>
+
+              {/* Contact Info - Compact */}
+              <div className="flex flex-wrap justify-center gap-6 mb-10 text-sm">
+                <a href={`tel:${contactInfo.phone}`} className="flex items-center gap-2 text-gray-400 hover:text-primary transition">
+                  <span>📞</span>
+                  <span dir="ltr">{contactInfo.phone}</span>
+                </a>
+                <a href={`mailto:${contactInfo.email}`} className="flex items-center gap-2 text-gray-400 hover:text-primary transition">
+                  <span>📧</span>
+                  <span>{contactInfo.email}</span>
+                </a>
+                <a href={`https://wa.me/${contactInfo.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-primary transition">
+                  <span>💬</span>
+                  <span>واتساب</span>
+                </a>
+              </div>
+
+              {/* Social Media - Modern Icons */}
+              <div className="flex justify-center gap-4 mb-10">
+                <a href={contactInfo.facebook} target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-white/5 hover:bg-blue-600 rounded-xl flex items-center justify-center transition-all text-xl hover:scale-110 border border-white/10 hover:border-blue-500">
+                  👍
+                </a>
+                <a href={contactInfo.instagram} target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-white/5 hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-600 rounded-xl flex items-center justify-center transition-all text-xl hover:scale-110 border border-white/10 hover:border-pink-500">
+                  📷
+                </a>
+                <button onClick={() => setShowContact(true)} className="w-12 h-12 bg-white/5 hover:bg-green-600 rounded-xl flex items-center justify-center transition-all text-xl hover:scale-110 border border-white/10 hover:border-green-500">
+                  ✉️
+                </button>
+              </div>
+
+              {/* Bottom - Copyright */}
+              <div className="border-t border-white/10 pt-6 text-center">
+                <p className="text-gray-500 text-sm">
+                  © 2024 <span className="text-primary font-bold">Kesti Pro</span> • جميع الحقوق محفوظة
+                </p>
+              </div>
             </div>
           </div>
         </footer>
