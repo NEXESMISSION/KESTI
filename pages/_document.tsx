@@ -2,7 +2,7 @@ import { Html, Head, Main, NextScript } from 'next/document'
 
 export default function Document() {
   return (
-    <Html lang="ar" dir="rtl">
+    <Html lang="en" dir="ltr">
       <Head>
         {/* Favicon and Icons */}
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />

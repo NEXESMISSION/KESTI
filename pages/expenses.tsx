@@ -10,10 +10,6 @@ interface Expense {
   description: string
   amount: number
   category: string | null
-  expense_type: 'one_time' | 'recurring'
-  recurring_frequency: 'daily' | 'weekly' | 'monthly' | 'yearly' | null
-  next_occurrence_date: string | null
-  is_active: boolean
   created_at: string
 }
 
@@ -28,18 +24,8 @@ function Expenses() {
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
   const [category, setCategory] = useState('')
-  const [expenseType, setExpenseType] = useState<'one_time' | 'recurring'>('one_time')
-  const [recurringFrequency, setRecurringFrequency] = useState<'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom'>('monthly')
-  const [nextOccurrenceDate, setNextOccurrenceDate] = useState('')
-  const [useCustomDate, setUseCustomDate] = useState(false)
-  const [customIntervalAmount, setCustomIntervalAmount] = useState('1')
-  const [customIntervalUnit, setCustomIntervalUnit] = useState<'minutes' | 'hours' | 'days' | 'weeks' | 'months' | 'years'>('days')
-  
-  // Ref to prevent duplicate processing in React Strict Mode
-  const processingRef = useRef(false)
-  
   // Filter states
-  const [filterType, setFilterType] = useState<'all' | 'one_time' | 'recurring'>('all')
+  const [filterType, setFilterType] = useState<'all'>('all')
   const [filterCategory, setFilterCategory] = useState('')
   const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'week' | 'month'>('all')
   const [filtersExpanded, setFiltersExpanded] = useState(false)
@@ -68,18 +54,6 @@ function Expenses() {
       }
     }
     
-    // Process on load with duplicate checking
-    // Wait a bit to ensure expenses are loaded
-    setTimeout(() => {
-      processRecurringExpenses()
-    }, 1000)
-    
-    // Set up interval to check every 10 seconds for minute-level precision
-    const interval = setInterval(() => {
-      processRecurringExpenses()
-    }, 10000) // Check every 10 seconds
-    
-    return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -114,161 +88,6 @@ function Expenses() {
       setError('Failed to load expenses')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const processRecurringExpenses = async () => {
-    // Prevent duplicate execution (React Strict Mode calls effects twice)
-    if (processingRef.current) {
-      console.log('Already processing, skipping...')
-      return
-    }
-    
-    processingRef.current = true
-    
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        processingRef.current = false
-        return
-      }
-
-      const now = new Date()
-
-      // Get all active recurring expenses
-      const { data: allRecurring, error: fetchError } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('owner_id', session.user.id)
-        .eq('expense_type', 'recurring')
-        .eq('is_active', true)
-
-      if (fetchError) throw fetchError
-      if (!allRecurring || allRecurring.length === 0) return
-
-      // Filter to only process expenses that are actually due
-      const dueExpenses = allRecurring.filter(expense => {
-        const nextDate = new Date(expense.next_occurrence_date)
-        return nextDate <= now
-      })
-
-      if (dueExpenses.length === 0) {
-        console.log('No recurring expenses due at this time')
-        return
-      }
-
-      console.log(`Processing ${dueExpenses.length} due recurring expenses...`)
-
-      for (const expense of dueExpenses) {
-        try {
-          // Check if we already created an expense for this occurrence recently (last 2 minutes for tighter control)
-          const twoMinutesAgo = new Date()
-          twoMinutesAgo.setMinutes(twoMinutesAgo.getMinutes() - 2)
-          
-          // Get the expected occurrence number
-          const expectedOccurrence = (expense.occurrence_count || 0) + 1
-          
-          // Check if this specific occurrence was already created
-          const { data: recentExpenses, error: recentError } = await supabase
-            .from('expenses')
-            .select('description, created_at')
-            .eq('owner_id', session.user.id)
-            .eq('expense_type', 'one_time')
-            .eq('description', `${expense.description} (متكرر #${expectedOccurrence})`)
-            .gte('created_at', twoMinutesAgo.toISOString())
-          
-          if (recentError) throw recentError
-          
-          if (recentExpenses && recentExpenses.length > 0) {
-            console.log(`⏭️ Skipping ${expense.description} #${expectedOccurrence} - already created recently`)
-            continue
-          }
-          
-          // Calculate next occurrence date
-          const currentDate = new Date(expense.next_occurrence_date)
-          let nextDate = new Date(currentDate)
-
-          if (expense.recurring_frequency === 'custom') {
-            const amount = expense.custom_interval_amount || 1
-            const unit = expense.custom_interval_unit || 'days'
-
-            if (unit === 'minutes') {
-              nextDate.setMinutes(currentDate.getMinutes() + amount)
-            } else if (unit === 'hours') {
-              nextDate.setHours(currentDate.getHours() + amount)
-            } else if (unit === 'days') {
-              nextDate.setDate(currentDate.getDate() + amount)
-            } else if (unit === 'weeks') {
-              nextDate.setDate(currentDate.getDate() + (amount * 7))
-            } else if (unit === 'months') {
-              nextDate.setMonth(currentDate.getMonth() + amount)
-            } else if (unit === 'years') {
-              nextDate.setFullYear(currentDate.getFullYear() + amount)
-            }
-          } else {
-            switch (expense.recurring_frequency) {
-              case 'daily':
-                nextDate.setDate(currentDate.getDate() + 1)
-                break
-              case 'weekly':
-                nextDate.setDate(currentDate.getDate() + 7)
-                break
-              case 'monthly':
-                nextDate.setMonth(currentDate.getMonth() + 1)
-                break
-              case 'yearly':
-                nextDate.setFullYear(currentDate.getFullYear() + 1)
-                break
-            }
-          }
-
-          // Get current occurrence count and increment it
-          const occurrenceCount = (expense.occurrence_count || 0) + 1
-          
-          // Create a new one-time expense entry for this occurrence
-          const newExpense = {
-            owner_id: session.user.id,
-            description: `${expense.description} (متكرر #${occurrenceCount})`,
-            amount: expense.amount,
-            category: expense.category,
-            expense_type: 'one_time' as const,
-            created_at: new Date().toISOString()
-          }
-
-          const { error: insertError } = await supabase
-            .from('expenses')
-            .insert([newExpense])
-
-          if (insertError) throw insertError
-
-          // Update the recurring expense template with next occurrence date and counter
-          const { error: updateError } = await supabase
-            .from('expenses')
-            .update({ 
-              next_occurrence_date: nextDate.toISOString(),
-              occurrence_count: occurrenceCount
-            })
-            .eq('id', expense.id)
-
-          if (updateError) throw updateError
-
-          console.log(`✅ Created recurring expense entry: ${expense.description}`)
-          console.log(`   Next occurrence: ${nextDate.toISOString()}`)
-          console.log(`   Occurrence count: ${occurrenceCount}`)
-        } catch (err) {
-          console.error(`Error processing expense ${expense.id}:`, err)
-        }
-      }
-
-      // Refresh the expenses list
-      await fetchExpenses(session.user.id)
-    } catch (err) {
-      console.error('Error processing recurring expenses:', err)
-    } finally {
-      // Reset the flag after a short delay to allow next check
-      setTimeout(() => {
-        processingRef.current = false
-      }, 1000) // 1 second cooldown (faster for 10-second intervals)
     }
   }
 
@@ -373,11 +192,6 @@ function Expenses() {
     setDescription(expense.description)
     setAmount(expense.amount.toString())
     setCategory(expense.category || '')
-    setExpenseType(expense.expense_type)
-    if (expense.expense_type === 'recurring') {
-      setRecurringFrequency(expense.recurring_frequency || 'monthly')
-      setNextOccurrenceDate(expense.next_occurrence_date || '')
-    }
     setShowModal(true)
   }
 
@@ -402,30 +216,11 @@ function Expenses() {
     }
   }
 
-  const handleToggleActive = async (expense: Expense) => {
-    try {
-      const { error } = await supabase
-        .from('expenses')
-        .update({ is_active: !expense.is_active })
-        .eq('id', expense.id)
-
-      if (error) throw error
-
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) await fetchExpenses(session.user.id)
-    } catch (err: any) {
-      console.error('Error toggling expense:', err)
-      setError('Failed to update expense')
-    }
-  }
 
   const resetForm = () => {
     setDescription('')
     setAmount('')
     setCategory('')
-    setExpenseType('one_time')
-    setRecurringFrequency('monthly')
-    setNextOccurrenceDate('')
     setEditingExpense(null)
     setError(null)
     setShowSaveButton(false)
@@ -465,7 +260,6 @@ function Expenses() {
 
   // Filter expenses
   const filteredExpenses = expenses.filter(expense => {
-    const matchesType = filterType === 'all' || expense.expense_type === filterType
     const matchesCategory = !filterCategory || 
       (expense.category && expense.category.toLowerCase().includes(filterCategory.toLowerCase()))
     
@@ -489,7 +283,7 @@ function Expenses() {
       }
     }
     
-    return matchesType && matchesCategory && matchesTimeFilter
+    return matchesCategory && matchesTimeFilter
   })
 
   // Filter by time first for expense calculations
@@ -519,18 +313,9 @@ function Expenses() {
   // Calculate totals
   const timeFilteredExpenses = getTimeFilteredExpenses(expenses)
   
-  // Only count one-time expenses in the total (recurring are just templates)
-  const totalOneTime = timeFilteredExpenses
-    .filter(e => e.expense_type === 'one_time')
+  // Calculate total expenses
+  const totalExpenses = timeFilteredExpenses
     .reduce((sum, e) => sum + Number(e.amount), 0)
-  
-  // Count active recurring templates (for display only, not in total)
-  const activeRecurringCount = timeFilteredExpenses
-    .filter(e => e.expense_type === 'recurring' && e.is_active)
-    .length
-  
-  // Total is only one-time expenses (actual expenses, not templates)
-  const totalExpenses = totalOneTime
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -672,18 +457,12 @@ function Expenses() {
           </div>
         </div>
 
-        {/* Quick Stats - Simple 2 Cards */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
-          <div className="bg-white rounded-xl shadow p-4 text-center">
-            <p className="text-2xl mb-2">💵</p>
-            <p className="text-lg sm:text-2xl font-bold text-gray-900">{formatCurrency(totalOneTime)}</p>
-            <p className="text-xs text-gray-500 mt-1">لمرة واحدة</p>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow p-4 text-center">
-            <p className="text-2xl mb-2">🔄</p>
-            <p className="text-lg sm:text-2xl font-bold text-gray-900">{activeRecurringCount}</p>
-            <p className="text-xs text-gray-500 mt-1">متكررة</p>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 mb-6">
+          <div className="bg-white rounded-xl shadow p-6 text-center">
+            <p className="text-3xl mb-3">💵</p>
+            <p className="text-2xl sm:text-3xl font-bold text-gray-900">{formatCurrency(totalExpenses)}</p>
+            <p className="text-sm text-gray-500 mt-2">إجمالي المصروفات</p>
           </div>
         </div>
 
@@ -772,24 +551,10 @@ function Expenses() {
                 <option value="month">30 يوم</option>
               </select>
             </div>
-          
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">النوع</label>
-              <select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value as any)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-sm"
-              >
-                <option value="all">الكل</option>
-                <option value="one_time">لمرة واحدة</option>
-                <option value="recurring">متكررة</option>
-              </select>
-            </div>
             
             <div className="flex items-end">
               <button
                 onClick={() => {
-                  setFilterType('all')
                   setFilterCategory('')
                   setTimeFilter('all')
                 }}
@@ -832,48 +597,12 @@ function Expenses() {
                     <span className="font-semibold text-sm text-red-600">{formatCurrency(expense.amount)}</span>
                   </div>
                   
-                  <div className="px-3 pb-2 flex items-center gap-1.5">
-                    {expense.expense_type === 'one_time' ? (
-                      <span className="px-1.5 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                        لمرة واحدة
-                      </span>
-                    ) : (
-                      <>
-                        <span className="px-1.5 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                          {expense.recurring_frequency}
-                        </span>
-                        {expense.is_active ? (
-                          <span className="px-1.5 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                            نشط
-                          </span>
-                        ) : (
-                          <span className="px-1.5 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                            غير نشط
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </div>
-                  
                   <div className="border-t border-gray-100 flex divide-x divide-gray-100">
-                    {expense.expense_type === 'recurring' && (
-                      <button
-                        onClick={() => handleToggleActive(expense)}
-                        className="flex-1 py-2 text-xs text-indigo-600 font-medium hover:bg-indigo-50"
-                      >
-                        {expense.is_active ? "إيقاف" : "تفعيل"}
-                      </button>
-                    )}
                     <button
                       onClick={() => {
                         setDescription(expense.description)
                         setAmount(String(expense.amount))
                         setCategory(expense.category || '')
-                        setExpenseType(expense.expense_type)
-                        if (expense.expense_type === 'recurring') {
-                          setRecurringFrequency(expense.recurring_frequency as any || 'monthly')
-                          setNextOccurrenceDate(expense.next_occurrence_date || '')
-                        }
                         setEditingExpense(expense)
                         setShowModal(true)
                       }}
@@ -908,9 +637,6 @@ function Expenses() {
                         المبلغ
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        النوع
-                      </th>
-                      <th className="px-4 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         التاريخ
                       </th>
                       <th className="px-4 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -930,34 +656,12 @@ function Expenses() {
                         <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                           <span className="font-semibold text-red-600">{formatCurrency(expense.amount)}</span>
                         </td>
-                        <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
-                          {expense.expense_type === 'one_time' ? (
-                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                              لمرة واحدة
-                            </span>
-                          ) : (
-                            <div>
-                              <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                {expense.recurring_frequency}
-                              </span>
-                              {expense.is_active ? (
-                                <span className="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                  نشط
-                                </span>
-                              ) : (
-                                <span className="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                  غير نشط
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </td>
                         <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                           {formatDate(expense.created_at)}
                         </td>
                         <td className="px-4 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
                           <div className="flex justify-end gap-2">
-                            {expense.expense_type === 'recurring' && (
+                            {false && (
                               <button
                                 onClick={() => handleToggleActive(expense)}
                                 className="text-indigo-600 hover:text-indigo-900"
@@ -971,11 +675,6 @@ function Expenses() {
                                 setDescription(expense.description)
                                 setAmount(String(expense.amount))
                                 setCategory(expense.category || '')
-                                setExpenseType(expense.expense_type)
-                                if (expense.expense_type === 'recurring') {
-                                  setRecurringFrequency(expense.recurring_frequency as any || 'monthly')
-                                  setNextOccurrenceDate(expense.next_occurrence_date || '')
-                                }
                                 setEditingExpense(expense)
                                 setShowModal(true)
                               }}

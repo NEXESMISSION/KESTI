@@ -44,7 +44,7 @@ function POS() {
   const [showAddCustomer, setShowAddCustomer] = useState(false)
   
   // Product box size control
-  const [productBoxSize, setProductBoxSize] = useState<'small' | 'large'>('small')
+  const [productBoxSize, setProductBoxSize] = useState<'small' | 'large'>('large')
   
   // Welcome modal state
   const [showWelcomeModal, setShowWelcomeModal] = useState(false)
@@ -738,7 +738,7 @@ function POS() {
                 
                 {/* Horizontal Scrollable Products */}
                 <div className="relative">
-                  <div className="flex space-x-3 sm:space-x-4 md:space-x-6 overflow-x-auto pb-4 scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+                  <div className="flex gap-4 sm:gap-6 md:gap-8 overflow-x-auto pb-4 scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
                     {categoryProducts.map((product) => (
                       <div
                         key={product.id}
@@ -770,27 +770,27 @@ function POS() {
                         </div>
                         
                         {/* Product Info */}
-                        <div className="p-3 sm:p-4">
-                          <h3 className="font-semibold text-sm sm:text-base md:text-lg text-gray-900 truncate">
+                        <div className="p-2 sm:p-3">
+                          <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-900 truncate">
                             {product.name}
                           </h3>
-                          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
                             {product.unit_type}
                           </p>
                           
                           {/* Stock Badge */}
                           {product.stock_quantity !== null && (
-                            <p className="text-[10px] sm:text-xs text-gray-400 mt-1">
+                            <p className="text-[9px] sm:text-[10px] text-gray-400 mt-0.5">
                               Stock: {product.stock_quantity}
                             </p>
                           )}
                           
                           {/* Price and Action */}
-                          <div className="flex justify-between items-center mt-3 sm:mt-4">
-                            <span className="font-bold text-base sm:text-lg md:text-xl text-gray-900">
+                          <div className="flex justify-between items-center mt-2 sm:mt-3">
+                            <span className="font-bold text-sm sm:text-base md:text-lg text-gray-900">
                               {product.selling_price.toFixed(2)} TND
                             </span>
-                            <div className="bg-blue-600 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium">
+                            <div className="bg-blue-600 text-white px-2 py-1 rounded-lg text-[9px] sm:text-[10px] font-medium">
                               Add
                             </div>
                           </div>
