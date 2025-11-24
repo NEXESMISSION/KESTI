@@ -1,4 +1,22 @@
+# Kesti Pro - POS System Tunisia
 User-agent: *
 Allow: /
+Allow: /signup
+Allow: /login
 
-Sitemap: https://your-domain.com/sitemap.xml
+# Block admin and API routes from indexing
+Disallow: /api/
+Disallow: /super-admin
+Disallow: /pos
+Disallow: /owner-dashboard
+Disallow: /stock
+Disallow: /finance
+Disallow: /history
+Disallow: /expenses
+Disallow: /credits
+
+# Sitemap location
+Sitemap: https://kestipro.com/sitemap.xml
+
+# Crawl delay (prevent overload)
+Crawl-delay: 1

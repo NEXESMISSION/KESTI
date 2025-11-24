@@ -573,11 +573,11 @@ function Expenses() {
             <button
               onClick={() => router.push('/owner-dashboard')}
               className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="لوحة التحكم"
+              title="المنتجات"
             >
               <div className="flex flex-col items-center justify-center gap-1">
-                <span className="text-lg">🏦</span>
-                <span className="text-[10px] sm:text-xs">لوحة التحكم</span>
+                <span className="text-lg">📦</span>
+                <span className="text-[10px] sm:text-xs">المنتجات</span>
               </div>
             </button>
             <button

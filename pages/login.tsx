@@ -167,13 +167,13 @@ export default function Login() {
       {/* Background decoration */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(111,198,5,0.15),transparent_50%),radial-gradient(circle_at_70%_50%,rgba(0,99,189,0.15),transparent_50%)]"></div>
       
-      {/* Back to home link */}
+      {/* Back to home link - Enhanced Visibility */}
       <Link 
         href="/"
-        className="absolute top-6 right-6 text-white hover:text-secondary transition-colors flex items-center gap-2 font-semibold backdrop-blur-sm bg-white/10 px-4 py-2 rounded-lg"
+        className="absolute top-4 md:top-6 right-4 md:right-6 bg-white hover:bg-gray-100 text-primary hover:text-secondary transition-all flex items-center gap-2 font-bold px-4 md:px-6 py-2 md:py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 border-2 border-white z-50"
       >
-        <span>→</span>
-        <span>الرجوع للرئيسية</span>
+        <span className="text-xl">→</span>
+        <span className="text-sm md:text-base">الرجوع للرئيسية</span>
       </Link>
       
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative z-10">

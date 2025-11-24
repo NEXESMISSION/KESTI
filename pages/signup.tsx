@@ -103,7 +103,7 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 shadow-xl">
+      <Card className="w-full max-w-md lg:max-w-3xl p-6 md:p-8 lg:p-10 shadow-2xl">
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <div className="relative w-24 h-24">
@@ -127,14 +127,38 @@ export default function Signup() {
           </p>
         </div>
 
-        {/* Success Message */}
+        {/* Success Popup Modal - Prominent Center Screen */}
         {success && (
-          <Alert variant="success" className="mb-6">
-            <div className="text-center">
-              <p className="font-semibold mb-1">تم إنشاء الحساب بنجاح! ✅</p>
-              <p className="text-sm">جاري تحويلك لصفحة تسجيل الدخول...</p>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+            <div className="bg-white rounded-3xl p-6 md:p-10 max-w-sm md:max-w-md w-full shadow-2xl transform animate-scaleIn">
+              {/* Success Icon */}
+              <div className="flex justify-center mb-6">
+                <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center animate-bounce shadow-xl">
+                  <svg className="w-12 h-12 md:w-14 md:h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Success Text */}
+              <div className="text-center space-y-4">
+                <h3 className="text-2xl md:text-3xl font-black text-gray-900">
+                  تم إنشاء الحساب بنجاح!
+                </h3>
+                <p className="text-lg md:text-xl text-gray-600 font-semibold">
+                  جاري تحويلك لصفحة تسجيل الدخول...
+                </p>
+                
+                {/* Loading Spinner */}
+                <div className="flex justify-center pt-4">
+                  <svg className="animate-spin h-8 w-8 text-green-500" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                </div>
+              </div>
             </div>
-          </Alert>
+          </div>
         )}
 
         {/* Error Message */}
@@ -145,7 +169,7 @@ export default function Signup() {
         )}
 
         {/* Signup Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5 lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-5 lg:space-y-0">
           {/* Full Name */}
           <div>
             <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -231,11 +255,14 @@ export default function Signup() {
             />
           </div>
 
-          {/* PIN */}
-          <div>
-            <label htmlFor="pin" className="block text-sm font-medium text-gray-700 mb-2">
-              رمز PIN (4-6 أرقام) *
-            </label>
+          {/* PIN - CUSTOM CODE HIGHLIGHTED */}
+          <div className="lg:col-span-2 bg-gradient-to-br from-yellow-50 to-orange-50 border-4 border-orange-400 rounded-xl p-4 shadow-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-2xl">🔑</span>
+              <label htmlFor="pin" className="block text-base md:text-lg font-black text-orange-900">
+                كود العرف (Custom Code) *
+              </label>
+            </div>
             <input
               id="pin"
               type="text"
@@ -243,23 +270,29 @@ export default function Signup() {
               pattern="\d{4,6}"
               value={formData.pin}
               onChange={(e) => handleInputChange('pin', e.target.value.replace(/\D/g, '').slice(0, 6))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-              placeholder="أدخل رمز PIN"
+              className="w-full px-4 py-3 md:py-4 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition bg-white text-lg md:text-xl font-bold text-center tracking-widest"
+              placeholder="● ● ● ●"
               disabled={loading || success}
               required
             />
-            <p className="text-xs text-gray-500 mt-1">
-              سيستخدم هذا الرمز لتأكيد العمليات المهمة
-            </p>
+            <div className="mt-3 bg-orange-100 rounded-lg p-3">
+              <p className="text-xs md:text-sm text-orange-900 font-semibold text-center">
+                ⚠️ كود سري من 4-6 أرقام لتأكيد العمليات المهمة
+              </p>
+              <p className="text-xs text-orange-800 mt-1 text-center">
+                احفظه بشكل آمن - لا تشاركه مع أحد!
+              </p>
+            </div>
           </div>
 
           {/* Submit Button */}
-          <Button
-            type="submit"
-            variant="primary"
-            className="w-full py-3 text-lg font-semibold"
-            disabled={loading || success}
-          >
+          <div className="lg:col-span-2">
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full py-3 md:py-4 text-lg md:text-xl font-semibold"
+              disabled={loading || success}
+            >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
@@ -273,7 +306,8 @@ export default function Signup() {
             ) : (
               'إنشاء الحساب'
             )}
-          </Button>
+            </Button>
+          </div>
         </form>
 
         {/* Login Link */}

@@ -4,6 +4,7 @@ import Image from 'next/image'
 import ImageSlider from '@/components/ImageSlider'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import SEO from '@/components/SEO'
 
 export default function Home() {
   const router = useRouter()
@@ -142,10 +143,13 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>Kesti Pro - نظام احترافي لإدارة المبيعات والمخزون</title>
-        <meta name="description" content="اكتشف Kesti Pro - النظام الاحترافي لإدارة المبيعات والمخزون" />
-      </Head>
+      <SEO 
+        title="Kesti Pro - نظام نقاط البيع الأول في تونس | POS System Tunisia"
+        description="نظام Kesti Pro الاحترافي لإدارة المبيعات والمخزون في تونس. POS System متكامل للمحلات التجارية، المطاعم، والصيدليات. نظام كاشير ذكي، تقارير مفصلة، إدارة المخزون التلقائية. جرّب مجاناً 15 يوم!"
+        keywords="نظام نقاط البيع تونس, POS System Tunisia, Kesti Pro, KestiPro, Kesti TN, نظام كاشير تونس, برنامج محاسبة تونس, إدارة المبيعات تونس, نظام المخزون تونس, Point of Sale Tunisia, Caisse Enregistreuse Tunisie, logiciel de gestion Tunisie, système de caisse Tunisie, gestion stock Tunisie, kesti, kestipro.com, pos tunisia, cashier system tunisia, retail management tunisia"
+        canonicalUrl="/"
+        ogType="website"
+      />
 
       <div className="min-h-screen bg-white" dir="rtl">
         {/* Navigation Header - Redesigned */}
@@ -158,7 +162,7 @@ export default function Home() {
               </div>
               
               {/* Desktop Menu */}
-              <div className="hidden md:flex items-center gap-2 lg:gap-4">
+              <div className="hidden md:flex items-center gap-2 lg:gap-3">
                 <Link
                   href="#features"
                   className="text-gray-700 hover:text-primary transition px-2 lg:px-3 py-2 font-medium text-sm"
@@ -173,15 +177,15 @@ export default function Home() {
                 </Link>
                 <Link
                   href="/login"
-                  className="text-gray-700 hover:text-primary transition px-3 py-1.5 font-medium text-sm border border-gray-300 rounded-lg"
+                  className="bg-gradient-to-r from-blue-600 to-primary text-white px-4 lg:px-6 py-2 font-bold text-sm border-2 border-blue-400 rounded-lg hover:scale-105 hover:shadow-lg transition-all"
                 >
-                  دخول
+                  🔐 دخول
                 </Link>
                 <Link
                   href="/signup"
-                  className="bg-gradient-to-r from-primary to-blue-600 text-white px-4 lg:px-5 py-1.5 rounded-lg font-bold text-sm hover:scale-105 transition-transform"
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 lg:px-6 py-2 rounded-lg font-black text-sm hover:scale-105 transition-all shadow-lg hover:shadow-green-500/50 border-2 border-green-400 animate-pulse hover:animate-none"
                 >
-                  تجربة مجانية 🚀
+                  🚀 تجربة مجانية
                 </Link>
               </div>
               
@@ -217,140 +221,205 @@ export default function Home() {
                 >
                   الأسعار
                 </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-3 rounded-lg font-black text-base text-center border-2 border-green-400 shadow-lg"
+                >
+                  🚀 تجربة مجانية
+                </Link>
                 <a
                   href="/login"
                   onClick={(e) => { handleLoginClick(e); setMobileMenuOpen(false); }}
-                  className="block text-gray-700 hover:text-primary hover:bg-gray-50 transition px-3 py-2 rounded-lg text-sm font-medium cursor-pointer"
+                  className="block w-full bg-gradient-to-r from-blue-600 to-primary text-white px-4 py-2.5 rounded-lg font-bold text-sm text-center border-2 border-blue-400 cursor-pointer"
                 >
-                  تسجيل الدخول
+                  🔐 تسجيل الدخول
                 </a>
                 <button
                   onClick={() => { setShowContact(true); setMobileMenuOpen(false); }}
-                  className="w-full bg-gradient-to-r from-secondary to-green-400 text-gray-900 px-4 py-2.5 rounded-lg font-bold text-sm"
+                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2.5 rounded-lg font-bold text-sm shadow-md"
                 >
-                  تواصل معنا 📞
+                  📞 تواصل معنا
                 </button>
               </div>
             )}
           </div>
         </nav>
 
-        {/* Hero Section - Completely Redesigned */}
+        {/* Hero Section - Ultra Modern Design */}
         <section className="relative bg-white overflow-hidden min-h-screen flex items-center pt-20">
-          {/* Modern Background with Geometric Shapes */}
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-blue-50 to-green-50"></div>
+          {/* Advanced Background with Multiple Layers */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50"></div>
           
-          {/* Animated Background Shapes */}
-          <div className="absolute top-20 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 left-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-primary/5 to-secondary/5 rounded-full blur-3xl"></div>
+          {/* Animated Background Shapes - Enhanced */}
+          <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-to-br from-primary/20 to-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 left-10 w-[500px] h-[500px] bg-gradient-to-br from-secondary/20 to-green-400/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+          <div className="absolute top-1/3 left-1/3 w-72 h-72 bg-gradient-to-br from-purple-400/10 to-pink-400/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
           
-          <div className="container mx-auto px-4 py-16 md:py-20 relative z-10">
+          {/* Gradient Grid Overlay */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.03)_1px,transparent_1px)] bg-[size:64px_64px]"></div>
+          
+          <div className="container mx-auto px-4 py-12 md:py-16 relative z-10">
             <div className="max-w-7xl mx-auto">
-              <div className="grid lg:grid-cols-2 gap-16 items-center">
-                {/* Left side - Content with solid backgrounds */}
-                <div className="text-center lg:text-right order-2 lg:order-1 space-y-8">
-                  {/* Badge */}
-                  <div className="inline-block">
-                    <div className="bg-gradient-to-r from-secondary to-green-400 px-6 py-3 rounded-full">
-                      <p className="text-sm md:text-base font-black text-white">✨ نظام احترافي متكامل</p>
+              <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+                {/* Left side - Enhanced Content */}
+                <div className="text-center lg:text-right order-2 lg:order-1 space-y-6 md:space-y-8">
+                  {/* Animated Badge */}
+                  <div className="inline-block animate-bounce">
+                    <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 px-5 py-2.5 rounded-full shadow-lg">
+                      <p className="text-sm md:text-base font-black text-white flex items-center gap-2 justify-center">
+                        <span className="animate-pulse">🔥</span>
+                        <span>النظام الأكثر شعبية في تونس</span>
+                      </p>
                     </div>
                   </div>
                   
-                  {/* Main Heading */}
-                  <div>
-                    <h1 className="text-3xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-3 md:mb-4 leading-[1.1]">
-                      <span className="block text-gray-900">نظام</span>
-                      <span className="block bg-gradient-to-r from-primary via-blue-600 to-secondary bg-clip-text text-transparent">
+                  {/* Main Heading - Enhanced */}
+                  <div className="space-y-3">
+                    <h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-black mb-2 leading-[1.05]">
+                      <span className="block text-gray-900 drop-shadow-sm">نظام</span>
+                      <span className="block bg-gradient-to-l from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent animate-gradient">
                         Kesti Pro
                       </span>
                     </h1>
-                    <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-gray-700 leading-relaxed">
-                      إدارة المبيعات والمخزون بذكاء
+                    <h2 className="text-xl md:text-3xl lg:text-4xl font-bold text-gray-700 leading-relaxed">
+                      🚀 إدارة المبيعات والمخزون بذكاء
                     </h2>
+                    <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto lg:mx-0">
+                      وفّر 4 ساعات يومياً • زد أرباحك 30% • تحكّم كامل من أي مكان
+                    </p>
                   </div>
                   
-                  {/* Value Proposition Box */}
-                  <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-2xl border border-gray-700">
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-4 text-right">
+                  {/* Value Proposition Box - Enhanced */}
+                  <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black rounded-3xl p-6 md:p-8 shadow-2xl border-2 border-gray-700 transform hover:scale-[1.02] transition-all">
+                    <div className="space-y-5">
+                      <div className="flex items-center gap-4 text-right">
                         <div className="flex-1">
-                          <p className="text-base md:text-xl lg:text-2xl font-bold text-white leading-relaxed">
-                            🚫 وداعاً للدفاتر والحسابات اليدوية
+                          <p className="text-lg md:text-2xl font-bold text-white leading-relaxed">
+                            <span className="text-red-400">🚫</span> وداعاً للدفاتر والحسابات اليدوية
                           </p>
                         </div>
                       </div>
-                      <div className="h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
-                      <div className="flex items-start gap-4 text-right">
+                      <div className="h-0.5 bg-gradient-to-r from-transparent via-yellow-500 to-transparent"></div>
+                      <div className="flex items-center gap-4 text-right">
                         <div className="flex-1">
-                          <p className="text-base md:text-xl lg:text-2xl font-bold text-secondary leading-relaxed">
-                            ✅ مرحباً بالتحكم الكامل والربح الواضح
+                          <p className="text-lg md:text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent leading-relaxed">
+                            <span className="text-green-400">✅</span> مرحباً بالتحكم الكامل والربح الواضح
                           </p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* CTA Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center pt-4">
+                  {/* Primary CTA Buttons - Ultra Highlighted */}
+                  <div className="space-y-4 pt-2">
+                    {/* Sign Up Button - Most Prominent */}
                     <Link
                       href="/signup"
-                      className="group relative bg-gradient-to-r from-primary via-blue-600 to-blue-500 text-white px-8 md:px-12 py-4 md:py-5 rounded-xl md:rounded-2xl text-base md:text-xl lg:text-2xl font-black transition-all shadow-2xl hover:shadow-primary/50 hover:scale-105 w-full sm:w-auto flex items-center justify-center gap-2 md:gap-3 overflow-hidden"
+                      className="group relative bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 text-white px-10 md:px-16 py-5 md:py-7 rounded-2xl text-xl md:text-3xl font-black transition-all shadow-2xl hover:shadow-green-500/50 hover:scale-105 w-full flex items-center justify-center gap-3 md:gap-4 overflow-hidden border-4 border-green-400 animate-pulse hover:animate-none"
                     >
-                      <span className="relative z-10">ابدأ تجربتك المجانية</span>
-                      <span className="text-3xl group-hover:translate-x-2 transition-transform relative z-10">🚀</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <span className="relative z-10 flex items-center gap-3">
+                        <span className="text-4xl">🚀</span>
+                        <span>ابدأ الآن مجاناً - 15 يوم</span>
+                      </span>
+                      <div className="absolute -right-12 top-0 w-24 h-full bg-white/20 transform rotate-12 group-hover:right-full transition-all duration-700"></div>
                     </Link>
+
+                    {/* Sign In Button - Highlighted */}
+                    <Link
+                      href="/login"
+                      className="group relative bg-gradient-to-r from-blue-600 to-primary text-white px-10 md:px-16 py-4 md:py-6 rounded-2xl text-lg md:text-2xl font-black transition-all shadow-xl hover:shadow-blue-500/50 hover:scale-105 w-full flex items-center justify-center gap-3 border-2 border-blue-400"
+                    >
+                      <span className="relative z-10 flex items-center gap-3">
+                        <span className="text-3xl">🔐</span>
+                        <span>تسجيل الدخول</span>
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl"></div>
+                    </Link>
+                  </div>
+
+                  {/* Secondary CTA Buttons */}
+                  <div className="grid grid-cols-2 gap-3 md:gap-4 pt-2">
                     <button
                       onClick={() => setShowContact(true)}
-                      className="group relative bg-white border-2 border-gray-300 text-gray-900 px-8 md:px-12 py-4 md:py-5 rounded-xl md:rounded-2xl text-base md:text-xl lg:text-2xl font-black transition-all shadow-lg hover:shadow-xl hover:scale-105 w-full sm:w-auto flex items-center justify-center gap-2 md:gap-3"
+                      className="group bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 md:px-6 py-3 md:py-4 rounded-xl text-sm md:text-lg font-bold hover:scale-105 transition-all shadow-lg hover:shadow-orange-500/50 flex items-center justify-center gap-2"
                     >
-                      <span className="relative z-10">تواصل معنا</span>
-                      <span className="text-3xl group-hover:translate-x-2 transition-transform relative z-10">💬</span>
+                      <span className="text-2xl group-hover:rotate-12 transition-transform">📞</span>
+                      <span>تواصل معنا</span>
                     </button>
                     <button
                       onClick={() => setShowVideo(true)}
-                      className="bg-white border-2 md:border-3 border-gray-900 text-gray-900 px-8 md:px-10 py-4 md:py-5 rounded-xl md:rounded-2xl text-base md:text-xl lg:text-2xl font-bold hover:bg-gray-900 hover:text-white transition-all w-full sm:w-auto flex items-center justify-center gap-2 md:gap-3 shadow-xl"
+                      className="group bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 md:px-6 py-3 md:py-4 rounded-xl text-sm md:text-lg font-bold hover:scale-105 transition-all shadow-lg hover:shadow-purple-500/50 flex items-center justify-center gap-2"
                     >
+                      <span className="text-2xl group-hover:scale-110 transition-transform">▶️</span>
                       <span>شاهد الفيديو</span>
-                      <span>▶️</span>
                     </button>
                   </div>
 
-                  {/* Trust Badge */}
-                  <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
-                    <div className="bg-green-100 px-4 py-2 rounded-full">
-                      <p className="text-base md:text-lg font-bold text-green-800">
-                        ✨ 15 يوم تجربة مجانية
+                  {/* Trust Badges - Enhanced */}
+                  <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-2">
+                    <div className="bg-gradient-to-r from-green-100 to-emerald-100 px-4 py-2.5 rounded-full border-2 border-green-300 shadow-md">
+                      <p className="text-sm md:text-base font-black text-green-800 flex items-center gap-2">
+                        <span className="animate-spin">✨</span>
+                        <span>15 يوم مجاني</span>
                       </p>
                     </div>
-                    <div className="bg-blue-100 px-4 py-2 rounded-full">
-                      <p className="text-base md:text-lg font-bold text-blue-800">
-                        � تفعيل فوري بعد التواصل
+                    <div className="bg-gradient-to-r from-blue-100 to-sky-100 px-4 py-2.5 rounded-full border-2 border-blue-300 shadow-md">
+                      <p className="text-sm md:text-base font-black text-blue-800 flex items-center gap-2">
+                        <span className="animate-pulse">⚡</span>
+                        <span>تفعيل فوري</span>
+                      </p>
+                    </div>
+                    <div className="bg-gradient-to-r from-yellow-100 to-orange-100 px-4 py-2.5 rounded-full border-2 border-yellow-300 shadow-md">
+                      <p className="text-sm md:text-base font-black text-orange-800 flex items-center gap-2">
+                        <span>🎁</span>
+                        <span>دعم مجاني</span>
                       </p>
                     </div>
                   </div>
+
+                  {/* Social Proof */}
+                  <div className="flex items-center justify-center lg:justify-start gap-3 pt-2">
+                    <div className="flex -space-x-3">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 border-2 border-white flex items-center justify-center text-white font-bold">👤</div>
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 border-2 border-white flex items-center justify-center text-white font-bold">👤</div>
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 border-2 border-white flex items-center justify-center text-white font-bold">👤</div>
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 border-2 border-white flex items-center justify-center text-white font-bold">+50</div>
+                    </div>
+                    <p className="text-sm md:text-base font-bold text-gray-700">
+                      <span className="text-green-600">+50</span> تاجر ينضم كل شهر
+                    </p>
+                  </div>
                 </div>
 
-                {/* Right side - Image Slider with better container */}
+                {/* Right side - Enhanced Image Slider */}
                 <div className="order-1 lg:order-2">
                   <div className="relative">
-                    {/* Glow effect behind slider */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 blur-3xl rounded-full"></div>
-                    <ImageSlider 
-                      images={['dashboard', 'pos', 'reports', 'inventory', 'analytics']}
-                      autoPlayInterval={3500}
-                    />
+                    {/* Enhanced Glow Effects */}
+                    <div className="absolute -inset-4 bg-gradient-to-br from-primary/30 via-purple-500/20 to-secondary/30 blur-3xl rounded-full animate-pulse"></div>
+                    <div className="absolute -inset-8 bg-gradient-to-tr from-blue-500/10 to-green-500/10 blur-3xl rounded-full"></div>
+                    
+                    {/* Floating Elements */}
+                    <div className="absolute -top-8 -right-8 w-20 h-20 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full blur-xl animate-bounce"></div>
+                    <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-400 rounded-full blur-xl animate-bounce" style={{animationDelay: '0.5s'}}></div>
+                    
+                    <div className="relative z-10 transform hover:scale-105 transition-transform duration-500">
+                      <ImageSlider 
+                        images={['dashboard', 'pos', 'reports', 'inventory', 'analytics']}
+                        autoPlayInterval={3500}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
           
-          {/* Scroll indicator */}
+          {/* Enhanced Scroll Indicator */}
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <div className="w-6 h-10 border-2 border-gray-400 rounded-full flex justify-center">
-              <div className="w-1 h-3 bg-gray-400 rounded-full mt-2"></div>
+            <div className="w-8 h-12 border-3 border-primary rounded-full flex justify-center p-2 bg-white/50 backdrop-blur-sm shadow-lg">
+              <div className="w-2 h-4 bg-gradient-to-b from-primary to-blue-600 rounded-full animate-pulse"></div>
             </div>
           </div>
         </section>
