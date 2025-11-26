@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Product } from '@/lib/supabase'
 
 type QuantityModalProps = {
@@ -10,10 +10,18 @@ type QuantityModalProps = {
 
 export default function QuantityModal({ isOpen, product, onClose, onAdd }: QuantityModalProps) {
   const [quantity, setQuantity] = useState('1')
+  const inputRef = useRef<HTMLInputElement>(null)
   
   useEffect(() => {
     if (isOpen) {
       setQuantity('1')
+      // Auto-focus and select the input when modal opens
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus()
+          inputRef.current.select()
+        }
+      }, 100)
     }
   }, [isOpen])
 
@@ -97,13 +105,16 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
             </button>
             
             <input
+              ref={inputRef}
               type="number"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               onKeyPress={handleKeyPress}
+              onFocus={(e) => e.target.select()}
               step={product.unit_type === 'item' ? '1' : '0.1'}
-              className="w-20 text-center text-3xl font-bold border-0 bg-transparent focus:outline-none text-gray-900"
+              className="w-24 text-center text-3xl font-bold border-2 border-gray-200 rounded-lg bg-white focus:border-blue-500 focus:outline-none text-gray-900 py-2"
               min="0.1"
+              inputMode="decimal"
             />
             
             <button
