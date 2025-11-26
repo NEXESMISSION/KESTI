@@ -752,47 +752,43 @@ function POS() {
                             setShowQuantityModal(true)
                           }
                         }}
-                        className={`flex-shrink-0 bg-white rounded-lg shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300 cursor-pointer ${
-                          productBoxSize === 'small' ? 'w-36 sm:w-40' : 'w-56 sm:w-64 md:w-80'
+                        className={`group flex-shrink-0 bg-white rounded-xl overflow-hidden border-2 border-transparent hover:border-blue-500 hover:shadow-xl transition-all duration-200 cursor-pointer ${
+                          productBoxSize === 'small' ? 'w-32 sm:w-36' : 'w-48 sm:w-52 md:w-56'
                         }`}
                       >
                         {/* Product Image */}
                         <div className={`relative w-full ${
-                          productBoxSize === 'small' ? 'h-24 sm:h-28' : 'h-40 sm:h-44 md:h-48'
+                          productBoxSize === 'small' ? 'h-20 sm:h-24' : 'h-32 sm:h-36 md:h-40'
                         }`}>
                           <Image
                             src={product.image_url || 'https://placehold.co/300x200/e5e7eb/6b7280?text=No+Image'}
                             alt={product.name}
                             fill
                             sizes="(max-width: 640px) 100vw, (max-width: 768px) 56px, 72px"
-                            className="object-cover"
+                            className="object-cover group-hover:scale-110 transition-transform duration-200"
                           />
+                          {/* Stock Badge Overlay */}
+                          {product.stock_quantity !== null && (
+                            <div className="absolute top-1 right-1 bg-black/70 backdrop-blur-sm text-white px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-medium">
+                              {product.stock_quantity} left
+                            </div>
+                          )}
                         </div>
                         
                         {/* Product Info */}
-                        <div className="p-2 sm:p-3">
-                          <h3 className="font-semibold text-xs sm:text-sm md:text-base text-gray-900 truncate">
+                        <div className={`${productBoxSize === 'small' ? 'p-1.5 sm:p-2' : 'p-2 sm:p-3'}`}>
+                          <h3 className={`font-bold ${productBoxSize === 'small' ? 'text-[10px] sm:text-xs' : 'text-xs sm:text-sm'} text-gray-900 truncate mb-1`}>
                             {product.name}
                           </h3>
-                          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
-                            {product.unit_type}
-                          </p>
                           
-                          {/* Stock Badge */}
-                          {product.stock_quantity !== null && (
-                            <p className="text-[9px] sm:text-[10px] text-gray-400 mt-0.5">
-                              Stock: {product.stock_quantity}
-                            </p>
-                          )}
-                          
-                          {/* Price and Action */}
-                          <div className="flex justify-between items-center mt-2 sm:mt-3">
-                            <span className="font-bold text-sm sm:text-base md:text-lg text-gray-900">
-                              {product.selling_price.toFixed(2)} TND
+                          {/* Price */}
+                          <div className="flex items-center justify-between">
+                            <span className={`font-extrabold ${productBoxSize === 'small' ? 'text-xs sm:text-sm' : 'text-sm sm:text-base'} text-blue-600`}>
+                              {product.selling_price.toFixed(2)}
                             </span>
-                            <div className="bg-blue-600 text-white px-2 py-1 rounded-lg text-[9px] sm:text-[10px] font-medium">
-                              Add
-                            </div>
+                            <span className={`${productBoxSize === 'small' ? 'text-[9px]' : 'text-[10px] sm:text-xs'} text-gray-500 font-medium`}>
+                              TND/{product.unit_type}
+                            </span>
                           </div>
                         </div>
                       </div>
