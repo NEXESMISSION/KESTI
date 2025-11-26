@@ -7,6 +7,12 @@
   "outputDirectory": ".next",
   "cleanUrls": true,
   "trailingSlash": false,
+  "functions": {
+    "pages/api/**/*.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  },
   "headers": [
     {
       "source": "/api/(.*)",

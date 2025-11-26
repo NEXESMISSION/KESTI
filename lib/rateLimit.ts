@@ -38,6 +38,15 @@ export function rateLimit(config: RateLimitConfig) {
     res: NextApiResponse,
     next: () => void
   ): boolean {
+    // ⚠️ RATE LIMITING DISABLED FOR BUSINESS OPERATIONS
+    // This middleware now allows unlimited API calls for business needs
+    // Security note: Monitor API usage through other means (logging, analytics)
+    
+    // Simply allow all requests through without checking limits
+    next()
+    return true
+    
+    /* ORIGINAL CODE - DISABLED FOR UNLIMITED ACCESS
     // Get client identifier (IP address or user ID)
     const identifier = getClientIdentifier(req)
     const now = Date.now()
@@ -72,6 +81,7 @@ export function rateLimit(config: RateLimitConfig) {
 
     next()
     return true
+    */
   }
 }
 
