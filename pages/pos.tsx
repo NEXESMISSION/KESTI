@@ -114,6 +114,39 @@ function POS() {
     }, 100)
   }, [])
 
+  // Keyboard support for PIN modal
+  useEffect(() => {
+    if (!showPinModal) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle keyboard input when PIN modal is open
+      if (e.key >= '0' && e.key <= '9') {
+        // Number keys
+        e.preventDefault()
+        setPin(prev => prev + e.key)
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        // Backspace or Delete
+        e.preventDefault()
+        setPin(prev => prev.slice(0, -1))
+      } else if (e.key === 'Enter') {
+        // Enter to submit
+        e.preventDefault()
+        if (pin.length > 0) {
+          handlePinSubmit()
+        }
+      } else if (e.key === 'Escape') {
+        // Escape to close
+        e.preventDefault()
+        setShowPinModal(false)
+        setPin('')
+        setError(null)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showPinModal, pin])
+
   const checkAuthAndFetchProducts = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -517,7 +550,7 @@ function POS() {
   })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto py-3 sm:py-4 px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
@@ -576,13 +609,7 @@ function POS() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
                   />
                 </svg>
               </button>
@@ -642,7 +669,10 @@ function POS() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto py-4 sm:py-6 px-3 sm:px-6 lg:px-8">
+      {/* Main Content Area with Cart Sidebar on Desktop */}
+      <div className="flex-1 flex">
+        {/* Products Section */}
+        <main className="flex-1 py-4 sm:py-6 px-3 sm:px-6 lg:px-8 overflow-y-auto">
         {/* Product Size Controls */}
         {!loading && products.length > 0 && (
           <div className="flex justify-end gap-2 mb-4">
@@ -801,7 +831,168 @@ function POS() {
         )}
       </main>
 
-      {/* Cart Sidebar */}
+      {/* Desktop Cart Sidebar - Always visible on lg+ screens */}
+      <aside className="hidden lg:flex lg:w-96 bg-gradient-to-b from-gray-50 to-white border-l border-gray-200 flex-col">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <h2 className="text-lg font-bold">عربة التسوق</h2>
+            </div>
+            <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold">
+              {getTotalItems()}
+            </div>
+          </div>
+        </div>
+
+        {cart.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-gray-500 p-8">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-8 mb-4">
+              <svg className="w-24 h-24 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">السلة فارغة</h3>
+            <p className="text-sm text-gray-500 text-center">ابدأ بإضافة المنتجات</p>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col">
+            <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+              {cart.map((item) => (
+                <CartItem key={item.product.id} item={item} />
+              ))}
+            </div>
+            
+            <div className="border-t-2 border-gray-100 p-4 bg-white shadow-lg">
+              {/* Credit System */}
+              <div className="mb-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border-2 border-orange-200 p-3">
+                <div className="flex items-center mb-2">
+                  <input
+                    type="checkbox"
+                    id="credit-checkbox-desktop"
+                    checked={isCredit}
+                    onChange={(e) => {
+                      setIsCredit(e.target.checked)
+                      if (!e.target.checked) {
+                        setSelectedCustomerId('')
+                      }
+                    }}
+                    className="w-5 h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                  />
+                  <label htmlFor="credit-checkbox-desktop" className="mr-2 text-sm font-bold text-gray-800">
+                    💳 بيع بالأجل
+                  </label>
+                </div>
+
+                {isCredit && (
+                  <div className="space-y-2">
+                    {!showAddCustomer ? (
+                      <div className="flex gap-2">
+                        <select
+                          value={selectedCustomerId}
+                          onChange={(e) => setSelectedCustomerId(e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
+                        >
+                          <option value="">اختر العميل</option>
+                          {creditCustomers.map((customer) => (
+                            <option key={customer.id} value={customer.id}>
+                              {customer.name} {customer.phone ? `(${customer.phone})` : ''}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => setShowAddCustomer(true)}
+                          className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-sm font-semibold whitespace-nowrap shadow-md"
+                        >
+                          + جديد
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 bg-orange-50 p-3 rounded-lg">
+                        <input
+                          type="text"
+                          placeholder="اسم العميل *"
+                          value={newCustomerName}
+                          onChange={(e) => setNewCustomerName(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
+                        />
+                        <input
+                          type="tel"
+                          placeholder="رقم الهاتف (اختياري)"
+                          value={newCustomerPhone}
+                          onChange={(e) => setNewCustomerPhone(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={addCreditCustomer}
+                            className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
+                          >
+                            حفظ
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowAddCustomer(false)
+                              setNewCustomerName('')
+                              setNewCustomerPhone('')
+                            }}
+                            className="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm"
+                          >
+                            إلغاء
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 mb-3 border-2 border-blue-200">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-semibold text-gray-600">الإجمالي</span>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-blue-600">{getTotalPrice().toFixed(2)}</div>
+                    <div className="text-xs text-blue-500 font-medium">TND</div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-500 mt-2 pt-2 border-t border-blue-200">
+                  {getTotalItems()} {getTotalItems() !== 1 ? 'عناصر' : 'عنصر'} • {cart.length} {cart.length !== 1 ? 'منتجات' : 'منتج'}
+                </div>
+              </div>
+              
+              <button
+                onClick={handleCheckout}
+                disabled={processingCheckout}
+                className={`w-full ${isCredit ? 'bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800' : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'} text-white py-3.5 rounded-xl transition-all flex items-center justify-center font-bold shadow-lg transform hover:scale-[1.02] active:scale-100`}
+              >
+                {processingCheckout ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    جاري المعالجة...
+                  </>
+                ) : (
+                  <>{isCredit ? '💳 تسجيل كدين' : '💰 إتمام الشراء'}</>
+                )}
+              </button>
+              
+              <button
+                onClick={clearCart}
+                className="w-full mt-2 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl transition font-semibold"
+              >
+                🗑️ تفريغ السلة
+              </button>
+            </div>
+          </div>
+        )}
+      </aside>
+      </div>
+
+      {/* Mobile Cart Modal */}
       {showCart && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end z-40">
           <div className="bg-gray-50 w-full max-w-md h-full overflow-y-auto shadow-xl flex flex-col">
@@ -965,10 +1156,10 @@ function POS() {
         </div>
       )}
 
-      {/* Floating Cart Button */}
+      {/* Floating Cart Button - Mobile Only */}
       <button
         onClick={() => setShowCart(true)}
-        className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-16 h-16 shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 z-50"
+        className="lg:hidden fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-16 h-16 shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 z-50"
         aria-label="Open Cart"
       >
         <div className="relative">

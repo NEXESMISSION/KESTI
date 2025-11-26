@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 import { Product } from '@/lib/supabase'
 
 type QuantityModalProps = {
@@ -11,12 +10,10 @@ type QuantityModalProps = {
 
 export default function QuantityModal({ isOpen, product, onClose, onAdd }: QuantityModalProps) {
   const [quantity, setQuantity] = useState('1')
-  const [unitQuantity, setUnitQuantity] = useState('1')
   
   useEffect(() => {
     if (isOpen) {
       setQuantity('1')
-      setUnitQuantity('1')
     }
   }, [isOpen])
 
@@ -62,111 +59,91 @@ export default function QuantityModal({ isOpen, product, onClose, onAdd }: Quant
   const showUnitQuantity = product.unit_type !== 'item'
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-sm sm:max-w-md p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-start mb-3 sm:mb-4">
-          <div className="flex-1">
-            <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900">{product.name}</h2>
-            <p className="text-xs sm:text-sm text-gray-500 mt-1">
-              {product.selling_price.toFixed(2)} TND per {product.unit_type}
-            </p>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xs overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-4 text-white">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold truncate pr-2">{product.name}</h2>
+            <button
+              onClick={onClose}
+              className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-xl sm:text-2xl leading-none p-1"
-          >
-            ×
-          </button>
+          <p className="text-sm text-blue-100 mt-1">
+            {product.selling_price.toFixed(2)} TND/{product.unit_type}
+          </p>
         </div>
 
-        {/* Product Image */}
-        {product.image_url && (
-          <div className="mb-3 sm:mb-4 relative w-full h-24 sm:h-32">
-            <Image
-              src={product.image_url}
-              alt={product.name}
-              fill
-              sizes="(max-width: 640px) 100vw, 384px"
-              className="object-cover rounded-lg"
+        {/* Body */}
+        <div className="p-5">
+          {/* Quantity Controls */}
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <button
+              onClick={() => {
+                const currentQty = parseFloat(quantity || '1')
+                const step = product.unit_type === 'item' ? 1 : 0.5
+                setQuantity(String(Math.max(step, currentQty - step)))
+              }}
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors"
+            >
+              <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M20 12H4" />
+              </svg>
+            </button>
+            
+            <input
+              type="number"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              onKeyPress={handleKeyPress}
+              step={product.unit_type === 'item' ? '1' : '0.1'}
+              className="w-20 text-center text-3xl font-bold border-0 bg-transparent focus:outline-none text-gray-900"
+              min="0.1"
             />
-          </div>
-        )}
-
-        <div className="space-y-3 sm:space-y-4">
-          {/* Quantity Input */}
-          <div>
-            <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
-              الكمية
-            </label>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <button
-                onClick={() => {
-                  const currentQty = parseFloat(quantity || '1')
-                  const step = product.unit_type === 'item' ? 1 : 0.5
-                  setQuantity(String(Math.max(step, currentQty - step)))
-                }}
-                className="bg-gray-200 hover:bg-gray-300 w-14 h-14 sm:w-12 sm:h-12 rounded-lg text-2xl sm:text-xl font-bold active:scale-95 transition"
-              >
-                −
-              </button>
-              <input
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                onKeyPress={handleKeyPress}
-                step={product.unit_type === 'item' ? '1' : '0.1'}
-                className="flex-1 text-center text-xl sm:text-2xl font-bold border-2 border-gray-300 rounded-lg h-10 sm:h-12 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                min="0.1"
-              />
-              <button
-                onClick={() => {
-                  const currentQty = parseFloat(quantity || '1')
-                  const step = product.unit_type === 'item' ? 1 : 0.5
-                  setQuantity(String(currentQty + step))
-                }}
-                className="bg-gray-200 hover:bg-gray-300 w-14 h-14 sm:w-12 sm:h-12 rounded-lg text-2xl sm:text-xl font-bold active:scale-95 transition"
-              >
-                +
-              </button>
-            </div>
-            {showUnitQuantity && (
-              <p className="text-xs sm:text-sm text-gray-500 mt-2 text-center">
-                كل عنصر يساوي 1 {product.unit_type}
-              </p>
-            )}
+            
+            <button
+              onClick={() => {
+                const currentQty = parseFloat(quantity || '1')
+                const step = product.unit_type === 'item' ? 1 : 0.5
+                setQuantity(String(currentQty + step))
+              }}
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors"
+            >
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
           </div>
 
-          {/* Total Price Preview */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
-            <div className="flex justify-between items-center">
-              <span className="text-xs sm:text-sm font-medium text-gray-700">السعر الإجمالي:</span>
-              <span className="text-lg sm:text-xl md:text-2xl font-bold text-blue-600">
-                {(
-                  product.selling_price *
-                  parseFloat(quantity || '1')
-                ).toFixed(2)} TND
-              </span>
-            </div>
-            <p className="text-[10px] sm:text-xs text-gray-600 mt-1 text-center">
-              {quantity} × {product.selling_price.toFixed(2)} دينار لكل {product.unit_type}
+          {/* Total Price */}
+          <div className="text-center mb-6">
+            <p className="text-sm text-gray-500 mb-1">الإجمالي</p>
+            <p className="text-3xl font-bold text-blue-600">
+              {(product.selling_price * parseFloat(quantity || '1')).toFixed(2)}
             </p>
+            <p className="text-xs text-gray-400 mt-1">TND</p>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2 sm:gap-3 mt-4 sm:mt-6">
-          <button
-            onClick={onClose}
-            className="flex-1 bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-gray-800 py-2 sm:py-2.5 md:py-3 rounded-lg text-sm sm:text-base font-medium transition"
-          >
-            إلغاء
-          </button>
-          <button
-            onClick={handleAdd}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-2 sm:py-2.5 md:py-3 rounded-lg text-sm sm:text-base font-medium transition"
-          >
-            إضافة إلى السلة
-          </button>
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors"
+            >
+              إلغاء
+            </button>
+            <button
+              onClick={handleAdd}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white py-3 rounded-xl font-semibold transition-colors shadow-lg shadow-blue-500/30"
+            >
+              إضافة
+            </button>
+          </div>
         </div>
       </div>
     </div>
