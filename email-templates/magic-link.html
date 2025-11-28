@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول إلى KESTI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            direction: rtl;
+        }
+        .email-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            background: linear-gradient(135deg, #6fc605 0%, #0063bd 100%);
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .logo {
+            font-size: 36px;
+            font-weight: 900;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            letter-spacing: 2px;
+        }
+        .tagline {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 28px;
+            color: #1a202c;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .message {
+            font-size: 16px;
+            color: #4a5568;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .button-container {
+            text-align: center;
+            margin: 40px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #6fc605 0%, #0063bd 100%);
+            color: white;
+            text-decoration: none;
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: 0 10px 25px rgba(111, 198, 5, 0.3);
+            transition: transform 0.2s;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(111, 198, 5, 0.4);
+        }
+        .divider {
+            margin: 30px 0;
+            text-align: center;
+            position: relative;
+        }
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e2e8f0;
+        }
+        .divider span {
+            background: white;
+            padding: 0 20px;
+            color: #a0aec0;
+            font-size: 14px;
+            position: relative;
+        }
+        .link-box {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px dashed #cbd5e0;
+            word-break: break-all;
+        }
+        .link-box a {
+            color: #0063bd;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .security-notice {
+            background: #fff5f5;
+            border-right: 4px solid #fc8181;
+            padding: 15px;
+            margin-top: 30px;
+            border-radius: 4px;
+        }
+        .security-notice p {
+            color: #742a2a;
+            font-size: 14px;
+            margin: 0;
+        }
+        .footer {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 30px;
+            text-align: center;
+        }
+        .footer-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #6fc605;
+            margin-bottom: 15px;
+        }
+        .footer-text {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        .footer-links {
+            margin-top: 20px;
+        }
+        .footer-links a {
+            color: #6fc605;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 14px;
+        }
+        .social-icons {
+            margin-top: 20px;
+        }
+        .social-icons a {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            background: rgba(111, 198, 5, 0.1);
+            border-radius: 50%;
+            color: #6fc605;
+            margin: 0 5px;
+            text-decoration: none;
+        }
+        @media (max-width: 600px) {
+            .content { padding: 30px 20px; }
+            .greeting { font-size: 24px; }
+            .cta-button { padding: 14px 30px; font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">KESTI</div>
+            <div class="tagline">نظام إدارة المبيعات والمخزون</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">🔐 تسجيل الدخول السريع</div>
+            
+            <p class="message">
+                مرحباً بك! 👋<br>
+                انقر على الزر أدناه لتسجيل الدخول إلى حسابك في KESTI.<br>
+                هذا الرابط صالح لمدة محدودة من أجل أمان حسابك.
+            </p>
+
+            <div class="button-container">
+                <a href="{{ .ConfirmationURL }}" class="cta-button">
+                    تسجيل الدخول الآن →
+                </a>
+            </div>
+
+            <div class="divider">
+                <span>أو انسخ الرابط</span>
+            </div>
+
+            <div class="link-box">
+                <a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a>
+            </div>
+
+            <div class="security-notice">
+                <p>
+                    <strong>⚠️ ملاحظة أمنية:</strong><br>
+                    إذا لم تطلب تسجيل الدخول، يمكنك تجاهل هذه الرسالة بأمان. لن يتم إجراء أي تغييرات على حسابك.
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-logo">KESTI Pro</div>
+            <div class="footer-text">
+                نظام إدارة شامل للمبيعات والمخزون والمصروفات<br>
+                مصمم خصيصاً للمحلات التجارية والسوبرماركت
+            </div>
+            <div class="footer-links">
+                <a href="https://kestipro.com">الموقع الرسمي</a> |
+                <a href="https://kestipro.com/support">الدعم الفني</a> |
+                <a href="https://kestipro.com/privacy">سياسة الخصوصية</a>
+            </div>
+            <div class="social-icons">
+                <a href="https://www.facebook.com/profile.php?id=61581670844981" target="_blank">f</a>
+                <a href="https://www.instagram.com/kesti_tn" target="_blank">📷</a>
+                <a href="tel:+21653518337">📞</a>
+            </div>
+            <div style="margin-top: 20px; font-size: 12px; color: #718096;">
+                © 2024 KESTI Pro. جميع الحقوق محفوظة.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

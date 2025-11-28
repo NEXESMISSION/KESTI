@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import Image from 'next/image'
 import ImageSlider from '@/components/ImageSlider'
@@ -12,6 +12,21 @@ export default function Home() {
   const [showContact, setShowContact] = useState(false)
   const [isYearly, setIsYearly] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Handle password reset redirect
+  useEffect(() => {
+    // Check if URL has password reset tokens in hash
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hash = window.location.hash.substring(1) // Remove #
+      const params = new URLSearchParams(hash)
+      
+      // Check if this is a password recovery link
+      if (params.get('type') === 'recovery' && params.get('access_token')) {
+        // Redirect to reset-password page with the full hash
+        router.replace('/reset-password' + window.location.hash)
+      }
+    }
+  }, [])
 
   const handleLoginClick = (e: React.MouseEvent) => {
     e.preventDefault()

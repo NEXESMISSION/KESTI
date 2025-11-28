@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { supabase, Product, ProductCategory } from '@/lib/supabase'
 import ProductForm from '@/components/ProductForm'
+import BulkProductImport from '@/components/BulkProductImport'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 
 function OwnerDashboard() {
@@ -16,6 +17,7 @@ function OwnerDashboard() {
   const [userId, setUserId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [filtersExpanded, setFiltersExpanded] = useState(false)
+  const [showBulkImport, setShowBulkImport] = useState(false)
 
   useEffect(() => {
     checkAuthAndFetch()
@@ -247,25 +249,41 @@ function OwnerDashboard() {
           </div>
         )}
 
-        <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
+        <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <h2 className="text-lg sm:text-xl font-semibold">المنتجات</h2>
-          <button
-            onClick={() => {
-              setSelectedProduct(undefined)
-              setShowProductForm(true)
-            }}
-            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition flex items-center justify-center sm:justify-start gap-2"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setShowBulkImport(true)}
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-5 sm:py-3 rounded-lg transition flex items-center justify-center gap-2"
             >
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            إضافة منتج جديد
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
+              استيراد ملف
+            </button>
+            <button
+              onClick={() => {
+                setSelectedProduct(undefined)
+                setShowProductForm(true)
+              }}
+              className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition flex items-center justify-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              إضافة منتج جديد
+            </button>
+          </div>
         </div>
 
         {/* Collapsible Category Filter */}
@@ -534,6 +552,16 @@ function OwnerDashboard() {
         onProductSaved={() => {
           setShowProductForm(false)
           fetchProducts(userId as string)
+        }}
+      />
+
+      {/* Bulk Product Import Modal */}
+      <BulkProductImport
+        isOpen={showBulkImport}
+        onClose={() => setShowBulkImport(false)}
+        onImportComplete={() => {
+          setShowBulkImport(false)
+          if (userId) fetchProducts(userId)
         }}
       />
     </div>

@@ -301,6 +301,15 @@ export default function Login() {
           </button>
         </form>
 
+        <div className="mt-4 text-center">
+          <Link 
+            href="/forgot-password"
+            className="text-sm text-primary hover:text-secondary transition-colors font-medium"
+          >
+            نسيت كلمة المرور؟
+          </Link>
+        </div>
+
         <div className="mt-6 text-center">
           <div className="border-t border-gray-200 pt-6">
             <p className="text-sm text-gray-600 mb-3">ليس لديك حساب؟</p>

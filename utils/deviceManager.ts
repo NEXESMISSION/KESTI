@@ -63,7 +63,7 @@ export function getDeviceInfo() {
 /**
  * Register the current device with the backend
  * Call this immediately after successful login
- * Super admins skip device registration (no device limits)
+ * Super admins and admin see-through sessions skip device registration (no device limits)
  */
 export async function registerCurrentDevice(): Promise<{
   success: boolean
@@ -73,6 +73,18 @@ export async function registerCurrentDevice(): Promise<{
   kickedDevice?: string
 }> {
   try {
+    // Check if this is an admin see-through session
+    if (typeof window !== 'undefined') {
+      const isSeeThroughSession = localStorage.getItem('admin_see_through') === 'true'
+      if (isSeeThroughSession) {
+        console.log('👁️ Admin see-through session - skipping device registration')
+        return {
+          success: true,
+          message: 'Admin see-through - no device limits',
+        }
+      }
+    }
+
     // Check if user is a super admin
     const { data: { session } } = await supabase.auth.getSession()
     
@@ -132,10 +144,19 @@ export async function registerCurrentDevice(): Promise<{
 /**
  * Check if the current device is still authorized
  * Returns true if authorized, false if kicked out
- * Super admins are always authorized (no device limits)
+ * Super admins and admin see-through sessions are always authorized (no device limits)
  */
 export async function isDeviceAuthorized(): Promise<boolean> {
   try {
+    // Check if this is an admin see-through session
+    if (typeof window !== 'undefined') {
+      const isSeeThroughSession = localStorage.getItem('admin_see_through') === 'true'
+      if (isSeeThroughSession) {
+        console.log('👁️ Admin see-through session - bypassing device authorization check')
+        return true
+      }
+    }
+
     // Check if user is logged in
     const { data: { session } } = await supabase.auth.getSession()
     
@@ -181,10 +202,18 @@ export async function isDeviceAuthorized(): Promise<boolean> {
 /**
  * Update the last active timestamp for this device
  * Call this periodically to keep the device "fresh"
- * Super admins skip this since they don't have tracked devices
+ * Super admins and admin see-through sessions skip this since they don't have tracked devices
  */
 export async function updateDeviceActivity(): Promise<void> {
   try {
+    // Check if this is an admin see-through session
+    if (typeof window !== 'undefined') {
+      const isSeeThroughSession = localStorage.getItem('admin_see_through') === 'true'
+      if (isSeeThroughSession) {
+        return // Don't track activity for see-through sessions
+      }
+    }
+
     // Check if user is a super admin
     const { data: { session } } = await supabase.auth.getSession()
     
@@ -215,10 +244,19 @@ export async function updateDeviceActivity(): Promise<void> {
 /**
  * Enforce device limit - checks if current device is still authorized
  * If not authorized, logs out the user
- * Super admins are exempt from device limits
+ * Super admins and admin see-through sessions are exempt from device limits
  */
 export async function enforceDeviceLimit(): Promise<void> {
   try {
+    // Check if this is an admin see-through session - skip enforcement
+    if (typeof window !== 'undefined') {
+      const isSeeThroughSession = localStorage.getItem('admin_see_through') === 'true'
+      if (isSeeThroughSession) {
+        console.log('👁️ Admin see-through session - skipping device limit enforcement')
+        return
+      }
+    }
+
     // Prevent multiple simultaneous enforcement checks (loop prevention)
     if (typeof window !== 'undefined' && (window as any).__enforcingDeviceLimit) {
       return

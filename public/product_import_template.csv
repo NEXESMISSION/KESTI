@@ -1,0 +1,11 @@
+name,selling_price,cost_price,unit_type,category_name,stock_quantity,low_stock_threshold
+Coca Cola 1.5L,3.50,2.50,item,Beverages,100,20
+Fresh Milk,4.00,3.00,l,Dairy,50,10
+Tomatoes,2.50,1.80,kg,Vegetables,200,30
+Olive Oil,12.00,9.00,l,Cooking Oils,30,5
+White Bread,1.50,0.80,item,Bakery,150,25
+Chicken Breast,8.50,6.00,kg,Meat,80,15
+Orange Juice,5.00,3.50,l,Beverages,60,12
+Flour,3.00,2.00,kg,Baking,120,20
+Sugar,2.50,1.50,kg,Baking,100,15
+Rice,4.50,3.00,kg,Grains,150,25
