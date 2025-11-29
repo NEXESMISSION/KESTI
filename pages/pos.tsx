@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { supabase, Product, ProductCategory, CreditCustomer } from '@/lib/supabase'
@@ -50,6 +50,7 @@ function POS() {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false)
   const [businessName, setBusinessName] = useState('')
   const [daysRemaining, setDaysRemaining] = useState(0)
+  const welcomeCheckedRef = useRef(false)
   
   // Contact modal state
   const [showContact, setShowContact] = useState(false)
@@ -214,6 +215,10 @@ function POS() {
   }
 
   const checkFirstLogin = async () => {
+    // Prevent multiple calls (React Strict Mode, etc.)
+    if (welcomeCheckedRef.current) return
+    welcomeCheckedRef.current = true
+    
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
@@ -238,13 +243,13 @@ function POS() {
         const daysLeft = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
         
         if (daysLeft > 0 && daysLeft <= 15) {
-          // Show welcome modal for users with active trial
+          // Mark as seen FIRST to prevent race conditions
+          localStorage.setItem(welcomeKey, 'true')
+          
+          // Then show welcome modal
           setBusinessName(profile.full_name || 'عزيزي العميل')
           setDaysRemaining(daysLeft)
           setShowWelcomeModal(true)
-          
-          // Mark as seen for this specific user
-          localStorage.setItem(welcomeKey, 'true')
         }
       }
     } catch (error) {
