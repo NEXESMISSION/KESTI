@@ -215,12 +215,13 @@ function POS() {
 
   const checkFirstLogin = async () => {
     try {
-      // Check if this is the first time user is logging in
-      const hasSeenWelcome = localStorage.getItem('hasSeenWelcome')
-      if (hasSeenWelcome) return
-
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
+
+      // Check if this specific user has seen the welcome modal
+      const welcomeKey = `hasSeenWelcome_${session.user.id}`
+      const hasSeenWelcome = localStorage.getItem(welcomeKey)
+      if (hasSeenWelcome) return
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -242,8 +243,8 @@ function POS() {
           setDaysRemaining(daysLeft)
           setShowWelcomeModal(true)
           
-          // Mark as seen
-          localStorage.setItem('hasSeenWelcome', 'true')
+          // Mark as seen for this specific user
+          localStorage.setItem(welcomeKey, 'true')
         }
       }
     } catch (error) {
