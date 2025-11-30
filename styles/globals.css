@@ -18,6 +18,22 @@ body {
     rgb(var(--background-start-rgb));
 }
 
+/* Prevent auto-zoom on mobile when focusing inputs */
+/* iOS zooms when input font-size is less than 16px */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="search"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

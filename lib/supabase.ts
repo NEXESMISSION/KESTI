@@ -23,6 +23,8 @@ export type Profile = {
   history_auto_clear_days: number | null
   history_auto_clear_minutes: number | null
   last_history_clear: string | null
+  welcome_shown: boolean
+  pending_alert_message: string | null
 }
 
 export type UserLimit = {

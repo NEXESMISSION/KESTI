@@ -36,6 +36,11 @@ function SuperAdmin() {
   const [deviceCounts, setDeviceCounts] = useState<Record<string, number>>({})
   const [deviceLimits, setDeviceLimits] = useState<Record<string, number>>({})
   const [loadingDevices, setLoadingDevices] = useState(false)
+  
+  // Alert system state
+  const [showAlertModal, setShowAlertModal] = useState(false)
+  const [alertUserId, setAlertUserId] = useState<string | null>(null)
+  const [alertMessage, setAlertMessage] = useState('')
 
   useEffect(() => {
     checkAuth()
@@ -399,6 +404,37 @@ function SuperAdmin() {
     setEditingBusiness(business)
     setNewPassword('') // Reset password field
     setShowEditModal(true)
+  }
+
+  // Alert system functions
+  const openAlertModal = (businessId: string) => {
+    setAlertUserId(businessId)
+    setAlertMessage('')
+    setShowAlertModal(true)
+  }
+
+  const handleSendAlert = async () => {
+    if (!alertUserId || !alertMessage.trim()) {
+      setError('Please enter an alert message')
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ pending_alert_message: alertMessage.trim() })
+        .eq('id', alertUserId)
+
+      if (error) throw error
+
+      setSuccess('Alert sent successfully! It will show when the business owner enters the admin dashboard.')
+      setShowAlertModal(false)
+      setAlertUserId(null)
+      setAlertMessage('')
+    } catch (err: any) {
+      console.error('Error sending alert:', err)
+      setError('Failed to send alert')
+    }
   }
 
   const handleUpdateBusiness = async () => {
@@ -778,14 +814,21 @@ function SuperAdmin() {
                               ✏️ Edit
                             </button>
                             <button
+                              onClick={() => openAlertModal(business.id)}
+                              className="text-purple-600 hover:text-purple-900 text-xs"
+                              title="Send alert message"
+                            >
+                              📢 Alert
+                            </button>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button
                               onClick={() => setConfirmClearHistory(business.id)}
                               className="text-orange-600 hover:text-orange-900 text-xs"
                               title="Clear sales history (keeps products & expenses)"
                             >
                               🧹 Clear
                             </button>
-                          </div>
-                          <div className="flex space-x-2">
                             <button
                               onClick={() => setConfirmDelete(business.id)}
                               className="text-red-600 hover:text-red-900 text-xs"
@@ -922,19 +965,26 @@ function SuperAdmin() {
                         ✏️ Edit
                       </button>
                       <button
+                        onClick={() => openAlertModal(business.id)}
+                        className="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-3 py-2 rounded-lg font-medium transition"
+                        title="Send alert message"
+                      >
+                        📢 Alert
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
                         onClick={() => setConfirmClearHistory(business.id)}
                         className="text-xs bg-orange-50 text-orange-600 hover:bg-orange-100 px-3 py-2 rounded-lg font-medium transition"
                         title="Clear sales history"
                       >
-                        🧹 Clear History
+                        🧹 Clear
                       </button>
-                    </div>
-                    <div className="grid grid-cols-1 gap-2">
                       <button
                         onClick={() => setConfirmDelete(business.id)}
                         className="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg font-medium transition"
                       >
-                        🗑️ Delete Account
+                        🗑️ Delete
                       </button>
                     </div>
                   </div>
@@ -1444,6 +1494,55 @@ function SuperAdmin() {
                 className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg transition"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Alert Modal */}
+      {showAlertModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <span className="text-2xl">📢</span>
+              Send Alert to Business
+            </h2>
+            
+            <p className="text-sm text-gray-600 mb-4">
+              This message will appear as a popup when the business owner enters the admin dashboard (after PIN verification). It will only show once.
+            </p>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Alert Message (Arabic recommended)
+              </label>
+              <textarea
+                value={alertMessage}
+                onChange={(e) => setAlertMessage(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                rows={4}
+                placeholder="أدخل رسالتك هنا..."
+                dir="rtl"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleSendAlert}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg transition font-medium"
+              >
+                📢 Send Alert
+              </button>
+              <button
+                onClick={() => {
+                  setShowAlertModal(false)
+                  setAlertUserId(null)
+                  setAlertMessage('')
+                }}
+                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded-lg transition"
+              >
+                Cancel
               </button>
             </div>
           </div>

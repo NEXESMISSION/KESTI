@@ -228,18 +228,17 @@ function POS() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
 
-      // Check if this specific user has seen the welcome modal
-      const welcomeKey = `hasSeenWelcome_${session.user.id}`
-      const hasSeenWelcome = localStorage.getItem(welcomeKey)
-      if (hasSeenWelcome) return
-
+      // Check if this specific user has seen the welcome modal (from database)
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, subscription_ends_at')
+        .select('full_name, subscription_ends_at, welcome_shown')
         .eq('id', session.user.id)
         .single()
 
       if (!profile) return
+      
+      // Skip if user has already seen welcome modal
+      if (profile.welcome_shown) return
 
       // Calculate days remaining in trial
       if (profile.subscription_ends_at) {
@@ -248,8 +247,11 @@ function POS() {
         const daysLeft = Math.ceil((expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
         
         if (daysLeft > 0 && daysLeft <= 15) {
-          // Mark as seen FIRST to prevent race conditions
-          localStorage.setItem(welcomeKey, 'true')
+          // Mark as seen in database FIRST to prevent race conditions
+          await supabase
+            .from('profiles')
+            .update({ welcome_shown: true })
+            .eq('id', session.user.id)
           
           // Then show welcome modal
           setBusinessName(profile.full_name || 'عزيزي العميل')

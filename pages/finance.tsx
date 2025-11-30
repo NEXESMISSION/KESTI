@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 import AutoClearWarning from '@/components/AutoClearWarning'
+import AdminAlert from '@/components/AdminAlert'
 
 interface SaleItem {
   quantity: number
@@ -73,6 +74,7 @@ function Finance() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [filtersExpanded, setFiltersExpanded] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
     checkAuthAndFetch()
@@ -101,6 +103,8 @@ function Finance() {
         return
       }
 
+      setUserId(session.user.id)
+      
       await Promise.all([
         fetchSaleItems(session.user.id),
         fetchExpenses(session.user.id)
@@ -308,6 +312,9 @@ function Finance() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Admin Alert (shows once when super-admin sends a message) */}
+      <AdminAlert userId={userId} />
+      
       {/* Auto-Clear Warning Alert */}
       <AutoClearWarning />
       
