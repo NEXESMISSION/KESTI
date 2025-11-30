@@ -45,6 +45,11 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
     if (isOpen) {
       fetchCategories()
       
+      // Always clear image file and preview when opening form
+      setImageFile(null)
+      setImagePreview(null)
+      setUploadProgress(0)
+      
       if (isEditing && product) {
         // Populate form with product data for editing
         setName(product.name)
