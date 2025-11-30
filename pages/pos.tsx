@@ -408,8 +408,8 @@ function POS() {
         // Close modal and clear PIN
         setShowPinModal(false)
         setPin('')
-        // Navigate to finance page
-        router.push('/finance')
+        // Navigate to finance page - use window.location for reliable full page load
+        window.location.href = '/finance'
       } else {
         setError('Access denied. Not a business owner.')
       }
