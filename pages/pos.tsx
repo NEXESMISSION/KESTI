@@ -961,8 +961,9 @@ function POS() {
       </main>
 
       {/* Desktop Cart Sidebar - Always visible on lg+ screens, STICKY */}
-      <aside className="hidden lg:flex lg:w-96 bg-gradient-to-b from-gray-50 to-white border-l border-gray-200 flex-col h-[calc(100vh-140px)] sticky top-[140px]">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5 text-white">
+      <aside className="hidden lg:flex lg:w-96 bg-gradient-to-b from-gray-50 to-white border-l border-gray-200 flex-col h-[calc(100vh-140px)] sticky top-[140px] overflow-hidden">
+        {/* Cart Header - Fixed */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5 text-white flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -987,14 +988,16 @@ function POS() {
             <p className="text-sm text-gray-500 text-center">ابدأ بإضافة المنتجات</p>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col">
-            <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Cart Items - Scrollable */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 scrollbar-hide">
               {cart.map((item) => (
                 <CartItem key={item.product.id} item={item} />
               ))}
             </div>
             
-            <div className="border-t-2 border-gray-100 p-4 bg-white shadow-lg">
+            {/* Checkout Footer - Fixed at bottom */}
+            <div className="border-t-2 border-gray-100 p-4 bg-white shadow-lg flex-shrink-0">
               {/* Credit System */}
               <div className="mb-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border-2 border-orange-200 p-3">
                 <div className="flex items-center mb-2">
