@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { supabase, Product, ProductCategory, CreditCustomer } from '@/lib/supabase'
@@ -54,6 +54,11 @@ function POS() {
   
   // Contact modal state
   const [showContact, setShowContact] = useState(false)
+  
+  // Category scroll refs for horizontal scrolling
+  const categoryScrollRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
+  const [canScrollLeft, setCanScrollLeft] = useState<{ [key: string]: boolean }>({})
+  const [canScrollRight, setCanScrollRight] = useState<{ [key: string]: boolean }>({})
   
   const contactInfo = {
     phone: '+216 53518337',
@@ -555,6 +560,42 @@ function POS() {
     productsByCategory[categoryName].push(product)
   })
 
+  // Check scroll buttons visibility for a category
+  const checkScrollButtons = useCallback((categoryName: string) => {
+    const container = categoryScrollRefs.current[categoryName]
+    if (container) {
+      const { scrollLeft, scrollWidth, clientWidth } = container
+      setCanScrollLeft(prev => ({ ...prev, [categoryName]: scrollLeft > 0 }))
+      setCanScrollRight(prev => ({ ...prev, [categoryName]: scrollLeft < scrollWidth - clientWidth - 10 }))
+    }
+  }, [])
+
+  // Initialize scroll buttons for all categories
+  useEffect(() => {
+    Object.keys(productsByCategory).forEach(categoryName => {
+      checkScrollButtons(categoryName)
+    })
+  }, [productsByCategory, checkScrollButtons])
+
+  // Scroll category horizontally
+  const scrollCategory = (categoryName: string, direction: 'left' | 'right') => {
+    const container = categoryScrollRefs.current[categoryName]
+    if (container) {
+      const scrollAmount = 300 // pixels to scroll
+      const newScrollLeft = direction === 'left' 
+        ? container.scrollLeft - scrollAmount 
+        : container.scrollLeft + scrollAmount
+      
+      container.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      })
+      
+      // Update button visibility after scroll
+      setTimeout(() => checkScrollButtons(categoryName), 300)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white shadow-md sticky top-0 z-30">
@@ -676,9 +717,9 @@ function POS() {
       </div>
 
       {/* Main Content Area with Cart Sidebar on Desktop */}
-      <div className="flex-1 flex">
-        {/* Products Section */}
-        <main className="flex-1 py-4 sm:py-6 px-3 sm:px-6 lg:px-8 overflow-y-auto">
+      <div className="flex-1 flex overflow-hidden">
+        {/* Products Section - Scrollable */}
+        <main className="flex-1 py-4 sm:py-6 px-3 sm:px-6 lg:px-8 overflow-y-auto h-[calc(100vh-140px)]">
         {/* Product Size Controls */}
         {!loading && products.length > 0 && (
           <div className="flex justify-end gap-2 mb-4">
@@ -763,18 +804,88 @@ function POS() {
             </button>
           </div>
         ) : (
-          /* Category Sections with Horizontal Scroll */
+          /* Category Sections with Horizontal Scroll and Arrows */
           <div className="space-y-6 sm:space-y-8">
             {Object.entries(productsByCategory).map(([categoryName, categoryProducts]) => (
-              <div key={categoryName}>
-                {/* Category Header */}
-                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 px-2 sm:px-0">
-                  {categoryName}
-                </h2>
+              <div key={categoryName} className="relative">
+                {/* Category Header with Scroll Arrows */}
+                <div className="flex items-center justify-between mb-3 sm:mb-4 px-2 sm:px-0">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
+                    {categoryName}
+                    <span className="text-sm font-normal text-gray-500 mr-2">({categoryProducts.length})</span>
+                  </h2>
+                  
+                  {/* Scroll Arrow Buttons - Desktop */}
+                  <div className="hidden sm:flex items-center gap-2">
+                    <button
+                      onClick={() => scrollCategory(categoryName, 'left')}
+                      disabled={!canScrollLeft[categoryName]}
+                      className={`p-2 rounded-full transition-all duration-200 ${
+                        canScrollLeft[categoryName]
+                          ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      }`}
+                      aria-label="التمرير لليسار"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => scrollCategory(categoryName, 'right')}
+                      disabled={!canScrollRight[categoryName]}
+                      className={`p-2 rounded-full transition-all duration-200 ${
+                        canScrollRight[categoryName]
+                          ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      }`}
+                      aria-label="التمرير لليمين"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
                 
-                {/* Horizontal Scrollable Products */}
-                <div className="relative">
-                  <div className="flex gap-4 sm:gap-6 md:gap-8 overflow-x-auto pb-4 scrollbar-hide" style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+                {/* Horizontal Scrollable Products with Side Arrows */}
+                <div className="relative group/category">
+                  {/* Left Scroll Button - Overlay Style */}
+                  {canScrollLeft[categoryName] && (
+                    <button
+                      onClick={() => scrollCategory(categoryName, 'left')}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white text-gray-800 p-3 rounded-full shadow-xl border border-gray-200 opacity-0 group-hover/category:opacity-100 transition-all duration-200 hover:scale-110 hidden sm:flex items-center justify-center"
+                      style={{ transform: 'translate(-50%, -50%)' }}
+                      aria-label="التمرير لليسار"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                  )}
+                  
+                  {/* Right Scroll Button - Overlay Style */}
+                  {canScrollRight[categoryName] && (
+                    <button
+                      onClick={() => scrollCategory(categoryName, 'right')}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white text-gray-800 p-3 rounded-full shadow-xl border border-gray-200 opacity-0 group-hover/category:opacity-100 transition-all duration-200 hover:scale-110 hidden sm:flex items-center justify-center"
+                      style={{ transform: 'translate(50%, -50%)' }}
+                      aria-label="التمرير لليمين"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  )}
+                  
+                  {/* Products Container */}
+                  <div 
+                    ref={(el) => {
+                      categoryScrollRefs.current[categoryName] = el
+                    }}
+                    onScroll={() => checkScrollButtons(categoryName)}
+                    className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 px-1 scroll-smooth scrollbar-hide"
+                  >
                     {categoryProducts.map((product) => (
                       <div
                         key={product.id}
@@ -788,42 +899,54 @@ function POS() {
                             setShowQuantityModal(true)
                           }
                         }}
-                        className={`group flex-shrink-0 bg-white rounded-xl overflow-hidden border-2 border-transparent hover:border-blue-500 hover:shadow-xl transition-all duration-200 cursor-pointer ${
-                          productBoxSize === 'small' ? 'w-32 sm:w-36' : 'w-48 sm:w-52 md:w-56'
+                        className={`group flex-shrink-0 bg-white rounded-xl overflow-hidden border-2 border-gray-100 hover:border-blue-500 hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:scale-[1.02] ${
+                          productBoxSize === 'small' ? 'w-32 sm:w-36' : 'w-44 sm:w-48 md:w-52'
                         }`}
                       >
                         {/* Product Image */}
                         <div className={`relative w-full ${
-                          productBoxSize === 'small' ? 'h-20 sm:h-24' : 'h-32 sm:h-36 md:h-40'
+                          productBoxSize === 'small' ? 'h-20 sm:h-24' : 'h-28 sm:h-32 md:h-36'
                         }`}>
                           <Image
                             src={product.image_url || 'https://placehold.co/300x200/e5e7eb/6b7280?text=No+Image'}
                             alt={product.name}
                             fill
                             sizes="(max-width: 640px) 100vw, (max-width: 768px) 56px, 72px"
-                            className="object-cover group-hover:scale-110 transition-transform duration-200"
+                            className="object-cover group-hover:scale-105 transition-transform duration-200"
                           />
                           {/* Stock Badge Overlay */}
                           {product.stock_quantity !== null && (
-                            <div className="absolute top-1 right-1 bg-black/70 backdrop-blur-sm text-white px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-medium">
-                              {product.stock_quantity} left
+                            <div className={`absolute top-1.5 right-1.5 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                              product.stock_quantity <= (product.low_stock_threshold || 10) 
+                                ? 'bg-red-500/90' 
+                                : 'bg-black/60'
+                            }`}>
+                              {product.stock_quantity} متبقي
                             </div>
                           )}
+                          {/* Quick Add Overlay */}
+                          <div className="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/10 transition-colors duration-200 flex items-center justify-center">
+                            <div className="bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all duration-200 transform scale-75 group-hover:scale-100 shadow-lg">
+                              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
+                            </div>
+                          </div>
                         </div>
                         
                         {/* Product Info */}
-                        <div className={`${productBoxSize === 'small' ? 'p-1.5 sm:p-2' : 'p-2 sm:p-3'}`}>
-                          <h3 className={`font-bold ${productBoxSize === 'small' ? 'text-[10px] sm:text-xs' : 'text-xs sm:text-sm'} text-gray-900 truncate mb-1`}>
+                        <div className={`${productBoxSize === 'small' ? 'p-2' : 'p-2.5 sm:p-3'}`}>
+                          <h3 className={`font-bold ${productBoxSize === 'small' ? 'text-[11px] sm:text-xs' : 'text-xs sm:text-sm'} text-gray-900 truncate mb-1.5`}>
                             {product.name}
                           </h3>
                           
                           {/* Price */}
                           <div className="flex items-center justify-between">
-                            <span className={`font-extrabold ${productBoxSize === 'small' ? 'text-xs sm:text-sm' : 'text-sm sm:text-base'} text-blue-600`}>
+                            <span className={`font-extrabold ${productBoxSize === 'small' ? 'text-sm' : 'text-base sm:text-lg'} text-blue-600`}>
                               {product.selling_price.toFixed(2)}
                             </span>
-                            <span className={`${productBoxSize === 'small' ? 'text-[9px]' : 'text-[10px] sm:text-xs'} text-gray-500 font-medium`}>
-                              TND/{product.unit_type}
+                            <span className={`${productBoxSize === 'small' ? 'text-[9px]' : 'text-[10px] sm:text-xs'} text-gray-500 font-medium bg-gray-100 px-1.5 py-0.5 rounded`}>
+                              TND
                             </span>
                           </div>
                         </div>
@@ -837,8 +960,8 @@ function POS() {
         )}
       </main>
 
-      {/* Desktop Cart Sidebar - Always visible on lg+ screens */}
-      <aside className="hidden lg:flex lg:w-96 bg-gradient-to-b from-gray-50 to-white border-l border-gray-200 flex-col">
+      {/* Desktop Cart Sidebar - Always visible on lg+ screens, STICKY */}
+      <aside className="hidden lg:flex lg:w-96 bg-gradient-to-b from-gray-50 to-white border-l border-gray-200 flex-col h-[calc(100vh-140px)] sticky top-[140px]">
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5 text-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

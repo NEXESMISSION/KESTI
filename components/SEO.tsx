@@ -393,7 +393,7 @@ export default function SEO({
       
       {/* Search Engine Verification - Add your verification codes */}
       {/* <meta name="google-site-verification" content="YOUR_GOOGLE_VERIFICATION_CODE" /> */}
-      {/* <meta name="msvalidate.01" content="YOUR_BING_VERIFICATION_CODE" /> */}
+      <meta name="msvalidate.01" content="FE45875844F1249207E9886A6DC434D1" />
       {/* <meta name="yandex-verification" content="YOUR_YANDEX_VERIFICATION_CODE" /> */}
       
       {/* Language & Region */}

@@ -23,6 +23,21 @@ body {
     text-wrap: balance;
   }
   
+  /* Hide Scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Smooth scroll for horizontal containers */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+  
   /* Gradient Animation */
   @keyframes gradient {
     0%, 100% {
