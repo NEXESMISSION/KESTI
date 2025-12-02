@@ -1,34 +1,56 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { verifySuperAdmin, isValidUUID, safeErrorResponse, checkRateLimit, getClientIp } from '@/lib/api-security'
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return safeErrorResponse(res, 405, 'Method not allowed')
+  }
+
+  // Rate limiting: 5 requests per minute (password changes are sensitive)
+  const ip = getClientIp(req)
+  const rateLimit = checkRateLimit(`update-password:${ip}`, 5, 60000)
+  if (!rateLimit.allowed) {
+    return safeErrorResponse(res, 429, 'Too many requests')
   }
 
   try {
+    // SECURITY: Only super admins can reset user passwords
+    const auth = await verifySuperAdmin(req)
+    if (!auth.authorized) {
+      return safeErrorResponse(res, 403, 'Super admin access required')
+    }
+
     const { userId, newPassword } = req.body
 
-    if (!userId || !newPassword) {
-      return res.status(400).json({ error: 'userId and newPassword are required' })
+    // SECURITY: Validate UUID format
+    if (!userId || !isValidUUID(userId)) {
+      return safeErrorResponse(res, 400, 'Invalid user ID')
     }
 
-    // Validate password length
+    // Validate password
+    if (!newPassword || typeof newPassword !== 'string') {
+      return safeErrorResponse(res, 400, 'Password is required')
+    }
+
     if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'Password must be at least 6 characters long' })
+      return safeErrorResponse(res, 400, 'Password must be at least 6 characters')
     }
 
-    // Get credentials from environment variables (NEVER hardcode!)
+    if (newPassword.length > 72) {
+      return safeErrorResponse(res, 400, 'Password too long')
+    }
+
     const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
     const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
     if (!SUPABASE_URL || !SERVICE_KEY) {
-      return res.status(500).json({ error: 'Server configuration error' })
+      return safeErrorResponse(res, 500, 'Server configuration error')
     }
 
-    // Update user password in Supabase Auth using admin API
+    // Update user password
     const response = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
       method: 'PUT',
       headers: {
@@ -42,12 +64,7 @@ export default async function handler(
     })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Unknown error' }))
-      console.error('Error updating password:', errorData)
-      return res.status(response.status).json({
-        error: 'Failed to update password',
-        details: errorData
-      })
+      return safeErrorResponse(res, 500, 'Failed to update password')
     }
 
     return res.status(200).json({
@@ -55,11 +72,7 @@ export default async function handler(
       message: 'Password updated successfully'
     })
 
-  } catch (error: any) {
-    console.error('Unexpected error updating password:', error)
-    return res.status(500).json({
-      error: 'Internal server error',
-      message: error.message
-    })
+  } catch (error) {
+    return safeErrorResponse(res, 500, 'Internal server error')
   }
 }

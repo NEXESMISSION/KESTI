@@ -1,10 +1,29 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
+import { safeErrorResponse, checkRateLimit, getClientIp } from '@/lib/api-security'
+
+// Secret key for cron job authentication (set in environment)
+const CRON_SECRET = process.env.CRON_SECRET
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Allow both POST and GET (for cron jobs)
   if (req.method !== 'POST' && req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return safeErrorResponse(res, 405, 'Method not allowed')
+  }
+
+  // Rate limiting: 60 requests per minute (for cron jobs)
+  const ip = getClientIp(req)
+  const rateLimit = checkRateLimit(`auto-clear:${ip}`, 60, 60000)
+  if (!rateLimit.allowed) {
+    return safeErrorResponse(res, 429, 'Too many requests')
+  }
+
+  // SECURITY: Verify cron secret if configured
+  if (CRON_SECRET) {
+    const authHeader = req.headers.authorization
+    if (authHeader !== `Bearer ${CRON_SECRET}`) {
+      return safeErrorResponse(res, 401, 'Unauthorized')
+    }
   }
 
   try {
@@ -12,13 +31,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase credentials')
-      return res.status(500).json({ error: 'Server configuration error' })
+      return safeErrorResponse(res, 500, 'Server configuration error')
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
-    
-    console.log(`🔍 Auto-clear check started at ${new Date().toISOString()}`)
 
     // Get all business users with auto-clear enabled
     const { data: profiles, error: profilesError } = await supabase
@@ -123,11 +139,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       clearedUsers,
       checkedProfiles: profiles?.length || 0
     })
-  } catch (error: any) {
-    console.error('Error in check-and-auto-clear API:', error)
-    return res.status(500).json({
-      error: error.message || 'Failed to check auto-clear',
-      details: error
-    })
+  } catch (error) {
+    return safeErrorResponse(res, 500, 'Auto-clear check failed')
   }
 }

@@ -1,29 +1,48 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { verifySuperAdmin, isValidUUID, safeErrorResponse, checkRateLimit, getClientIp } from '@/lib/api-security'
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return safeErrorResponse(res, 405, 'Method not allowed')
+  }
+
+  // Rate limiting: 10 requests per minute for admin actions
+  const ip = getClientIp(req)
+  const rateLimit = checkRateLimit(`delete-business:${ip}`, 10, 60000)
+  if (!rateLimit.allowed) {
+    return safeErrorResponse(res, 429, 'Too many requests')
   }
 
   try {
-    const { userId } = req.body
-
-    if (!userId) {
-      return res.status(400).json({ error: 'userId is required' })
+    // SECURITY: Only super admins can delete users
+    const auth = await verifySuperAdmin(req)
+    if (!auth.authorized) {
+      return safeErrorResponse(res, 403, 'Super admin access required')
     }
 
-    // Get credentials from environment variables (NEVER hardcode!)
+    const { userId } = req.body
+
+    // SECURITY: Validate UUID format
+    if (!userId || !isValidUUID(userId)) {
+      return safeErrorResponse(res, 400, 'Invalid user ID')
+    }
+
+    // SECURITY: Prevent self-deletion
+    if (userId === auth.userId) {
+      return safeErrorResponse(res, 400, 'Cannot delete your own account')
+    }
+
     const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
     const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
     if (!SUPABASE_URL || !SERVICE_KEY) {
-      return res.status(500).json({ error: 'Server configuration error' })
+      return safeErrorResponse(res, 500, 'Server configuration error')
     }
 
-    // Delete user from Supabase Auth using admin API
+    // Delete user from Supabase Auth
     const response = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
       method: 'DELETE',
       headers: {
@@ -34,12 +53,7 @@ export default async function handler(
     })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: 'Unknown error' }))
-      console.error('Error deleting user from auth:', errorData)
-      return res.status(response.status).json({
-        error: 'Failed to delete user from authentication',
-        details: errorData
-      })
+      return safeErrorResponse(res, 500, 'Failed to delete user')
     }
 
     return res.status(200).json({
@@ -47,11 +61,7 @@ export default async function handler(
       message: 'User deleted successfully'
     })
 
-  } catch (error: any) {
-    console.error('Unexpected error deleting user:', error)
-    return res.status(500).json({
-      error: 'Internal server error',
-      message: error.message
-    })
+  } catch (error) {
+    return safeErrorResponse(res, 500, 'Internal server error')
   }
 }

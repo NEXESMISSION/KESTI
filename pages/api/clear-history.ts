@@ -1,61 +1,72 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
+import { verifyAuth, isValidUUID, safeErrorResponse, checkRateLimit, getClientIp } from '@/lib/api-security'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return safeErrorResponse(res, 405, 'Method not allowed')
+  }
+
+  // Rate limiting: 5 requests per minute
+  const ip = getClientIp(req)
+  const rateLimit = checkRateLimit(`clear-history:${ip}`, 5, 60000)
+  if (!rateLimit.allowed) {
+    return safeErrorResponse(res, 429, 'Too many requests')
   }
 
   try {
+    // SECURITY: Verify the caller is authenticated
+    const auth = await verifyAuth(req)
+    if (!auth.authenticated) {
+      return safeErrorResponse(res, 401, 'Authentication required')
+    }
+
     const { userId } = req.body
 
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' })
+    // SECURITY: Users can only clear their own history (unless super admin)
+    if (userId !== auth.userId && auth.role !== 'super_admin') {
+      return safeErrorResponse(res, 403, 'Access denied')
+    }
+
+    // SECURITY: Validate UUID format
+    if (!userId || !isValidUUID(userId)) {
+      return safeErrorResponse(res, 400, 'Invalid user ID')
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('Missing Supabase credentials')
-      return res.status(500).json({ error: 'Server configuration error' })
+      return safeErrorResponse(res, 500, 'Server configuration error')
     }
 
-    // Create Supabase client with service role key (bypasses RLS)
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Delete sales and sale_items for this user
-    // This will automatically delete sale_items due to CASCADE
     const { error: salesError } = await supabase
       .from('sales')
       .delete()
       .eq('owner_id', userId)
 
     if (salesError) {
-      console.error('Error deleting sales:', salesError)
-      throw salesError
+      return safeErrorResponse(res, 500, 'Failed to clear sales history')
     }
 
-    // Delete expenses (saved templates are in localStorage, so they're safe)
+    // Delete expenses
     const { error: expensesError } = await supabase
       .from('expenses')
       .delete()
       .eq('owner_id', userId)
 
     if (expensesError) {
-      console.error('Error deleting expenses:', expensesError)
-      throw expensesError
+      return safeErrorResponse(res, 500, 'Failed to clear expenses history')
     }
 
     return res.status(200).json({ 
       success: true, 
-      message: 'History cleared successfully. Products and saved expense templates retained.' 
+      message: 'History cleared successfully' 
     })
-  } catch (error: any) {
-    console.error('Error in clear-history API:', error)
-    return res.status(500).json({ 
-      error: error.message || 'Failed to clear history',
-      details: error
-    })
+  } catch (error) {
+    return safeErrorResponse(res, 500, 'Failed to clear history')
   }
 }

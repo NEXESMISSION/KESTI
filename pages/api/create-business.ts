@@ -1,42 +1,76 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
-
-// This should use the service role key in production (keep it secret!)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+import { verifySuperAdmin, safeErrorResponse, sanitizeInput, checkRateLimit, getClientIp } from '@/lib/api-security'
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return safeErrorResponse(res, 405, 'Method not allowed')
+  }
+
+  // Rate limiting: 10 creates per minute
+  const ip = getClientIp(req)
+  const rateLimit = checkRateLimit(`create-business:${ip}`, 10, 60000)
+  if (!rateLimit.allowed) {
+    return safeErrorResponse(res, 429, 'Too many requests')
   }
 
   try {
+    // SECURITY: Only super admins can create business accounts
+    const auth = await verifySuperAdmin(req)
+    if (!auth.authorized) {
+      return safeErrorResponse(res, 403, 'Super admin access required')
+    }
+
     const { email, password, fullName, phoneNumber, pin, subscriptionEndsAt } = req.body
 
-    // Validate inputs
+    // Validate and sanitize inputs
     if (!email || !password || !fullName || !phoneNumber || !pin) {
-      return res.status(400).json({ error: 'Missing required fields' })
+      return safeErrorResponse(res, 400, 'Missing required fields')
     }
+
+    // Sanitize inputs
+    const cleanEmail = sanitizeInput(email).toLowerCase()
+    const cleanFullName = sanitizeInput(fullName)
+    const cleanPhoneNumber = sanitizeInput(phoneNumber)
+    const cleanPin = sanitizeInput(pin)
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(cleanEmail)) {
+      return safeErrorResponse(res, 400, 'Invalid email format')
+    }
+
+    // Validate PIN (4-6 digits)
+    if (!/^\d{4,6}$/.test(cleanPin)) {
+      return safeErrorResponse(res, 400, 'PIN must be 4-6 digits')
+    }
+
+    // Validate password length
+    if (password.length < 6 || password.length > 72) {
+      return safeErrorResponse(res, 400, 'Invalid password length')
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return safeErrorResponse(res, 500, 'Server configuration error')
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
 
     // Create the auth user
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
+      email: cleanEmail,
       password,
       email_confirm: true,
     })
 
-    if (authError) {
-      console.error('Auth error:', authError)
-      return res.status(400).json({ error: authError.message })
-    }
-
-    if (!authData.user) {
-      return res.status(400).json({ error: 'Failed to create user' })
+    if (authError || !authData.user) {
+      return safeErrorResponse(res, 400, 'Failed to create user account')
     }
 
     // Create the profile
@@ -44,28 +78,26 @@ export default async function handler(
       .from('profiles')
       .insert({
         id: authData.user.id,
-        full_name: fullName,
-        email: email,
-        phone_number: phoneNumber,
-        role: 'business_user',  // This will be cast to the ENUM type by PostgreSQL
+        full_name: cleanFullName,
+        email: cleanEmail,
+        phone_number: cleanPhoneNumber,
+        role: 'business_user',
         subscription_ends_at: subscriptionEndsAt,
         is_suspended: false,
-        pin_code: pin,
+        pin_code: cleanPin,
       })
 
     if (profileError) {
-      console.error('Profile error:', profileError)
       // Cleanup: delete the auth user if profile creation fails
       await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
-      return res.status(400).json({ error: profileError.message })
+      return safeErrorResponse(res, 400, 'Failed to create user profile')
     }
 
     return res.status(200).json({ 
       success: true, 
       userId: authData.user.id 
     })
-  } catch (error: any) {
-    console.error('Unexpected error:', error)
-    return res.status(500).json({ error: error.message || 'Internal server error' })
+  } catch (error) {
+    return safeErrorResponse(res, 500, 'Internal server error')
   }
 }
