@@ -26,23 +26,24 @@ const ContactForm: React.FC<ContactFormProps> = ({ className }) => {
     };
 
     try {
-      // نستخدم no-cors بدون هيدرز مخصصة حتى يكون الطلب مسموح من المتصفح
-      await fetch(
-        'https://script.google.com/macros/s/AKfycbzzQ7e5sbeP4F0RfXJZAgg0FPXoGyc6SnVdXAnF9V26Rj6GU2Rs0HLz0u1MBJHPaRxm/exec',
-        {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      // استخدام API route بدلاً من الاتصال المباشر بـ Google Apps Script لتجنب مشاكل CSP
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-      // في وضع no-cors، الطلب ينجح لكن يرمي خطأ في المتصفح، لذا نفترض النجاح
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send message');
+      }
+
       setFormStatus({
         success: true,
-        message: 'تم إرسال رسالتك بنجاح! سنتواصل معك قريبًا.',
+        message: result.message || 'تم إرسال رسالتك بنجاح! سنتواصل معك قريبًا.',
       });
 
       // Reset form
@@ -51,18 +52,11 @@ const ContactForm: React.FC<ContactFormProps> = ({ className }) => {
       setEmail('');
       setMessage('');
     } catch (error) {
-      // في وضع no-cors، الخطأ الطبيعي لا يعني فشل الطلب - البيانات تم إرسالها
-      console.log('Expected no-cors error (this is normal):', error);
+      console.error('Error submitting form:', error);
       setFormStatus({
-        success: true,
-        message: 'تم إرسال رسالتك بنجاح! سنتواصل معك قريبًا.',
+        success: false,
+        message: 'حدث خطأ في إرسال الرسالة. يرجى المحاولة مرة أخرى أو تواصل معنا مباشرة عبر الواتساب.',
       });
-
-      // Reset form
-      setName('');
-      setPhone('');
-      setEmail('');
-      setMessage('');
     } finally {
       setIsSubmitting(false);
     }
