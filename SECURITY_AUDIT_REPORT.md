@@ -23,7 +23,7 @@ CRON_SECRET=sA3Lng0Jlpy0KaIOZ0W+39JAdNfbAeI1B5/aBnSyt/o=
 |----------|--------|-------|
 | `/api/delete-business` | ❌ No auth, anyone could delete users | ✅ Super admin only + rate limit |
 | `/api/update-password` | ❌ No auth, anyone could change passwords | ✅ Super admin only + rate limit |
-| `/api/clear-history` | ❌ Anyone could delete any user's data | ✅ Auth required, users can only clear their own |
+| `/api/clear-history` | ❌ Anyone could delete any user's data | ✅ Super admin only + rate limit |
 | `/api/create-business` | ❌ No auth required | ✅ Super admin only + rate limit |
 | `/api/create-business-consolidated` | ❌ No auth required | ✅ Super admin only + rate limit |
 | `/api/check-and-auto-clear` | ❌ Publicly accessible | ✅ CRON_SECRET authentication |

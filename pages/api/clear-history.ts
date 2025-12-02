@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
-import { verifyAuth, isValidUUID, safeErrorResponse, checkRateLimit, getClientIp } from '@/lib/api-security'
+import { verifySuperAdmin, isValidUUID, safeErrorResponse, checkRateLimit, getClientIp } from '@/lib/api-security'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -15,18 +15,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // SECURITY: Verify the caller is authenticated
-    const auth = await verifyAuth(req)
-    if (!auth.authenticated) {
-      return safeErrorResponse(res, 401, 'Authentication required')
+    // SECURITY: Only super admins can clear history
+    const auth = await verifySuperAdmin(req)
+    if (!auth.authorized) {
+      return safeErrorResponse(res, 403, 'Super admin access required')
     }
 
     const { userId } = req.body
-
-    // SECURITY: Users can only clear their own history (unless super admin)
-    if (userId !== auth.userId && auth.role !== 'super_admin') {
-      return safeErrorResponse(res, 403, 'Access denied')
-    }
 
     // SECURITY: Validate UUID format
     if (!userId || !isValidUUID(userId)) {
