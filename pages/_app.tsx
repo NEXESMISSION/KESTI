@@ -2,6 +2,7 @@ import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { CartProvider } from '@/contexts/CartContext'
 import { SuspensionProvider } from '@/contexts/SuspensionContext'
+import ErrorBoundary from '@/components/ErrorBoundary'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabase'
@@ -32,7 +33,13 @@ export default function App({ Component, pageProps }: AppProps) {
       // Enforce device limit AFTER route change completes (except public pages)
       // This prevents interrupting navigation
       if (!isPublicPage(url)) {
-        enforceDeviceLimit()
+        try {
+          enforceDeviceLimit().catch(err => {
+            console.warn('Device limit enforcement failed:', err)
+          })
+        } catch (err) {
+          console.warn('Device limit enforcement error:', err)
+        }
       }
     }
 
@@ -51,11 +58,15 @@ export default function App({ Component, pageProps }: AppProps) {
 
     // Check authentication and device limit
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      // Enforce device limit if user is logged in (skip on public pages)
-      if (session && !isPublicPage(router.pathname)) {
-        await enforceDeviceLimit()
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        // Enforce device limit if user is logged in (skip on public pages)
+        if (session && !isPublicPage(router.pathname)) {
+          await enforceDeviceLimit()
+        }
+      } catch (err) {
+        console.warn('Auth check failed:', err)
       }
     }
 
@@ -67,7 +78,13 @@ export default function App({ Component, pageProps }: AppProps) {
     // Periodic device limit check (every 30 seconds)
     const deviceCheckInterval = setInterval(() => {
       if (!isPublicPage(router.pathname)) {
-        enforceDeviceLimit()
+        try {
+          enforceDeviceLimit().catch(err => {
+            console.warn('Periodic device check failed:', err)
+          })
+        } catch (err) {
+          console.warn('Periodic device check error:', err)
+        }
       }
     }, 30000) // 30 seconds
 
@@ -81,7 +98,7 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [router.isReady, router.pathname])
 
   return (
-    <>
+    <ErrorBoundary>
       {/* Global loading bar for route transitions */}
       {isNavigating && (
         <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-pulse">
@@ -94,6 +111,6 @@ export default function App({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
         </CartProvider>
       </SuspensionProvider>
-    </>
+    </ErrorBoundary>
   )
 }

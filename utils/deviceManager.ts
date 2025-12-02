@@ -8,6 +8,44 @@ import { supabase } from '@/lib/supabase'
 const STORAGE_KEY = 'kesti_device_id'
 
 /**
+ * Generate a UUID compatible with all browsers (including older mobile browsers)
+ * Falls back to a custom implementation if crypto.randomUUID is not available
+ */
+function generateUUID(): string {
+  // Try modern API first (secure contexts in modern browsers)
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    try {
+      return crypto.randomUUID()
+    } catch (e) {
+      // Fall through to fallback
+    }
+  }
+  
+  // Fallback: Use crypto.getRandomValues if available (works in most browsers)
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    try {
+      const bytes = new Uint8Array(16)
+      crypto.getRandomValues(bytes)
+      // Set version (4) and variant bits
+      bytes[6] = (bytes[6] & 0x0f) | 0x40
+      bytes[8] = (bytes[8] & 0x3f) | 0x80
+      // Convert to hex string
+      const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('')
+      return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+    } catch (e) {
+      // Fall through to final fallback
+    }
+  }
+  
+  // Final fallback: Math.random based (works everywhere, less secure but sufficient for device IDs)
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0
+    const v = c === 'x' ? r : (r & 0x3 | 0x8)
+    return v.toString(16)
+  })
+}
+
+/**
  * Get or create a persistent device identifier
  * This ID persists across sessions and logins
  */
@@ -16,15 +54,21 @@ export function getLocalDeviceId(): string {
     return '' // Server-side, return empty
   }
 
-  let deviceId = localStorage.getItem(STORAGE_KEY)
-  
-  if (!deviceId) {
-    // Generate a random UUID if one doesn't exist
-    deviceId = crypto.randomUUID()
-    localStorage.setItem(STORAGE_KEY, deviceId)
+  try {
+    let deviceId = localStorage.getItem(STORAGE_KEY)
+    
+    if (!deviceId) {
+      // Generate a random UUID if one doesn't exist
+      deviceId = generateUUID()
+      localStorage.setItem(STORAGE_KEY, deviceId)
+    }
+    
+    return deviceId
+  } catch (e) {
+    // localStorage might be unavailable (private browsing, etc.)
+    console.warn('Unable to access localStorage for device ID:', e)
+    return generateUUID() // Return a temporary ID
   }
-  
-  return deviceId
 }
 
 /**
@@ -38,25 +82,33 @@ export function getDeviceInfo() {
     }
   }
 
-  const ua = navigator.userAgent
-  let deviceName = 'Unknown Device'
-  
-  // Detect browser
-  if (ua.includes('Chrome')) deviceName = 'Chrome'
-  else if (ua.includes('Safari')) deviceName = 'Safari'
-  else if (ua.includes('Firefox')) deviceName = 'Firefox'
-  else if (ua.includes('Edge')) deviceName = 'Edge'
-  
-  // Detect OS
-  if (ua.includes('Windows')) deviceName += ' on Windows'
-  else if (ua.includes('Mac')) deviceName += ' on macOS'
-  else if (ua.includes('Linux')) deviceName += ' on Linux'
-  else if (ua.includes('Android')) deviceName += ' on Android'
-  else if (ua.includes('iOS')) deviceName += ' on iOS'
-  
-  return {
-    name: deviceName,
-    userAgent: ua,
+  try {
+    const ua = typeof navigator !== 'undefined' ? navigator.userAgent || '' : ''
+    let deviceName = 'Unknown Device'
+    
+    // Detect browser
+    if (ua.includes('Chrome')) deviceName = 'Chrome'
+    else if (ua.includes('Safari')) deviceName = 'Safari'
+    else if (ua.includes('Firefox')) deviceName = 'Firefox'
+    else if (ua.includes('Edge')) deviceName = 'Edge'
+    
+    // Detect OS
+    if (ua.includes('Windows')) deviceName += ' on Windows'
+    else if (ua.includes('Mac')) deviceName += ' on macOS'
+    else if (ua.includes('Linux')) deviceName += ' on Linux'
+    else if (ua.includes('Android')) deviceName += ' on Android'
+    else if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) deviceName += ' on iOS'
+    
+    return {
+      name: deviceName,
+      userAgent: ua,
+    }
+  } catch (e) {
+    console.warn('Unable to get device info:', e)
+    return {
+      name: 'Unknown Device',
+      userAgent: '',
+    }
   }
 }
 
