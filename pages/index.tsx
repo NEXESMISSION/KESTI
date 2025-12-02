@@ -507,14 +507,13 @@ export default function Home() {
         <footer className="py-12 bg-gray-900 border-t border-gray-800">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-3">
-                <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-7 brightness-0 invert" />
-                <span className="font-bold text-white">Kesti Pro</span>
+              <div className="flex items-center">
+                <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-8 brightness-0 invert" />
               </div>
               
               <div className="flex items-center gap-6 text-sm text-gray-300">
                 <a href={`mailto:${contactInfo.email}`} className="hover:text-white transition">{contactInfo.email}</a>
-                <a href={`tel:${contactInfo.phone}`} className="hover:text-white transition">53 518 337</a>
+                <a href={`tel:${contactInfo.phone}`} className="hover:text-white transition" dir="ltr">53518337</a>
               </div>
 
               <div className="flex items-center gap-4">
@@ -530,8 +529,10 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="text-center text-gray-400 text-sm mt-8">
-              © 2024 Kesti Pro. جميع الحقوق محفوظة.
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 mt-8">
+              <Link href="/legal" className="text-gray-400 hover:text-white text-sm transition">الشروط والأحكام</Link>
+              <span className="text-gray-600 hidden md:inline">|</span>
+              <span className="text-gray-400 text-sm">© 2025 Kesti Pro. جميع الحقوق محفوظة.</span>
             </div>
           </div>
         </footer>

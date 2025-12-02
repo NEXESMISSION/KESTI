@@ -1,11 +1,10 @@
 import { useState, FormEvent, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/router'
-import Image from 'next/image'
 import Link from 'next/link'
+import Head from 'next/head'
 import { registerCurrentDevice } from '@/utils/deviceManager'
 
-// Function to translate error messages to Arabic
 function translateErrorToArabic(error: string): string {
   const errorMap: { [key: string]: string } = {
     'Invalid login credentials': 'بيانات تسجيل الدخول غير صحيحة',
@@ -23,19 +22,16 @@ function translateErrorToArabic(error: string): string {
     'Please check your credentials': 'الرجاء التحقق من بياناتك',
   }
 
-  // Check if error contains known patterns
   for (const [englishError, arabicError] of Object.entries(errorMap)) {
     if (error.toLowerCase().includes(englishError.toLowerCase())) {
       return arabicError
     }
   }
 
-  // Default Arabic error message for unknown errors
   return 'حدث خطأ في تسجيل الدخول. الرجاء التحقق من بياناتك والمحاولة مرة أخرى.'
 }
 
 export default function Login() {
-  // State variables
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -44,23 +40,18 @@ export default function Login() {
   const [kickedDeviceMessage, setKickedDeviceMessage] = useState<string | null>(null)
   const router = useRouter()
   
-  // Check if user is already logged in and handle device limit messages
   useEffect(() => {
-    // Check for device limit exceeded reason
     if (router.query.reason === 'device_limit_exceeded') {
       setError('تم تسجيل الخروج: تم تجاوز حد الأجهزة. تم تسجيل دخول جهاز آخر.')
-      // Clear any lingering session data to prevent auto-redirect loop
-      // But preserve device ID to maintain device identity
       const deviceId = localStorage.getItem('kesti_device_id')
       localStorage.clear()
       sessionStorage.clear()
       if (deviceId) {
         localStorage.setItem('kesti_device_id', deviceId)
       }
-      return // Don't auto-redirect when kicked out due to device limit
+      return
     }
     
-    // If user just logged out, don't auto-redirect
     if (router.query.logout === 'true') {
       return
     }
@@ -69,7 +60,6 @@ export default function Login() {
       const { data: { session } } = await supabase.auth.getSession()
       
       if (session) {
-        // User is already logged in, get their profile
         const { data: profile } = await supabase
           .from('profiles')
           .select('*')
@@ -77,15 +67,11 @@ export default function Login() {
           .single()
         
         if (profile) {
-          // Check if there's a redirectUrl in the query parameters
           const redirectUrl = router.query.redirectUrl as string
           
-          // Use router.push for client-side navigation
           if (redirectUrl && !redirectUrl.includes('/login')) {
-            // Redirect to the original URL the user was trying to access
             router.push(redirectUrl)
           } else {
-            // Default redirect based on user role
             const userRole = typeof profile.role === 'object' ? 
               profile.role.toString() : String(profile.role)
             
@@ -102,15 +88,12 @@ export default function Login() {
     checkSession()
   }, [router])
 
-
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
     
     try {
-      // Step 1: Sign in with Supabase Auth
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -128,7 +111,6 @@ export default function Login() {
         return
       }
       
-      // Step 2: Get user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
@@ -147,33 +129,26 @@ export default function Login() {
         return
       }
       
-      // Step 3: Register device session
       const deviceResult = await registerCurrentDevice()
       
       if (deviceResult.kicked && deviceResult.kickedDevice) {
         setKickedDeviceMessage(
-          `⚠️ تم تسجيل دخول جهاز جديد. تم إخراج: ${deviceResult.kickedDevice}`
+          `تم تسجيل دخول جهاز جديد. تم إخراج: ${deviceResult.kickedDevice}`
         )
       }
       
       if (!deviceResult.success) {
         console.warn('Device registration failed:', deviceResult.error)
-        // Continue login even if device registration fails
       }
       
-      // Get the role
       const userRole = typeof profile.role === 'object' ? 
         profile.role.toString() : String(profile.role)
       
-      // Check if there's a redirectUrl in the query parameters
       const redirectUrl = router.query.redirectUrl as string
       
-      // Use router.push for client-side navigation
       if (redirectUrl && !redirectUrl.includes('/login')) {
-        // Redirect to the original URL the user was trying to access
         router.push(redirectUrl)
       } else {
-        // Default navigation based on role
         if (userRole === 'super_admin') {
           router.push('/super-admin')
         } else if (userRole === 'business_user') {
@@ -193,135 +168,197 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary via-blue-700 to-secondary p-4 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(111,198,5,0.15),transparent_50%),radial-gradient(circle_at_70%_50%,rgba(0,99,189,0.15),transparent_50%)]"></div>
-      
-      {/* Back to home link - Enhanced Visibility */}
-      <Link 
-        href="/"
-        className="absolute top-4 md:top-6 right-4 md:right-6 bg-white hover:bg-gray-100 text-primary hover:text-secondary transition-all flex items-center gap-2 font-bold px-4 md:px-6 py-2 md:py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 border-2 border-white z-50"
-      >
-        <span className="text-xl">→</span>
-        <span className="text-sm md:text-base">الرجوع للرئيسية</span>
-      </Link>
-      
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative z-10">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <Image src="/logo/KESTi.png" alt="KESTI" width={200} height={80} className="h-16 w-auto" priority />
-          </div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
-            مرحباً بك
-          </h2>
-          <p className="text-gray-600 text-lg">سجل الدخول إلى Kesti Pro</p>
-        </div>
+    <>
+      <Head>
+        <title>تسجيل الدخول - Kesti Pro</title>
+        <meta name="description" content="سجل دخولك إلى Kesti Pro" />
+      </Head>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          {kickedDeviceMessage && (
-            <div className="bg-orange-50 border border-orange-200 text-orange-700 px-4 py-3 rounded-lg">
-              {kickedDeviceMessage}
-            </div>
-          )}
-
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-              البريد الإلكتروني
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="username email"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
-              placeholder="بريدك@مثال.com"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-              كلمة المرور
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition"
-                placeholder="أدخل كلمة المرور"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none transition-colors"
-                aria-label={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
-              >
-                {showPassword ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                    <line x1="1" y1="1" x2="23" y2="23"></line>
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                )}
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gradient-to-r from-primary to-secondary hover:shadow-xl text-white font-bold py-3 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-          >
-            {loading ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex" dir="rtl">
+        {/* Left Side - Features (Hidden on Mobile) */}
+        <div className="hidden lg:flex flex-1 bg-gray-900 items-center justify-center p-12">
+          <div className="max-w-md text-center">
+            <div className="mb-8">
+              <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                 </svg>
-                جاري تسجيل الدخول...
-              </span>
-            ) : (
-              'تسجيل الدخول'
-            )}
-          </button>
-        </form>
+              </div>
+              <h2 className="text-3xl font-black text-white mb-4">مرحباً بعودتك!</h2>
+              <p className="text-gray-400 text-lg">سجل دخولك لإدارة عملك بكل سهولة</p>
+            </div>
 
-        <div className="mt-4 text-center">
-          <Link 
-            href="/forgot-password"
-            className="text-sm text-primary hover:text-secondary transition-colors font-medium"
-          >
-            نسيت كلمة المرور؟
-          </Link>
+            <div className="space-y-4 text-right">
+              <div className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">تقارير فورية</h3>
+                  <p className="text-gray-400 text-sm">راقب مبيعاتك وأرباحك لحظة بلحظة</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">بياناتك آمنة</h3>
+                  <p className="text-gray-400 text-sm">تشفير عالي المستوى لحماية معلوماتك</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 bg-white/5 rounded-xl p-4 border border-white/10">
+                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">سريع وسهل</h3>
+                  <p className="text-gray-400 text-sm">واجهة بسيطة تناسب الجميع</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="mt-6 text-center">
-          <div className="border-t border-gray-200 pt-6">
-            <p className="text-sm text-gray-600 mb-3">ليس لديك حساب؟</p>
-            <Link 
-              href="/signup"
-              className="inline-block bg-gradient-to-r from-primary to-secondary text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transition-all"
-            >
-              إنشاء حساب - تجربة مجانية 15 يوم 🚀
+        {/* Right Side - Form */}
+        <div className="flex-1 flex items-center justify-center p-6 md:p-12">
+          <div className="w-full max-w-md">
+            {/* Logo */}
+            <Link href="/" className="flex justify-center mb-8">
+              <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-12" />
             </Link>
+
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">تسجيل الدخول</h1>
+              <p className="text-gray-500 text-lg">أدخل بياناتك للمتابعة</p>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-center flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {error}
+              </div>
+            )}
+
+            {/* Kicked Device Message */}
+            {kickedDeviceMessage && (
+              <div className="mb-6 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl text-center flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                {kickedDeviceMessage}
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">البريد الإلكتروني</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition shadow-sm"
+                  placeholder="example@email.com"
+                  dir="ltr"
+                  required
+                  autoComplete="username email"
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">كلمة المرور</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-3 pl-12 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition shadow-sm"
+                    placeholder="أدخل كلمة المرور"
+                    required
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                  >
+                    {showPassword ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Forgot Password */}
+              <div className="text-left">
+                <Link href="/forgot-password" className="text-sm text-gray-500 hover:text-gray-900 transition">
+                  نسيت كلمة المرور؟
+                </Link>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 bg-gray-900 text-white rounded-xl font-bold text-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    جاري تسجيل الدخول...
+                  </span>
+                ) : 'تسجيل الدخول'}
+              </button>
+            </form>
+
+            {/* Signup Link */}
+            <div className="mt-8 text-center">
+              <div className="border-t border-gray-200 pt-6">
+                <p className="text-gray-500 mb-4">ليس لديك حساب؟</p>
+                <Link 
+                  href="/signup"
+                  className="inline-block w-full py-3 bg-gray-100 text-gray-900 font-bold rounded-xl hover:bg-gray-200 transition border border-gray-200"
+                >
+                  إنشاء حساب جديد - 15 يوم مجاناً
+                </Link>
+              </div>
+            </div>
+
+            {/* Back to Home */}
+            <div className="mt-6 text-center">
+              <Link href="/" className="text-gray-400 hover:text-gray-600 text-sm transition flex items-center justify-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                العودة للصفحة الرئيسية
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
