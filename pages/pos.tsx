@@ -90,22 +90,9 @@ function POS() {
   useEffect(() => {
     checkAuthAndFetchProducts()
     checkAutoClearStatus()
-    triggerAutoClearCheck()
     checkFirstLogin()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const triggerAutoClearCheck = async () => {
-    try {
-      // Trigger the auto-clear check in background
-      await fetch('/api/check-and-auto-clear', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      })
-    } catch (error) {
-      console.error('Auto-clear check failed:', error)
-    }
-  }
 
   // Prevent autofill in PIN fields
   useEffect(() => {
@@ -501,15 +488,18 @@ function POS() {
 
         if (saleError) throw saleError
 
-        // Create sale items
-        const saleItems = cart.map((item) => ({
-          sale_id: sale.id,
-          product_id: item.product.id,
-          product_name: item.product.name,
-          quantity: item.quantity,
-          price_at_sale: item.product.selling_price,
-          cost_price_at_sale: item.product.cost_price || 0,
-        }))
+        // Create sale items (set product_id to null for custom items)
+        const saleItems = cart.map((item) => {
+          const isCustomItem = item.product.id.startsWith('custom-')
+          return {
+            sale_id: sale.id,
+            product_id: isCustomItem ? null : item.product.id,
+            product_name: item.product.name,
+            quantity: item.quantity,
+            price_at_sale: item.product.selling_price,
+            cost_price_at_sale: item.product.cost_price || 0,
+          }
+        })
 
         const { error: itemsError } = await supabase.from('sale_items').insert(saleItems)
 
@@ -518,9 +508,10 @@ function POS() {
         setSuccess('تم إتمام الدفع بنجاح!')
       }
 
-      // Deduct stock for products with stock tracking enabled (for both regular and credit sales)
+      // Deduct stock for products with stock tracking enabled (skip custom items)
       for (const item of cart) {
-        if (item.product.stock_quantity !== null) {
+        const isCustomItem = item.product.id.startsWith('custom-')
+        if (!isCustomItem && item.product.stock_quantity !== null) {
           const newStock = item.product.stock_quantity - item.quantity
           
           const { error: stockError } = await supabase
