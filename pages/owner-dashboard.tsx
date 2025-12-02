@@ -99,25 +99,6 @@ function OwnerDashboard() {
     }
   }
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut({ scope: 'local' })
-      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; domain=' + window.location.hostname
-      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT; domain=' + window.location.hostname
-      document.cookie = 'sb-access-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
-      document.cookie = 'sb-refresh-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT'
-      localStorage.clear()
-      sessionStorage.clear()
-      await new Promise(resolve => setTimeout(resolve, 100))
-      window.location.replace('/login?logout=true')
-    } catch (error) {
-      console.error('Error during logout:', error)
-      localStorage.clear()
-      sessionStorage.clear()
-      window.location.replace('/login?logout=true')
-    }
-  }
-
   const filteredProducts = selectedCategory
     ? products.filter(p => p.category_id === selectedCategory)
     : products
@@ -138,17 +119,6 @@ function OwnerDashboard() {
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-              </button>
-              
-              {/* Logout */}
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white p-2 sm:p-2.5 rounded-lg transition"
-                title="تسجيل الخروج"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
               </button>
             </div>

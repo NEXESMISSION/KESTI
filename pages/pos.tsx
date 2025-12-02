@@ -609,33 +609,52 @@ function POS() {
     setShowCustomItemModal(false)
   }
 
-  // Group products by category
-  const productsByCategory: { [key: string]: Product[] } = {}
-  
-  filteredProducts.forEach(product => {
-    const categoryName = product.category?.name || 'Uncategorized'
-    if (!productsByCategory[categoryName]) {
-      productsByCategory[categoryName] = []
-    }
-    productsByCategory[categoryName].push(product)
-  })
+  // Group products by category (memoized to prevent infinite loops)
+  const productsByCategory = useMemo(() => {
+    const grouped: { [key: string]: Product[] } = {}
+    filteredProducts.forEach(product => {
+      const categoryName = product.category?.name || 'Uncategorized'
+      if (!grouped[categoryName]) {
+        grouped[categoryName] = []
+      }
+      grouped[categoryName].push(product)
+    })
+    return grouped
+  }, [filteredProducts])
+
+  // Get category names for dependency tracking
+  const categoryNames = useMemo(() => Object.keys(productsByCategory), [productsByCategory])
 
   // Check scroll buttons visibility for a category
   const checkScrollButtons = useCallback((categoryName: string) => {
     const container = categoryScrollRefs.current[categoryName]
     if (container) {
       const { scrollLeft, scrollWidth, clientWidth } = container
-      setCanScrollLeft(prev => ({ ...prev, [categoryName]: scrollLeft > 0 }))
-      setCanScrollRight(prev => ({ ...prev, [categoryName]: scrollLeft < scrollWidth - clientWidth - 10 }))
+      const newCanScrollLeft = scrollLeft > 0
+      const newCanScrollRight = scrollLeft < scrollWidth - clientWidth - 10
+      
+      // Only update state if values actually changed
+      setCanScrollLeft(prev => {
+        if (prev[categoryName] === newCanScrollLeft) return prev
+        return { ...prev, [categoryName]: newCanScrollLeft }
+      })
+      setCanScrollRight(prev => {
+        if (prev[categoryName] === newCanScrollRight) return prev
+        return { ...prev, [categoryName]: newCanScrollRight }
+      })
     }
   }, [])
 
   // Initialize scroll buttons for all categories
   useEffect(() => {
-    Object.keys(productsByCategory).forEach(categoryName => {
-      checkScrollButtons(categoryName)
-    })
-  }, [productsByCategory, checkScrollButtons])
+    // Use requestAnimationFrame to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      categoryNames.forEach(categoryName => {
+        checkScrollButtons(categoryName)
+      })
+    }, 100)
+    return () => clearTimeout(timeoutId)
+  }, [categoryNames, checkScrollButtons])
 
   // Scroll category horizontally
   const scrollCategory = (categoryName: string, direction: 'left' | 'right') => {
