@@ -55,6 +55,15 @@ function POS() {
   // Contact modal state
   const [showContact, setShowContact] = useState(false)
   
+  // Custom quick-add item modal state
+  const [showCustomItemModal, setShowCustomItemModal] = useState(false)
+  const [customItem, setCustomItem] = useState({
+    name: '',
+    price: '',
+    quantity: '1',
+    note: ''
+  })
+  
   // Category scroll refs for horizontal scrolling
   const categoryScrollRefs = useRef<{ [key: string]: HTMLDivElement | null }>({})
   const [canScrollLeft, setCanScrollLeft] = useState<{ [key: string]: boolean }>({})
@@ -549,6 +558,45 @@ function POS() {
   const clearFilters = () => {
     setSearchTerm('')
     setSelectedCategory(null)
+  }
+
+  // Handle adding custom quick item to cart
+  const handleAddCustomItem = () => {
+    if (!customItem.name.trim() || !customItem.price.trim()) {
+      setError('يرجى إدخال اسم المنتج والسعر')
+      return
+    }
+    
+    const price = parseFloat(customItem.price)
+    const quantity = parseFloat(customItem.quantity) || 1
+    
+    if (isNaN(price) || price <= 0) {
+      setError('يرجى إدخال سعر صحيح')
+      return
+    }
+    
+    // Create a temporary product object for the cart
+    const tempProduct: Product = {
+      id: `custom-${Date.now()}`, // Unique temporary ID
+      owner_id: userId || '',
+      name: customItem.note ? `${customItem.name.trim()} (${customItem.note.trim()})` : customItem.name.trim(),
+      selling_price: price,
+      cost_price: 0, // No cost tracking for quick items
+      category_id: null,
+      image_url: null,
+      unit_type: 'item',
+      stock_quantity: null, // No stock tracking
+      low_stock_threshold: null,
+      created_at: new Date().toISOString()
+    }
+    
+    addToCart(tempProduct, quantity)
+    setSuccess('تمت إضافة المنتج للسلة')
+    setTimeout(() => setSuccess(null), 2000)
+    
+    // Reset form and close modal
+    setCustomItem({ name: '', price: '', quantity: '1', note: '' })
+    setShowCustomItemModal(false)
   }
 
   // Group products by category
@@ -1290,6 +1338,22 @@ function POS() {
         </div>
       )}
 
+      {/* Floating Quick Add Button - For adding rare/custom items */}
+      <button
+        onClick={() => setShowCustomItemModal(true)}
+        className="fixed bottom-8 left-8 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-full w-14 h-14 shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 z-50 group border-2 border-white/20"
+        aria-label="إضافة منتج سريع"
+        title="إضافة منتج سريع"
+      >
+        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        {/* Tooltip on hover */}
+        <span className="absolute left-16 bg-gray-900 text-white text-xs font-semibold px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg">
+          + إضافة سريعة
+        </span>
+      </button>
+
       {/* Floating Cart Button - Mobile Only */}
       <button
         onClick={() => setShowCart(true)}
@@ -1584,6 +1648,134 @@ function POS() {
         daysRemaining={daysRemaining}
         onContactClick={() => setShowContact(true)}
       />
+
+      {/* Custom Quick Item Modal */}
+      {showCustomItemModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowCustomItemModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold">إضافة منتج سريع</h2>
+                    <p className="text-sm text-emerald-200">للمنتجات النادرة أو الخاصة</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowCustomItemModal(false)}
+                  className="text-white/80 hover:text-white transition p-1"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Form */}
+            <div className="p-5 space-y-4">
+              {/* Name Field - Required */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  اسم المنتج <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={customItem.name}
+                  onChange={(e) => setCustomItem(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="مثال: قطعة غيار..."
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition"
+                  autoFocus
+                />
+              </div>
+
+              {/* Price Field - Required */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  السعر (دينار) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={customItem.price}
+                  onChange={(e) => setCustomItem(prev => ({ ...prev, price: e.target.value }))}
+                  placeholder="0.00"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition text-lg font-semibold"
+                />
+              </div>
+
+              {/* Quantity Field - Optional (defaults to 1) */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  الكمية <span className="text-gray-400 font-normal">(اختياري - الافتراضي: 1)</span>
+                </label>
+                <input
+                  type="number"
+                  step="1"
+                  min="1"
+                  value={customItem.quantity}
+                  onChange={(e) => setCustomItem(prev => ({ ...prev, quantity: e.target.value }))}
+                  placeholder="1"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition"
+                />
+              </div>
+
+              {/* Note Field - Optional */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  ملاحظة <span className="text-gray-400 font-normal">(اختياري)</span>
+                </label>
+                <input
+                  type="text"
+                  value={customItem.note}
+                  onChange={(e) => setCustomItem(prev => ({ ...prev, note: e.target.value }))}
+                  placeholder="أي تفاصيل إضافية..."
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition"
+                />
+              </div>
+
+              {/* Info Box */}
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                <p className="text-sm text-emerald-800 flex items-start gap-2">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>هذا المنتج سيُضاف للسلة فقط ولن يُحفظ في قائمة المنتجات. مناسب للمنتجات النادرة أو الخاصة.</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 pb-5 flex gap-3">
+              <button
+                onClick={() => {
+                  setCustomItem({ name: '', price: '', quantity: '1', note: '' })
+                  setShowCustomItemModal(false)
+                }}
+                className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={handleAddCustomItem}
+                className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                إضافة للسلة
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Contact Modal */}
       {showContact && (

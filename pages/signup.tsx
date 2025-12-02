@@ -2,7 +2,6 @@ import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import Link from 'next/link'
-import Alert from '@/components/ui/Alert'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 
@@ -165,11 +164,40 @@ export default function Signup() {
           </div>
         )}
 
-        {/* Error Message */}
+        {/* Error Popup Modal - Centered on Screen */}
         {error && (
-          <Alert variant="error" className="mb-6">
-            <p className="text-center font-semibold">{error}</p>
-          </Alert>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+            <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm md:max-w-md w-full shadow-2xl transform animate-scaleIn border-4 border-red-500">
+              {/* Error Icon */}
+              <div className="flex justify-center mb-5">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-xl animate-pulse">
+                  <svg className="w-10 h-10 md:w-12 md:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Error Text */}
+              <div className="text-center space-y-3">
+                <h3 className="text-xl md:text-2xl font-black text-red-600">
+                  خطأ!
+                </h3>
+                <p className="text-base md:text-lg text-gray-700 font-semibold leading-relaxed">
+                  {error}
+                </p>
+              </div>
+              
+              {/* Close Button */}
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => setError(null)}
+                  className="px-8 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-xl hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 shadow-lg"
+                >
+                  حسناً
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Signup Form */}
