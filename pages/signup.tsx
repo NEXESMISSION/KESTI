@@ -375,41 +375,119 @@ export default function Signup() {
               
               {/* Content */}
               <div className="p-6 overflow-y-auto max-h-[calc(85vh-180px)] text-gray-600 space-y-4 text-sm leading-relaxed">
-                <p>بتسجيلك أو استخدامك لخدمة Kesti Pro، فإنك تقر بأنك قرأت وفهمت ووافقت على الشروط التالية كاملةً وبدون تحفظ:</p>
+                <p className="text-gray-700">بتسجيلك أو استخدامك لخدمة Kesti Pro، فإنك تقر بأنك قرأت وفهمت ووافقت على الشروط التالية كاملةً وبدون تحفظ:</p>
 
                 <div className="space-y-3">
+                  {/* Section 1 */}
                   <div className="bg-gray-50 rounded-xl p-4">
-                    <h3 className="font-bold text-gray-900 mb-2">1. الاستخدام المشروع والقانوني</h3>
-                    <p className="text-gray-500">يُحظر استخدام الخدمة في أي نشاط غير قانوني. أنت المسؤول عن جميع عمليات البيع والإقرارات الضريبية.</p>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="w-6 h-6 bg-gray-900 rounded-lg flex items-center justify-center text-white text-xs font-bold">1</span>
+                      <h3 className="font-bold text-gray-900">الاستخدام المشروع والقانوني</h3>
+                    </div>
+                    <ul className="space-y-1 text-gray-500 mr-9">
+                      <li>• يُحظر تماماً استخدام الخدمة في أي نشاط غير قانوني أو يخالف التشريعات التونسية السارية.</li>
+                      <li>• أنت وحدك المسؤول قانونياً ومالياً عن جميع عمليات البيع والفواتير والإقرارات الضريبية.</li>
+                    </ul>
                   </div>
 
+                  {/* Section 2 */}
                   <div className="bg-gray-50 rounded-xl p-4">
-                    <h3 className="font-bold text-gray-900 mb-2">2. دقة البيانات</h3>
-                    <p className="text-gray-500">أنت مسؤول عن صحة البيانات التي تدخلها. Kesti Pro أداة مساعدة ولا تُعتبر بديلاً عن محاسب قانوني.</p>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="w-6 h-6 bg-gray-900 rounded-lg flex items-center justify-center text-white text-xs font-bold">2</span>
+                      <h3 className="font-bold text-gray-900">دقة البيانات والمحاسبة</h3>
+                    </div>
+                    <ul className="space-y-1 text-gray-500 mr-9">
+                      <li>• أنت مسؤول مسؤولية كاملة عن صحة ودقة الأسعار والكميات والمصروفات وجميع البيانات التي تدخلها.</li>
+                      <li>• Kesti Pro أداة مساعدة تقنية فقط، ولا تُعتبر بأي حال بديلاً عن محاسب قانوني أو خبير ضرائب معتمد.</li>
+                    </ul>
                   </div>
 
+                  {/* Section 3 */}
                   <div className="bg-gray-50 rounded-xl p-4">
-                    <h3 className="font-bold text-gray-900 mb-2">3. حماية البيانات</h3>
-                    <p className="text-gray-500">نطبّق معايير تشفير عالية المستوى. لا نبيع بياناتك الشخصية لأي طرف ثالث.</p>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="w-6 h-6 bg-gray-900 rounded-lg flex items-center justify-center text-white text-xs font-bold">3</span>
+                      <h3 className="font-bold text-gray-900">حماية البيانات والأمان</h3>
+                    </div>
+                    <ul className="space-y-1 text-gray-500 mr-9">
+                      <li>• نحن نطبّق معايير تشفير عالية المستوى (TLS 1.3 وتشفير قواعد البيانات) لحماية بياناتك.</li>
+                      <li>• لا نبيع بياناتك الشخصية ولا نشاركها مع أي طرف ثالث إلا بأمر قضائي ساري أو بموافقتك الصريحة.</li>
+                      <li>• في حال وقوع أي هجوم إلكتروني أو اختراق ناتج عن ظروف قاهرة، فإننا غير مسؤولين عن أي أضرار تنجم عن ذلك.</li>
+                    </ul>
                   </div>
 
+                  {/* Section 4 */}
                   <div className="bg-gray-50 rounded-xl p-4">
-                    <h3 className="font-bold text-gray-900 mb-2">4. الاشتراك والدفع</h3>
-                    <p className="text-gray-500">الاشتراك يجدد تلقائياً. يمكنك الإلغاء في أي وقت بدون رسوم.</p>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="w-6 h-6 bg-gray-900 rounded-lg flex items-center justify-center text-white text-xs font-bold">4</span>
+                      <h3 className="font-bold text-gray-900">الاشتراك والتسعير والدفع</h3>
+                    </div>
+                    <ul className="space-y-1 text-gray-500 mr-9">
+                      <li>• الاشتراك شهري أو سنوي ويجدد تلقائياً ما لم تقم بإلغائه قبل موعد التجديد.</li>
+                      <li>• يمكنك إلغاء الاشتراك في أي وقت من لوحة التحكم بدون أي رسوم إلغاء.</li>
+                      <li>• لا يتم استرجاع المبالغ المدفوعة عن الفترة التي تم استخدام الخدمة فيها فعلياً.</li>
+                    </ul>
                   </div>
 
+                  {/* Section 5 */}
                   <div className="bg-gray-50 rounded-xl p-4">
-                    <h3 className="font-bold text-gray-900 mb-2">5. فترة التجربة</h3>
-                    <p className="text-gray-500">15 يوماً مجاناً. لا يتم خصم أي مبلغ إلا بموافقتك.</p>
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="w-6 h-6 bg-gray-900 rounded-lg flex items-center justify-center text-white text-xs font-bold">5</span>
+                      <h3 className="font-bold text-gray-900">فترة التجربة المجانية</h3>
+                    </div>
+                    <ul className="space-y-1 text-gray-500 mr-9">
+                      <li>• 15 يوماً مجاناً من تاريخ إنشاء الحساب.</li>
+                      <li>• لا يتم خصم أي مبلغ إلا بعد انتهاء الفترة المجانية وبموافقتك الصريحة.</li>
+                    </ul>
                   </div>
 
-                  <div className="bg-red-50 rounded-xl p-4 border border-red-100">
-                    <h3 className="font-bold text-red-800 mb-2">6. حدود المسؤولية</h3>
-                    <p className="text-red-700">تُقدَّم الخدمة «كما هي». الحد الأقصى لمسؤوليتنا لن يتجاوز المبلغ المدفوع خلال 3 أشهر.</p>
+                  {/* Section 6 - Important */}
+                  <div className="bg-red-50 rounded-xl p-4 border border-red-200">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="w-6 h-6 bg-red-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">6</span>
+                      <h3 className="font-bold text-red-800">حدود المسؤولية (مهم جداً)</h3>
+                    </div>
+                    <ul className="space-y-1 text-red-700 mr-9">
+                      <li>• تُقدَّم الخدمة «كما هي» و«حسب التوفر» بدون أي ضمان باستمراريتها 100%.</li>
+                      <li>• لا نتحمل مسؤولية أي أضرار مباشرة أو غير مباشرة أو خسائر في الأرباح أو البيانات.</li>
+                    </ul>
+                    <p className="mt-2 mr-9 text-red-800 font-medium text-xs bg-red-100 p-2 rounded-lg">
+                      الحد الأقصى لمسؤوليتنا المالية لن يتجاوز المبلغ الذي دفعته خلال الثلاثة أشهر السابقة.
+                    </p>
+                  </div>
+
+                  {/* Section 7 */}
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="w-6 h-6 bg-gray-900 rounded-lg flex items-center justify-center text-white text-xs font-bold">7</span>
+                      <h3 className="font-bold text-gray-900">تعديل الشروط</h3>
+                    </div>
+                    <ul className="space-y-1 text-gray-500 mr-9">
+                      <li>• نحتفظ بالحق في تعديل هذه الشروط في أي وقت، وسنُعلمك بالتغييرات.</li>
+                      <li>• استمرار استخدامك للخدمة بعد 7 أيام من الإشعار يُعتبر موافقة صريحة على الشروط المعدّلة.</li>
+                    </ul>
+                  </div>
+
+                  {/* Section 8 */}
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="w-6 h-6 bg-gray-900 rounded-lg flex items-center justify-center text-white text-xs font-bold">8</span>
+                      <h3 className="font-bold text-gray-900">القانون الواجب التطبيق</h3>
+                    </div>
+                    <ul className="space-y-1 text-gray-500 mr-9">
+                      <li>• تخضع هذه الشروط وتفسر وفقاً لقوانين الجمهورية التونسية.</li>
+                      <li>• أي نزاع يكون من اختصاص المحاكم التونسية المختصة في تونس العاصمة حصرياً.</li>
+                    </ul>
                   </div>
                 </div>
 
-                <p className="text-center text-gray-400 text-xs pt-4">آخر تحديث: 2 ديسمبر 2025</p>
+                {/* Agreement Notice */}
+                <div className="bg-gray-900 rounded-xl p-4 text-center">
+                  <p className="text-white text-xs leading-relaxed">
+                    بضغطك على زر «إنشاء حساب» أو «موافق» فإنك تؤكد أنك بالغ قانونياً (18 سنة فأكثر)، وقد قرأت وفهمت ووافقت على كل ما ورد أعلاه.
+                  </p>
+                </div>
+
+                <p className="text-center text-gray-400 text-xs">آخر تحديث: 2 ديسمبر 2025</p>
               </div>
 
               {/* Footer */}
