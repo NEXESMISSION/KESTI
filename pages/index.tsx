@@ -75,7 +75,6 @@ export default function Home() {
     { title: 'ربحك الصافي كل يوم', desc: 'بعد الايجار والكهرباء والمصاريف كلها', icon: '📊' },
     { title: 'حسابات تلقائية', desc: 'لا تقعد تحسب للفجر، النظام يحسب لك كل شيء', icon: '💰' },
     { title: 'تحكم من اي مكان', desc: 'من البيت او القهوة، من اي تليفون او كمبيوتر', icon: '�' },
-    { title: 'كل موظف له حسابه', desc: 'تعرف من باع ماذا وتمنع السرقة بسهولة', icon: '👥' },
     { title: 'يعمل على تليفونك', desc: 'لا تشتري جهاز كاشير غالي', icon: '📱' },
     { title: 'دعم واتساب فوري', desc: 'سؤال؟ نرد عليك في دقائق', icon: '🎧' },
   ]
@@ -150,8 +149,8 @@ export default function Home() {
                     <span>ادارة المبيعات والمخزون بذكاء</span>
                   </div>
                   
-                  {/* Main Headline - 32-38px mobile, 48-60px desktop */}
-                  <h1 className="text-[32px] sm:text-[40px] md:text-[48px] lg:text-[54px] font-black text-gray-900 mb-6 leading-[1.25]">
+                  {/* Main Headline - 36-40px mobile, 48-60px desktop */}
+                  <h1 className="text-[36px] sm:text-[42px] md:text-[50px] lg:text-[58px] font-black text-gray-900 mb-6 leading-[1.2]">
                     <span className="text-red-600">وداعا</span> للدفاتر
                     <br />
                     والحسابات اليدوية
@@ -275,15 +274,12 @@ export default function Home() {
               <div className="w-20 h-1 bg-red-500 mx-auto rounded"></div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 max-w-7xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 md:gap-6 max-w-6xl mx-auto">
               {problems.map((problem, idx) => (
-                <div key={idx} className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-red-400 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group cursor-pointer" style={{animationDelay: `${idx * 100}ms`}}>
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-[36px] group-hover:scale-110 transition-transform duration-300">{problem.icon}</span>
-                    <div className="w-10 h-1 bg-red-400 group-hover:w-16 transition-all duration-500 rounded"></div>
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-[18px] md:text-[20px] lg:text-[22px] mb-3 leading-[1.4]">{problem.title}</h3>
-                  <p className="text-[16px] md:text-[17px] lg:text-[18px] text-gray-500 leading-[1.7]">{problem.desc}</p>
+                <div key={idx} className="bg-white rounded-2xl p-5 md:p-6 border-2 border-gray-100 hover:border-red-400 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group cursor-pointer">
+                  <div className="text-[32px] md:text-[40px] mb-3 group-hover:scale-110 transition-transform duration-300">{problem.icon}</div>
+                  <h3 className="font-bold text-gray-900 text-[16px] md:text-[19px] lg:text-[21px] mb-2 leading-[1.4]">{problem.title}</h3>
+                  <p className="text-[14px] md:text-[16px] lg:text-[17px] text-gray-500 leading-[1.6]">{problem.desc}</p>
                 </div>
               ))}
             </div>
@@ -314,22 +310,6 @@ export default function Home() {
                   <p className="text-[16px] md:text-[17px] lg:text-[18px] text-gray-600 leading-[1.7]">{feature.desc}</p>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Screenshot Section */}
-        <section className="py-20 md:py-28 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-10">
-              <h2 className="text-[24px] sm:text-[28px] md:text-[36px] lg:text-[42px] font-bold text-gray-900 mb-3 leading-[1.3]">واجهة بسيطة وسهلة</h2>
-              <p className="text-[16px] sm:text-[18px] md:text-[20px] text-gray-600 leading-[1.7]">لا تحتاج خبرة تقنية - ابدا العمل في دقائق</p>
-            </div>
-            
-            <div className="max-w-5xl mx-auto">
-              <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl p-6 md:p-10 shadow-2xl hover:shadow-3xl transition-all duration-700 hover:scale-[1.02] group">
-                <img src="/test1.png" alt="واجهة النظام" className="w-full rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-500" />
-              </div>
             </div>
           </div>
         </section>
@@ -396,17 +376,17 @@ export default function Home() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-20 md:py-28 bg-white">
+        <section className="py-20 md:py-28 bg-gray-50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-[24px] sm:text-[28px] md:text-[36px] lg:text-[42px] font-bold text-gray-900 mb-3 leading-[1.3]">أسئلة شائعة</h2>
             </div>
 
-            <div className="max-w-3xl mx-auto space-y-5">
+            <div className="max-w-3xl mx-auto space-y-4">
               {faqs.map((faq, idx) => (
-                <div key={idx} className="bg-white rounded-2xl p-7 md:p-8 shadow-sm hover:shadow-xl border-2 border-transparent hover:border-gray-200 transition-all duration-500 cursor-pointer group">
-                  <h3 className="font-bold text-gray-900 text-[19px] md:text-[21px] lg:text-[23px] mb-3 leading-[1.5] group-hover:text-gray-700 transition-colors">{faq.q}</h3>
-                  <p className="text-gray-600 text-[17px] md:text-[18px] lg:text-[20px] leading-[1.8]">{faq.a}</p>
+                <div key={idx} className="bg-gray-900 text-white rounded-2xl p-6 md:p-8 hover:bg-gray-800 transition-all duration-300 cursor-pointer">
+                  <h3 className="font-bold text-[18px] md:text-[20px] lg:text-[22px] mb-3 leading-[1.4]">{faq.q}</h3>
+                  <p className="text-gray-300 text-[16px] md:text-[17px] lg:text-[18px] leading-[1.7]">{faq.a}</p>
                 </div>
               ))}
             </div>
