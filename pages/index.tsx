@@ -5,6 +5,7 @@ import ImageSlider from '@/components/ImageSlider'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import SEO from '@/components/SEO'
+import ContactForm from '@/components/ContactForm'
 
 export default function Home() {
   const router = useRouter()
@@ -13,7 +14,7 @@ export default function Home() {
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<{name: string, price: string, period: string} | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [currentSlide, setCurrentSlide] = useState(0)
+  const [currentSlide, setCurrentSlide] = useState(0) // 0 is لوحة التحكم (default)
 
   const slides = [
     { img: '/test1.png', title: 'لوحة التحكم' },
@@ -30,7 +31,7 @@ export default function Home() {
     { title: 'مخزون غير واضح', desc: 'لا تعرف بالضبط ما تبقى من كل صنف ومتى ينفد', icon: '📦' },
     { title: 'مبيعات كثيرة لكن الربح مجهول', desc: 'بعد خصم الايجار والكهرباء والمصروفات لا تعرف كم بقي', icon: '💸' },
     { title: 'لا تستطيع ترك المحل', desc: 'يجب ان تكون موجودا دائما لرؤية ما يحدث', icon: '🔒' },
-    { title: 'كاشير تقليدي غالي جدا', desc: 'تكلفة كبيرة مقدما + صيانة سنوية + جهاز خاص', icon: '�' },
+    { title: 'كاشير تقليدي غالي جدا', desc: 'تكلفة كبيرة مقدما + صيانة سنوية + جهاز خاص', icon: '🚫' },
   ]
 
   const paymentInfo = {
@@ -38,7 +39,7 @@ export default function Home() {
     bankName: 'BTE Bank',
     d17: '58415520',
     flouci: '58415520',
-    phone: '+216 53 518 337',
+    phone: '+21653518337',
     email: 'support@kestipro.com',
     whatsapp: '21653518337',
     instagram: 'https://www.instagram.com/kesti_tn',
@@ -62,7 +63,7 @@ export default function Home() {
   }, [router])
 
   const contactInfo = {
-    phone: '+216 53 518 337',
+    phone: '+21653518337',
     email: 'support@kestipro.com',
     whatsapp: '21653518337',
     facebook: 'https://www.facebook.com/profile.php?id=61581670844981',
@@ -70,11 +71,11 @@ export default function Home() {
   }
 
   const features = [
-    { title: 'بيع في ثانيتين', desc: 'ضغطتين او مسح بالكاميرا والمبيع يحفظ تلقائيا', icon: '⚡' },
+    { title: 'بيع في ثانيتين', desc: 'ضغطتين والمبيع يحفظ تلقائيا', icon: '⚡' },
     { title: 'مخزونك دائما تحت عينيك', desc: 'تعرف كم بقى من كل صنف مع تنبيه قبل النفاد', icon: '📦' },
     { title: 'ربحك الصافي كل يوم', desc: 'بعد الايجار والكهرباء والمصاريف كلها', icon: '📊' },
     { title: 'حسابات تلقائية', desc: 'لا تقعد تحسب للفجر، النظام يحسب لك كل شيء', icon: '💰' },
-    { title: 'تحكم من اي مكان', desc: 'من البيت او القهوة، من اي تليفون او كمبيوتر', icon: '�' },
+    { title: 'تحكم من اي مكان', desc: 'من البيت او القهوة، من اي تليفون او كمبيوتر', icon: '🌍' },
     { title: 'يعمل على تليفونك', desc: 'لا تشتري جهاز كاشير غالي', icon: '📱' },
     { title: 'دعم واتساب فوري', desc: 'سؤال؟ نرد عليك في دقائق', icon: '🎧' },
   ]
@@ -86,7 +87,6 @@ export default function Home() {
   const faqs = [
     { q: 'هل يعمل على الحاسوب والتابلت؟', a: 'نعم، يعمل على كل الأجهزة بنفس الحساب.' },
     { q: 'هل أحتاج إنترنت؟', a: 'نعم، اتصال إنترنت بسيط يكفي.' },
-    { q: 'هل تساعدوني في إضافة المنتجات؟', a: 'نعم! نضيف منتجاتك مجاناً.' },
     { q: 'كيف أدفع؟', a: 'عبر D17 أو Flouci أو تحويل بنكي.' },
   ]
 
@@ -266,27 +266,27 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Problems Section */}
-        <section id="problems" className="py-16 md:py-20 bg-gray-50">
+        {/* Problems Section - Dark */}
+        <section id="problems" className="py-20 md:py-28 bg-gray-900">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-[24px] sm:text-[28px] md:text-[36px] lg:text-[42px] font-bold text-gray-900 mb-3 leading-[1.3]">هل تعاني من هذه المشاكل؟</h2>
+              <h2 className="text-[24px] sm:text-[28px] md:text-[36px] lg:text-[42px] font-bold text-white mb-3 leading-[1.3]">هل تعاني من هذه المشاكل؟</h2>
               <div className="w-20 h-1 bg-red-500 mx-auto rounded"></div>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 md:gap-6 max-w-6xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5 max-w-6xl mx-auto">
               {problems.map((problem, idx) => (
-                <div key={idx} className="bg-white rounded-2xl p-5 md:p-6 border-2 border-gray-100 hover:border-red-400 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group cursor-pointer">
-                  <div className="text-[32px] md:text-[40px] mb-3 group-hover:scale-110 transition-transform duration-300">{problem.icon}</div>
-                  <h3 className="font-bold text-gray-900 text-[16px] md:text-[19px] lg:text-[21px] mb-2 leading-[1.4]">{problem.title}</h3>
-                  <p className="text-[14px] md:text-[16px] lg:text-[17px] text-gray-500 leading-[1.6]">{problem.desc}</p>
+                <div key={idx} className="bg-gray-800 rounded-2xl p-5 md:p-6 border border-gray-700 hover:border-red-500 hover:bg-gray-700 hover:-translate-y-2 transition-all duration-500 group cursor-pointer">
+                  <div className="text-[36px] md:text-[42px] mb-4 group-hover:scale-110 transition-transform duration-300">{problem.icon}</div>
+                  <h3 className="font-bold text-white text-[16px] md:text-[18px] lg:text-[20px] mb-2 leading-[1.4]">{problem.title}</h3>
+                  <p className="text-[14px] md:text-[15px] lg:text-[16px] text-gray-400 leading-[1.6]">{problem.desc}</p>
                 </div>
               ))}
             </div>
             
             <div className="text-center mt-10">
-              <p className="text-[16px] sm:text-[18px] text-gray-600 mb-4">Kesti Pro يحل كل هذه المشاكل</p>
-              <Link href="/signup" className="inline-flex items-center gap-2 text-red-600 font-bold text-[16px] sm:text-[18px] hover:text-red-700 hover:gap-3 transition-all duration-300">
+              <p className="text-[16px] sm:text-[18px] text-gray-400 mb-4">Kesti Pro يحل كل هذه المشاكل</p>
+              <Link href="/signup" className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-[16px] sm:text-[18px] hover:bg-red-700 hover:gap-3 transition-all duration-300">
                 ابدا الان
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
               </Link>
@@ -295,19 +295,19 @@ export default function Home() {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50">
+        <section id="features" className="py-20 md:py-28 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-[24px] sm:text-[28px] md:text-[36px] lg:text-[42px] font-bold text-gray-900 mb-3 leading-[1.3]">كل ما تحتاجه لادارة محلك</h2>
               <p className="text-[16px] sm:text-[18px] md:text-[20px] text-gray-600 leading-[1.7]">نظام متكامل يوفر وقتك ويزيد ارباحك</p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6 max-w-6xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5 max-w-6xl mx-auto">
               {features.map((feature, idx) => (
-                <div key={idx} className="bg-white border-2 border-gray-100 rounded-2xl p-6 md:p-7 hover:shadow-2xl hover:-translate-y-2 hover:border-gray-300 transition-all duration-500 group cursor-pointer">
-                  <div className="text-[40px] md:text-[48px] mb-4 group-hover:scale-110 transition-transform duration-300">{feature.icon}</div>
-                  <h3 className="text-[18px] md:text-[20px] lg:text-[22px] font-bold text-gray-900 mb-3 leading-[1.4]">{feature.title}</h3>
-                  <p className="text-[16px] md:text-[17px] lg:text-[18px] text-gray-600 leading-[1.7]">{feature.desc}</p>
+                <div key={idx} className="bg-gray-50 rounded-2xl p-5 md:p-6 border border-gray-200 hover:border-gray-400 hover:shadow-xl hover:-translate-y-2 transition-all duration-500 group cursor-pointer">
+                  <div className="text-[36px] md:text-[42px] mb-4 group-hover:scale-110 transition-transform duration-300">{feature.icon}</div>
+                  <h3 className="text-[16px] md:text-[18px] lg:text-[20px] font-bold text-gray-900 mb-2 leading-[1.4]">{feature.title}</h3>
+                  <p className="text-[14px] md:text-[15px] lg:text-[16px] text-gray-600 leading-[1.6]">{feature.desc}</p>
                 </div>
               ))}
             </div>
@@ -381,14 +381,18 @@ export default function Home() {
             <div className="text-center mb-12">
               <h2 className="text-[24px] sm:text-[28px] md:text-[36px] lg:text-[42px] font-bold text-gray-900 mb-3 leading-[1.3]">أسئلة شائعة</h2>
             </div>
-
-            <div className="max-w-3xl mx-auto space-y-4">
-              {faqs.map((faq, idx) => (
-                <div key={idx} className="bg-gray-900 text-white rounded-2xl p-6 md:p-8 hover:bg-gray-800 transition-all duration-300 cursor-pointer">
-                  <h3 className="font-bold text-[18px] md:text-[20px] lg:text-[22px] mb-3 leading-[1.4]">{faq.q}</h3>
-                  <p className="text-gray-300 text-[16px] md:text-[17px] lg:text-[18px] leading-[1.7]">{faq.a}</p>
-                </div>
-              ))}
+            
+            <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+              <div className="space-y-4">
+                {faqs.map((faq, idx) => (
+                  <div key={idx} className="bg-gray-900 text-white rounded-2xl p-6 md:p-8 hover:bg-gray-800 transition-all duration-300 cursor-pointer">
+                    <h3 className="font-bold text-[18px] md:text-[20px] lg:text-[22px] mb-3 leading-[1.4]">{faq.q}</h3>
+                    <p className="text-gray-300 text-[16px] md:text-[17px] lg:text-[18px] leading-[1.7]">{faq.a}</p>
+                  </div>
+                ))}
+              </div>
+              
+              <ContactForm className="animate-fadeIn" />
             </div>
           </div>
         </section>
