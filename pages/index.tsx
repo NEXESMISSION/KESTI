@@ -266,6 +266,78 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Video Explainer Section */}
+        <section className="py-16 md:py-24 bg-gradient-to-b from-white to-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-10">
+              <h2 className="text-[24px] sm:text-[28px] md:text-[36px] lg:text-[42px] font-bold text-gray-900 mb-3 leading-[1.3]">
+                شاهد كيف يعمل Kesti Pro
+              </h2>
+              <p className="text-[16px] sm:text-[18px] md:text-[20px] text-gray-600 leading-[1.7]">
+                في دقيقتين فقط، اكتشف كيف يمكنك إدارة محلك بكل سهولة
+              </p>
+            </div>
+
+            {/* Video Thumbnail with Play Button */}
+            <div className="max-w-4xl mx-auto">
+              <div 
+                onClick={() => setShowVideo(true)}
+                className="relative aspect-video bg-gray-900 rounded-2xl overflow-hidden cursor-pointer group shadow-2xl hover:shadow-3xl transition-all duration-500"
+              >
+                {/* Video Thumbnail - Using YouTube thumbnail */}
+                <img 
+                  src="https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
+                  alt="شاهد الفيديو التوضيحي"
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-60 group-hover:scale-105 transition-all duration-500"
+                />
+                
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                
+                {/* Play Button */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-20 h-20 md:w-24 md:h-24 bg-white/95 rounded-full flex items-center justify-center group-hover:scale-110 group-hover:bg-white transition-all duration-300 shadow-2xl">
+                    <svg className="w-8 h-8 md:w-10 md:h-10 text-red-600 mr-[-4px]" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Video Label */}
+                <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6">
+                  <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2">
+                    <span className="text-red-600 font-bold text-[14px] md:text-[16px]">▶</span>
+                    <span className="text-gray-900 font-semibold text-[14px] md:text-[16px]">شاهد الفيديو</span>
+                  </div>
+                </div>
+
+                {/* Duration Badge */}
+                <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
+                  <div className="bg-black/70 text-white px-3 py-1 rounded-lg text-[13px] md:text-[14px]">
+                    2:30
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Features under video */}
+            <div className="flex flex-wrap justify-center gap-6 mt-8 max-w-3xl mx-auto">
+              <div className="flex items-center gap-2 text-gray-600 text-[14px] md:text-[16px]">
+                <span className="text-green-500">✓</span>
+                <span>شرح مبسط</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600 text-[14px] md:text-[16px]">
+                <span className="text-green-500">✓</span>
+                <span>خطوات واضحة</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600 text-[14px] md:text-[16px]">
+                <span className="text-green-500">✓</span>
+                <span>بالعربية</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Problems Section - Dark */}
         <section id="problems" className="py-20 md:py-28 bg-gray-900">
           <div className="container mx-auto px-4">
@@ -527,6 +599,37 @@ export default function Home() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Video Modal */}
+        {showVideo && (
+          <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" onClick={() => setShowVideo(false)}>
+            {/* Close Button */}
+            <button 
+              onClick={() => setShowVideo(false)} 
+              className="absolute top-4 right-4 md:top-6 md:right-6 z-10 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition group"
+            >
+              <svg className="w-6 h-6 text-white group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Video Container */}
+            <div className="w-full max-w-5xl aspect-video" onClick={e => e.stopPropagation()}>
+              <iframe
+                className="w-full h-full rounded-2xl shadow-2xl"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0"
+                title="Kesti Pro - فيديو توضيحي"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+
+            {/* Click outside hint */}
+            <p className="absolute bottom-6 text-white/50 text-sm">
+              اضغط في أي مكان للإغلاق
+            </p>
           </div>
         )}
       </div>
