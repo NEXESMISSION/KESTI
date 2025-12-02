@@ -109,7 +109,7 @@ export default function Home() {
               <div className="hidden md:flex items-center gap-6">
                 <a href="#features" className="text-gray-600 hover:text-gray-900 font-medium">المميزات</a>
                 <a href="#pricing" className="text-gray-600 hover:text-gray-900 font-medium">الأسعار</a>
-                <Link href="/login" className="text-gray-600 hover:text-gray-900 font-medium">دخول</Link>
+                <Link href="/login" className="bg-gray-100 hover:bg-gray-200 text-gray-900 px-5 py-2.5 rounded-lg font-semibold transition">تسجيل الدخول</Link>
                 <Link href="/signup" className="bg-gray-900 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-800 transition">
                   ابدأ مجاناً
                 </Link>
@@ -127,7 +127,7 @@ export default function Home() {
               <div className="md:hidden py-4 border-t space-y-3">
                 <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-gray-600">المميزات</a>
                 <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-gray-600">الأسعار</a>
-                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-gray-600">دخول</Link>
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block bg-gray-100 hover:bg-gray-200 text-gray-900 px-5 py-3 rounded-lg font-semibold text-center">تسجيل الدخول</Link>
                 <Link href="/signup" className="block bg-gray-900 text-white px-5 py-3 rounded-lg font-semibold text-center">ابدأ مجاناً</Link>
               </div>
             )}
@@ -167,15 +167,7 @@ export default function Home() {
                       <span className="text-green-500 font-bold">✓</span>
                       <span>تليفونك يكفي</span>
                     </div>
-                    <div className="flex items-center gap-2 bg-gray-100 text-gray-700 px-5 py-2.5 rounded-full text-[15px] sm:text-[16px] hover:bg-gray-200 transition-all duration-300">
-                      <span className="text-green-500 font-bold">✓</span>
-                      <span>19 دينار فقط</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-gray-100 text-gray-700 px-5 py-2.5 rounded-full text-[15px] sm:text-[16px] hover:bg-gray-200 transition-all duration-300">
-                      <span className="text-green-500 font-bold">✓</span>
-                      <span>دعم فوري</span>
-                    </div>
-                  </div>
+                                      </div>
 
                   {/* CTA Buttons - 17-19px mobile, 19-21px desktop */}
                   <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-6">

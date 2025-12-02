@@ -324,63 +324,33 @@ function Expenses() {
       {/* Page Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3 py-3">
-            <button
-              onClick={() => window.location.href = '/owner-dashboard'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="المنتجات"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
+          <div className="grid grid-cols-5 gap-2 py-3">
+            <button onClick={() => window.location.href = '/products'} className="py-2 rounded-lg text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+              <div className="flex flex-col items-center gap-1">
                 <span className="text-lg">📦</span>
                 <span className="text-[10px] sm:text-xs">المنتجات</span>
               </div>
             </button>
-            <button
-              onClick={() => window.location.href = '/stock'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="المخزون"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
-                <span className="text-lg">🏷️</span>
-                <span className="text-[10px] sm:text-xs">المخزون</span>
-              </div>
-            </button>
-            <button
-              onClick={() => window.location.href = '/finance'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="المالية"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
+            <button onClick={() => window.location.href = '/finance'} className="py-2 rounded-lg text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+              <div className="flex flex-col items-center gap-1">
                 <span className="text-lg">💰</span>
                 <span className="text-[10px] sm:text-xs">المالية</span>
               </div>
             </button>
-            <button
-              onClick={() => window.location.href = '/credits'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="الديون"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
+            <button onClick={() => window.location.href = '/credits'} className="py-2 rounded-lg text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+              <div className="flex flex-col items-center gap-1">
                 <span className="text-lg">💳</span>
                 <span className="text-[10px] sm:text-xs">الديون</span>
               </div>
             </button>
-            <button
-              onClick={() => window.location.href = '/expenses'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
-              title="المصروفات"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
+            <button onClick={() => window.location.href = '/expenses'} className="py-2 rounded-lg text-center bg-red-600 text-white">
+              <div className="flex flex-col items-center gap-1">
                 <span className="text-lg">📊</span>
                 <span className="text-[10px] sm:text-xs">المصروفات</span>
               </div>
             </button>
-            <button
-              onClick={() => window.location.href = '/history'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="السجل"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
+            <button onClick={() => window.location.href = '/history'} className="py-2 rounded-lg text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+              <div className="flex flex-col items-center gap-1">
                 <span className="text-lg">📜</span>
                 <span className="text-[10px] sm:text-xs">السجل</span>
               </div>
@@ -389,151 +359,115 @@ function Expenses() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto py-4 sm:py-6 px-3 sm:px-4 lg:px-8">
+      <main className="max-w-7xl mx-auto py-4 px-3 sm:px-4 lg:px-8">
         {/* Success/Error Messages */}
         {success && (
-          <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-3 py-2 sm:py-3 rounded-lg relative flex justify-between items-center">
-            <span>{success}</span>
-            <button onClick={() => setSuccess(null)} className="text-green-700 hover:text-green-800">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          <div className="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center">
+            <span className="font-medium">{success}</span>
+            <button onClick={() => setSuccess(null)} className="text-green-700">✕</button>
           </div>
         )}
-        
         {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-3 py-2 sm:py-3 rounded-lg relative flex justify-between items-center">
-            <span>{error}</span>
-            <button onClick={() => setError(null)} className="text-red-700 hover:text-red-800">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          <div className="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg flex justify-between items-center">
+            <span className="font-medium">{error}</span>
+            <button onClick={() => setError(null)} className="text-red-700">✕</button>
           </div>
         )}
 
-
-        {/* Main Total Card - Simple & Clean */}
-        <div className="mb-6">
-          <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl shadow-2xl p-6 sm:p-8 text-white">
-            <div className="text-center">
-              <p className="text-sm sm:text-base opacity-90 mb-2">💸 إجمالي المصروفات</p>
-              <p className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">{formatCurrency(totalExpenses)}</p>
-              <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-2">
-                <span className="text-xs sm:text-sm">{timeFilteredExpenses.length} مصروف</span>
-              </div>
+        {/* Quick Add Button - Top Priority */}
+        <div
+          onClick={() => { resetForm(); setSuccess(null); setShowModal(true); }}
+          className="mb-4 bg-gradient-to-r from-red-500 to-red-600 rounded-xl p-4 flex items-center justify-between cursor-pointer hover:from-red-600 hover:to-red-700 transition-all shadow-lg"
+        >
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 rounded-lg p-2">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </div>
+            <div>
+              <h3 className="font-bold text-white">إضافة مصروف جديد</h3>
+              <p className="text-xs text-red-100">سجّل مصروفاتك بسهولة</p>
             </div>
           </div>
+          <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 gap-3 sm:gap-4 mb-6">
-          <div className="bg-white rounded-xl shadow p-6 text-center">
-            <p className="text-3xl mb-3">💵</p>
-            <p className="text-2xl sm:text-3xl font-bold text-gray-900">{formatCurrency(totalExpenses)}</p>
-            <p className="text-sm text-gray-500 mt-2">إجمالي المصروفات</p>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="bg-white rounded-xl shadow p-4 text-center">
+            <p className="text-2xl mb-1">💸</p>
+            <p className="text-xl sm:text-2xl font-black text-red-600">{totalExpenses.toFixed(0)}</p>
+            <p className="text-[10px] text-gray-500">إجمالي المصروفات</p>
+          </div>
+          <div className="bg-white rounded-xl shadow p-4 text-center">
+            <p className="text-2xl mb-1">📝</p>
+            <p className="text-xl sm:text-2xl font-black text-gray-800">{timeFilteredExpenses.length}</p>
+            <p className="text-[10px] text-gray-500">عدد المصروفات</p>
           </div>
         </div>
 
-        {/* Quick Add Button & Saved Templates - Always visible */}
-        <div className="flex justify-end gap-3 mb-4">
-          {savedTemplates.length > 0 && (
+        {/* Saved Templates - Compact */}
+        {savedTemplates.length > 0 && (
+          <div className="mb-4">
             <button
               onClick={() => setShowSavedTemplates(!showSavedTemplates)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg transition font-medium flex items-center gap-2"
+              className="w-full bg-purple-50 border border-purple-200 rounded-xl p-3 flex items-center justify-between"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              <div className="flex items-center gap-2">
+                <span className="text-lg">📑</span>
+                <span className="font-medium text-purple-700">القوالب المحفوظة ({savedTemplates.length})</span>
+              </div>
+              <svg className={`w-5 h-5 text-purple-500 transition-transform ${showSavedTemplates ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
-              <span>Saved ({savedTemplates.length})</span>
             </button>
-          )}
-          <button
-            onClick={() => {
-              resetForm()
-              setSuccess(null)
-              setShowModal(true)
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg transition font-medium flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            <span>مصروف جديد</span>
-          </button>
-        </div>
-        
-        {/* Saved Templates List */}
-        {showSavedTemplates && savedTemplates.length > 0 && (
-          <div className="bg-white rounded-xl shadow mb-4 p-4">
-            <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-              <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-              </svg>
-              Saved Expense Templates
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {savedTemplates.map((template, index) => (
-                <div
-                  key={index}
-                  className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition cursor-pointer bg-gradient-to-br from-purple-50 to-white"
-                  onClick={() => handleLoadTemplate(template)}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-semibold text-gray-900 text-sm">{template.description}</h4>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDeleteTemplate(index)
-                      }}
-                      className="text-red-500 hover:text-red-700 p-1"
-                      title="Delete template"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+            
+            {showSavedTemplates && (
+              <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {savedTemplates.map((template, index) => (
+                  <div
+                    key={index}
+                    onClick={() => handleLoadTemplate(template)}
+                    className="bg-white border border-purple-100 rounded-lg p-3 cursor-pointer hover:shadow-md transition"
+                  >
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-medium text-sm text-gray-900 truncate flex-1">{template.description}</h4>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(index); }}
+                        className="text-red-400 hover:text-red-600 ml-1"
+                      >✕</button>
+                    </div>
+                    <p className="text-purple-600 font-bold mt-1">{parseFloat(template.amount).toFixed(2)} TND</p>
                   </div>
-                  <p className="text-purple-600 font-bold text-lg">{parseFloat(template.amount).toFixed(2)} TND</p>
-                  {template.category && (
-                    <p className="text-xs text-gray-500 mt-1">{template.category}</p>
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Simple Filters - Always visible, no collapse */}
-        <div className="bg-white rounded-xl shadow p-4 mb-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">الفترة</label>
-              <select
-                value={timeFilter}
-                onChange={(e) => setTimeFilter(e.target.value as any)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-sm"
-              >
-                <option value="all">الكل</option>
-                <option value="today">اليوم</option>
-                <option value="week">7 أيام</option>
-                <option value="month">30 يوم</option>
-              </select>
-            </div>
-            
-            <div className="flex items-end">
-              <button
-                onClick={() => {
-                  setFilterCategory('')
-                  setTimeFilter('all')
-                }}
-                className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium transition"
-              >
-                إعادة تعيين
-              </button>
-            </div>
-          </div>
+        {/* Time Filter - Simple Chips */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+          {[
+            { key: 'all', label: 'الكل' },
+            { key: 'today', label: 'اليوم' },
+            { key: 'week', label: 'أسبوع' },
+            { key: 'month', label: 'شهر' },
+          ].map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setTimeFilter(f.key as any)}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition ${
+                timeFilter === f.key
+                  ? 'bg-red-600 text-white'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
 
         {/* Expenses List */}

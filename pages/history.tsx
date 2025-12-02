@@ -457,63 +457,33 @@ function History() {
       {/* Page Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3 py-3">
-            <button
-              onClick={() => window.location.href = '/owner-dashboard'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="المنتجات"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
+          <div className="grid grid-cols-5 gap-2 py-3">
+            <button onClick={() => window.location.href = '/products'} className="py-2 rounded-lg text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+              <div className="flex flex-col items-center gap-1">
                 <span className="text-lg">📦</span>
                 <span className="text-[10px] sm:text-xs">المنتجات</span>
               </div>
             </button>
-            <button
-              onClick={() => window.location.href = '/stock'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="المخزون"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
-                <span className="text-lg">🏷️</span>
-                <span className="text-[10px] sm:text-xs">المخزون</span>
-              </div>
-            </button>
-            <button
-              onClick={() => window.location.href = '/finance'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="المالية"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
+            <button onClick={() => window.location.href = '/finance'} className="py-2 rounded-lg text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+              <div className="flex flex-col items-center gap-1">
                 <span className="text-lg">💰</span>
                 <span className="text-[10px] sm:text-xs">المالية</span>
               </div>
             </button>
-            <button
-              onClick={() => window.location.href = '/credits'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="الديون"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
+            <button onClick={() => window.location.href = '/credits'} className="py-2 rounded-lg text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+              <div className="flex flex-col items-center gap-1">
                 <span className="text-lg">💳</span>
                 <span className="text-[10px] sm:text-xs">الديون</span>
               </div>
             </button>
-            <button
-              onClick={() => window.location.href = '/expenses'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="المصروفات"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
+            <button onClick={() => window.location.href = '/expenses'} className="py-2 rounded-lg text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition">
+              <div className="flex flex-col items-center gap-1">
                 <span className="text-lg">📊</span>
                 <span className="text-[10px] sm:text-xs">المصروفات</span>
               </div>
             </button>
-            <button
-              onClick={() => window.location.href = '/history'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
-              title="السجل"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
+            <button onClick={() => window.location.href = '/history'} className="py-2 rounded-lg text-center bg-indigo-600 text-white">
+              <div className="flex flex-col items-center gap-1">
                 <span className="text-lg">📜</span>
                 <span className="text-[10px] sm:text-xs">السجل</span>
               </div>
@@ -522,241 +492,102 @@ function History() {
         </div>
       </div>
 
-      <main className="max-w-7xl mx-auto py-4 sm:py-6 px-3 sm:px-4 lg:px-8">
-        {/* Page Title */}
-        <div className="mb-4 sm:mb-6">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">سجل المعاملات</h2>
-          <p className="text-sm text-gray-600 mt-1">تتبع سجل المبيعات والمصروفات</p>
+      <main className="max-w-7xl mx-auto py-4 px-3 sm:px-4 lg:px-8">
+        {/* Stats Summary */}
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="bg-white rounded-xl shadow p-3 text-center">
+            <p className="text-xl mb-1">💵</p>
+            <p className="text-lg sm:text-xl font-black text-green-600">{totalRevenue.toFixed(0)}</p>
+            <p className="text-[9px] text-gray-500">الإيرادات</p>
+          </div>
+          <div className="bg-white rounded-xl shadow p-3 text-center">
+            <p className="text-xl mb-1">💸</p>
+            <p className="text-lg sm:text-xl font-black text-red-600">{totalExpenses.toFixed(0)}</p>
+            <p className="text-[9px] text-gray-500">المصروفات</p>
+          </div>
+          <div className="bg-white rounded-xl shadow p-3 text-center">
+            <p className="text-xl mb-1">📊</p>
+            <p className={`text-lg sm:text-xl font-black ${netAmount >= 0 ? 'text-blue-600' : 'text-red-600'}`}>{netAmount.toFixed(0)}</p>
+            <p className="text-[9px] text-gray-500">الصافي</p>
+          </div>
         </div>
         
-        {/* View Mode Tabs - Simple tab strip at the top */}
-        <div className="bg-white rounded-lg mb-4 sm:mb-6 p-2 flex items-center justify-center border border-gray-200 gap-1 sm:gap-2">
-          <button
-            onClick={() => setViewMode('all')}
-            className={`flex-1 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition ${
-              viewMode === 'all'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            كل المعاملات
-          </button>
-          <button
-            onClick={() => setViewMode('sales')}
-            className={`flex-1 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition ${
-              viewMode === 'sales'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            المبيعات فقط
-          </button>
-          <button
-            onClick={() => setViewMode('credits')}
-            className={`flex-1 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition ${
-              viewMode === 'credits'
-                ? 'bg-orange-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            الديون
-          </button>
-          <button
-            onClick={() => setViewMode('expenses')}
-            className={`flex-1 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition ${
-              viewMode === 'expenses'
-                ? 'bg-red-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            المصروفات فقط
-          </button>
+        {/* View Mode Chips */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+          {[
+            { key: 'all', label: 'الكل', color: 'indigo' },
+            { key: 'sales', label: 'مبيعات', color: 'green' },
+            { key: 'credits', label: 'ديون', color: 'orange' },
+            { key: 'expenses', label: 'مصروفات', color: 'red' },
+          ].map((v) => (
+            <button
+              key={v.key}
+              onClick={() => setViewMode(v.key as any)}
+              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition ${
+                viewMode === v.key
+                  ? v.color === 'indigo' ? 'bg-indigo-600 text-white' 
+                    : v.color === 'green' ? 'bg-green-600 text-white'
+                    : v.color === 'orange' ? 'bg-orange-600 text-white'
+                    : 'bg-red-600 text-white'
+                  : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              {v.label}
+            </button>
+          ))}
         </div>
 
-        {/* Search */}
-        <div className="bg-white rounded-xl shadow mb-4 sm:mb-6 overflow-hidden">
-          <div className="p-3 sm:p-4">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="بحث في المعاملات..."
-                className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                autoComplete="off"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Collapsible Filter Options */}
-        <div className="bg-white rounded-xl shadow mb-4 sm:mb-6 overflow-hidden">
-          {/* Filter Header - Tap to expand */}
-          <div className="p-3 sm:p-4 flex justify-between items-center cursor-pointer" onClick={() => setFiltersExpanded(!filtersExpanded)}>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              <h3 className="font-medium text-sm sm:text-base">فلاتر متقدمة</h3>
-              <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
-                {/* Count how many filters are applied */}
-                {(timeFilter !== 'all' ? 1 : 0) + 
-                 (startDate ? 1 : 0) + 
-                 (endDate ? 1 : 0) + 
-                 (paymentMethod !== 'all' ? 1 : 0) + 
-                 (minAmount ? 1 : 0) + 
-                 (maxAmount ? 1 : 0)}
-              </span>
-            </div>
-            
-            <svg className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${filtersExpanded ? 'transform rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-
-          {/* Filter Options - Expandable */}
-          {filtersExpanded && (
-            <div className="border-t border-gray-200 p-3 sm:p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                {/* Time Period */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">فترة الزمن</label>
-                  <select
-                    value={timeFilter}
-                    onChange={(e) => setTimeFilter(e.target.value as any)}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                  >
-                    <option value="all">كل الوقت</option>
-                    <option value="today">اليوم</option>
-                    <option value="week">الأسبوع الماضي</option>
-                    <option value="month">الشهر الماضي</option>
-                  </select>
-                </div>
-
-                {/* Date Range */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">تاريخ البدء</label>
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">تاريخ النهاية</label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                  />
-                </div>
-
-                {/* Payment Method */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">طريقة الدفع</label>
-                  <select
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                  >
-                    <option value="all">كل الطرق</option>
-                    <option value="cash">النقد</option>
-                    <option value="card">البطاقة</option>
-                    <option value="mobile">الدفع المباشر</option>
-                  </select>
-                </div>
-
-                {/* Amount Range */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">الحد الأدنى للمبلغ</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 text-xs sm:text-sm">$</span>
-                    </div>
-                    <input
-                      type="number"
-                      value={minAmount}
-                      onChange={(e) => setMinAmount(e.target.value)}
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
-                      className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm pl-6 sm:pl-7"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">الحد الأقصى للمبلغ</label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 text-xs sm:text-sm">$</span>
-                    </div>
-                    <input
-                      type="number"
-                      value={maxAmount}
-                      onChange={(e) => setMaxAmount(e.target.value)}
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
-                      className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm pl-6 sm:pl-7"
-                    />
-                  </div>
-                </div>
-
-                {/* Sort By */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">ترتيب حسب</label>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                  >
-                    <option value="date-desc">التاريخ (الأحدث أولا)</option>
-                    <option value="date-asc">التاريخ (الأقدم أولا)</option>
-                    <option value="amount-desc">المبلغ (الأعلى أولا)</option>
-                    <option value="amount-asc">المبلغ (الأقل أولا)</option>
-                  </select>
-                </div>
-              </div>
-              
-              {/* Clear Filters */}
-              <div className="mt-4 flex justify-end">
-                <button
-                  onClick={clearFilters}
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs sm:text-sm transition flex items-center gap-1"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  إعادة تعيين كل الفلاتر
-                </button>
-              </div>
-            </div>
-          )}
+        {/* Time Filter Chips */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+          {[
+            { key: 'all', label: 'كل الوقت' },
+            { key: 'today', label: 'اليوم' },
+            { key: 'week', label: 'أسبوع' },
+            { key: 'month', label: 'شهر' },
+          ].map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setTimeFilter(f.key as any)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
+                timeFilter === f.key
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
           
-          {/* Results Count */}
-          <div className="border-t border-gray-200 p-2 sm:p-3 text-xs sm:text-sm text-gray-600 text-center bg-gray-50">
-            إظهار {filteredSales.length + creditSales.length + filteredExpenses.length} معاملة
-          </div>
+          {/* Download Button */}
+          <button
+            onClick={downloadData}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 flex items-center gap-1 whitespace-nowrap"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            تحميل
+          </button>
         </div>
+
+        {/* Search Bar */}
+        <div className="relative mb-4">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="🔍 بحث..."
+            className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm"
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">✕</button>
+          )}
+        </div>
+
+        {/* Results Count */}
+        <p className="text-xs text-gray-500 mb-3">
+          إظهار {viewMode === 'all' ? filteredSales.length + creditSales.length + filteredExpenses.length : viewMode === 'sales' ? filteredSales.length : viewMode === 'credits' ? creditSales.length : filteredExpenses.length} معاملة
+        </p>
 
         {/* Transactions List */}
         <div className="bg-white rounded-xl shadow overflow-hidden">

@@ -12,57 +12,46 @@ export default function CartItem({ item }: CartItemProps) {
   const totalPrice = item.totalPrice
 
   return (
-    <div className="bg-gradient-to-br from-white to-gray-50 rounded-xl border-2 border-gray-200 p-3 hover:border-blue-300 transition-all hover:shadow-md">
-      {/* Product Info */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex-1 min-w-0">
-          <h3 className="font-bold text-gray-900 truncate text-sm">{product.name}</h3>
-          <p className="text-xs text-gray-500 mt-0.5">
-            {product.selling_price.toFixed(2)} TND/{product.unit_type}
-          </p>
-        </div>
-        
-        {/* Remove Button */}
-        <button
-          onClick={() => removeFromCart(product.id)}
-          className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full hover:bg-red-100 text-red-500 hover:text-red-600 transition"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Quantity Controls & Price */}
-      <div className="flex items-center justify-between">
-        {/* Quantity Controls */}
-        <div className="flex items-center bg-gradient-to-r from-gray-100 to-gray-50 rounded-lg shadow-sm">
-          <button
-            onClick={() => decrementQuantity(product.id)}
-            className="w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-gray-200 rounded-l-lg transition active:scale-95"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M20 12H4" />
-            </svg>
-          </button>
-          
-          <span className="w-10 text-center font-bold text-gray-900">{quantity}</span>
-          
+    <div className="bg-white rounded-lg p-3 border border-gray-100 shadow-sm">
+      <div className="flex items-start gap-3">
+        {/* Quantity Controls - Left Side */}
+        <div className="flex flex-col items-center bg-gray-50 rounded-lg overflow-hidden">
           <button
             onClick={() => incrementQuantity(product.id)}
-            className="w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-gray-200 rounded-r-lg transition active:scale-95"
+            className="w-8 h-7 flex items-center justify-center text-gray-600 hover:bg-blue-100 hover:text-blue-600 transition"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+            </svg>
+          </button>
+          <span className="w-8 h-7 flex items-center justify-center font-bold text-sm bg-white border-y border-gray-100">{quantity}</span>
+          <button
+            onClick={() => decrementQuantity(product.id)}
+            className="w-8 h-7 flex items-center justify-center text-gray-600 hover:bg-red-100 hover:text-red-600 transition"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
         </div>
-        
-        {/* Total Price */}
-        <div className="text-right">
-          <div className="text-base font-bold text-blue-600">
-            {totalPrice.toFixed(2)} <span className="text-xs">TND</span>
-          </div>
+
+        {/* Product Info - Middle */}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-gray-900 text-sm leading-tight">{product.name}</h3>
+          <p className="text-xs text-gray-400 mt-0.5">{product.selling_price.toFixed(2)} × {quantity}</p>
+        </div>
+
+        {/* Price & Remove - Right Side */}
+        <div className="flex flex-col items-end gap-1">
+          <span className="font-bold text-blue-600 text-sm">{totalPrice.toFixed(2)}</span>
+          <button
+            onClick={() => removeFromCart(product.id)}
+            className="text-gray-300 hover:text-red-500 transition"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>

@@ -75,6 +75,9 @@ function Finance() {
   const [endDate, setEndDate] = useState('')
   const [filtersExpanded, setFiltersExpanded] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
+  const [chartFilter, setChartFilter] = useState<'week' | 'year' | 'custom'>('week')
+  const [chartStartDate, setChartStartDate] = useState('')
+  const [chartEndDate, setChartEndDate] = useState('')
 
   useEffect(() => {
     checkAuthAndFetch()
@@ -291,6 +294,125 @@ function Finance() {
     return `${amount.toFixed(2)} دينار`
   }
 
+  // Calculate chart data based on selected filter
+  const getChartData = () => {
+    const now = new Date()
+    const dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+    const monthNames = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']
+    
+    if (chartFilter === 'week') {
+      // Last 7 days - one bar per day
+      const data = []
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now)
+        date.setDate(date.getDate() - i)
+        const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+        const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999)
+        
+        const dayRevenue = saleItems
+          .filter(item => {
+            const itemDate = new Date(item.created_at)
+            return itemDate >= dayStart && itemDate <= dayEnd
+          })
+          .reduce((sum, item) => sum + (item.price_at_sale * item.quantity), 0)
+        
+        data.push({
+          label: dayNames[date.getDay()],
+          value: dayRevenue,
+          date: date.toLocaleDateString('ar-TN', { day: 'numeric', month: 'short' })
+        })
+      }
+      return data
+    } else if (chartFilter === 'year') {
+      // Last 12 months - one bar per month
+      const data = []
+      for (let i = 11; i >= 0; i--) {
+        const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59, 999)
+        
+        const monthRevenue = saleItems
+          .filter(item => {
+            const itemDate = new Date(item.created_at)
+            return itemDate >= monthDate && itemDate <= monthEnd
+          })
+          .reduce((sum, item) => sum + (item.price_at_sale * item.quantity), 0)
+        
+        data.push({
+          label: monthNames[monthDate.getMonth()].substring(0, 3),
+          value: monthRevenue,
+          date: monthNames[monthDate.getMonth()]
+        })
+      }
+      return data
+    } else {
+      // Custom date range
+      if (!chartStartDate || !chartEndDate) {
+        return [{ label: 'اختر التواريخ', value: 0, date: '' }]
+      }
+      
+      const start = new Date(chartStartDate)
+      const end = new Date(chartEndDate)
+      end.setHours(23, 59, 59, 999)
+      
+      // Calculate number of days between dates
+      const diffTime = Math.abs(end.getTime() - start.getTime())
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+      
+      const data = []
+      
+      if (diffDays <= 14) {
+        // Show daily if 14 days or less
+        for (let i = 0; i < diffDays; i++) {
+          const date = new Date(start)
+          date.setDate(date.getDate() + i)
+          const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+          const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999)
+          
+          const dayRevenue = saleItems
+            .filter(item => {
+              const itemDate = new Date(item.created_at)
+              return itemDate >= dayStart && itemDate <= dayEnd
+            })
+            .reduce((sum, item) => sum + (item.price_at_sale * item.quantity), 0)
+          
+          data.push({
+            label: `${date.getDate()}/${date.getMonth() + 1}`,
+            value: dayRevenue,
+            date: date.toLocaleDateString('ar-TN', { day: 'numeric', month: 'short' })
+          })
+        }
+      } else {
+        // Show weekly for longer periods
+        const numWeeks = Math.ceil(diffDays / 7)
+        for (let i = 0; i < Math.min(numWeeks, 12); i++) {
+          const weekStart = new Date(start)
+          weekStart.setDate(weekStart.getDate() + (i * 7))
+          const weekEnd = new Date(weekStart)
+          weekEnd.setDate(weekEnd.getDate() + 6)
+          if (weekEnd > end) weekEnd.setTime(end.getTime())
+          
+          const weekRevenue = saleItems
+            .filter(item => {
+              const itemDate = new Date(item.created_at)
+              return itemDate >= weekStart && itemDate <= weekEnd
+            })
+            .reduce((sum, item) => sum + (item.price_at_sale * item.quantity), 0)
+          
+          data.push({
+            label: `أسبوع ${i + 1}`,
+            value: weekRevenue,
+            date: `${weekStart.getDate()}/${weekStart.getMonth() + 1} - ${weekEnd.getDate()}/${weekEnd.getMonth() + 1}`
+          })
+        }
+      }
+      
+      return data.length > 0 ? data : [{ label: 'لا بيانات', value: 0, date: '' }]
+    }
+  }
+
+  const chartData = getChartData()
+  const maxValue = Math.max(...chartData.map(d => d.value), 1)
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Admin Alert (shows once when super-admin sends a message) */}
@@ -323,11 +445,11 @@ function Finance() {
       {/* Page Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-6 gap-1 sm:gap-2 md:gap-3 py-3">
+          <div className="grid grid-cols-5 gap-2 py-3">
             <button
-              onClick={() => window.location.href = '/owner-dashboard'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="المنتجات"
+              onClick={() => window.location.href = '/products'}
+              className="py-2 rounded-lg text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              title="المنتجات والمخزون"
             >
               <div className="flex flex-col items-center justify-center gap-1">
                 <span className="text-lg">📦</span>
@@ -335,18 +457,8 @@ function Finance() {
               </div>
             </button>
             <button
-              onClick={() => window.location.href = '/stock'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
-              title="المخزون"
-            >
-              <div className="flex flex-col items-center justify-center gap-1">
-                <span className="text-lg">🏷️</span>
-                <span className="text-[10px] sm:text-xs">المخزون</span>
-              </div>
-            </button>
-            <button
               onClick={() => window.location.href = '/finance'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-blue-600 text-white"
+              className="py-2 rounded-lg text-center bg-blue-600 text-white"
               title="المالية"
             >
               <div className="flex flex-col items-center justify-center gap-1">
@@ -356,7 +468,7 @@ function Finance() {
             </button>
             <button
               onClick={() => window.location.href = '/credits'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              className="py-2 rounded-lg text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               title="الديون"
             >
               <div className="flex flex-col items-center justify-center gap-1">
@@ -366,7 +478,7 @@ function Finance() {
             </button>
             <button
               onClick={() => window.location.href = '/expenses'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              className="py-2 rounded-lg text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               title="المصروفات"
             >
               <div className="flex flex-col items-center justify-center gap-1">
@@ -376,7 +488,7 @@ function Finance() {
             </button>
             <button
               onClick={() => window.location.href = '/history'}
-              className="px-2 sm:px-4 md:px-6 py-2 rounded-lg text-xs sm:text-sm md:text-base font-medium text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+              className="py-2 rounded-lg text-center bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
               title="السجل"
             >
               <div className="flex flex-col items-center justify-center gap-1">
@@ -510,6 +622,184 @@ function Finance() {
             <p className="text-2xl mb-2">📈</p>
             <p className="text-lg sm:text-2xl font-bold text-gray-900">{metrics.profitMargin.toFixed(0)}%</p>
             <p className="text-xs text-gray-500 mt-1">هامش الربح</p>
+          </div>
+        </div>
+
+        {/* Revenue Statistics Chart - Mobile Optimized */}
+        <div className="bg-white rounded-2xl shadow-lg mb-6 overflow-hidden">
+          {/* Header - Compact on Mobile */}
+          <div className="p-4 sm:p-6 bg-gradient-to-r from-blue-600 to-blue-700">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-2 rounded-xl">
+                  <span className="text-2xl">📊</span>
+                </div>
+                <div>
+                  <h3 className="text-lg sm:text-xl font-bold text-white">إحصائيات الإيرادات</h3>
+                  <p className="text-xs sm:text-sm text-blue-100">تتبع المبيعات</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Filter Tabs - Full Width on Mobile */}
+            <div className="mt-4 grid grid-cols-3 gap-2 bg-white/10 p-1 rounded-xl">
+              <button
+                onClick={() => setChartFilter('week')}
+                className={`py-2.5 px-2 rounded-lg text-sm font-bold transition-all ${
+                  chartFilter === 'week'
+                    ? 'bg-white text-blue-600 shadow-lg'
+                    : 'text-white/90 hover:bg-white/10'
+                }`}
+              >
+                أسبوع
+              </button>
+              <button
+                onClick={() => setChartFilter('year')}
+                className={`py-2.5 px-2 rounded-lg text-sm font-bold transition-all ${
+                  chartFilter === 'year'
+                    ? 'bg-white text-purple-600 shadow-lg'
+                    : 'text-white/90 hover:bg-white/10'
+                }`}
+              >
+                سنة
+              </button>
+              <button
+                onClick={() => setChartFilter('custom')}
+                className={`py-2.5 px-2 rounded-lg text-sm font-bold transition-all ${
+                  chartFilter === 'custom'
+                    ? 'bg-white text-emerald-600 shadow-lg'
+                    : 'text-white/90 hover:bg-white/10'
+                }`}
+              >
+                مخصص
+              </button>
+            </div>
+          </div>
+
+          {/* Custom Date Range Picker */}
+          {chartFilter === 'custom' && (
+            <div className="p-4 bg-emerald-50 border-b border-emerald-200">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-emerald-700 mb-1">من</label>
+                  <input
+                    type="date"
+                    value={chartStartDate}
+                    onChange={(e) => setChartStartDate(e.target.value)}
+                    className="w-full px-3 py-2 border-2 border-emerald-200 rounded-lg text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-emerald-700 mb-1">إلى</label>
+                  <input
+                    type="date"
+                    value={chartEndDate}
+                    onChange={(e) => setChartEndDate(e.target.value)}
+                    className="w-full px-3 py-2 border-2 border-emerald-200 rounded-lg text-sm"
+                  />
+                </div>
+              </div>
+              {chartStartDate && chartEndDate && (
+                <button
+                  onClick={() => { setChartStartDate(''); setChartEndDate(''); }}
+                  className="mt-2 w-full py-2 bg-gray-200 rounded-lg text-sm font-medium"
+                >
+                  مسح التواريخ
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Stats Summary - Above Chart on Mobile */}
+          <div className="grid grid-cols-4 divide-x divide-gray-100 bg-gray-50 border-b">
+            <div className="p-3 text-center">
+              <p className="text-[10px] text-gray-500 font-medium">الإجمالي</p>
+              <p className="text-sm sm:text-lg font-black text-blue-600">
+                {chartData.reduce((sum, d) => sum + d.value, 0) >= 1000 
+                  ? `${(chartData.reduce((sum, d) => sum + d.value, 0)/1000).toFixed(1)}k`
+                  : chartData.reduce((sum, d) => sum + d.value, 0).toFixed(0)}
+              </p>
+            </div>
+            <div className="p-3 text-center">
+              <p className="text-[10px] text-gray-500 font-medium">المتوسط</p>
+              <p className="text-sm sm:text-lg font-black text-green-600">
+                {(chartData.reduce((sum, d) => sum + d.value, 0) / Math.max(chartData.length, 1)).toFixed(0)}
+              </p>
+            </div>
+            <div className="p-3 text-center">
+              <p className="text-[10px] text-gray-500 font-medium">الأعلى</p>
+              <p className="text-sm sm:text-lg font-black text-purple-600">
+                {Math.max(...chartData.map(d => d.value), 0).toFixed(0)}
+              </p>
+            </div>
+            <div className="p-3 text-center">
+              <p className="text-[10px] text-gray-500 font-medium">الأدنى</p>
+              <p className="text-sm sm:text-lg font-black text-orange-600">
+                {Math.min(...chartData.map(d => d.value)).toFixed(0)}
+              </p>
+            </div>
+          </div>
+
+          {/* Chart Area - Optimized for Mobile */}
+          <div className="p-3 sm:p-5">
+            <div className="h-52 sm:h-64 flex items-end gap-1 sm:gap-2">
+              {chartData.map((item, index) => {
+                const heightPercent = maxValue > 0 ? (item.value / maxValue) * 100 : 0
+                const barColor = chartFilter === 'week' 
+                  ? 'bg-gradient-to-t from-blue-600 to-blue-400'
+                  : chartFilter === 'year'
+                  ? 'bg-gradient-to-t from-purple-600 to-purple-400'
+                  : 'bg-gradient-to-t from-emerald-600 to-emerald-400'
+                
+                return (
+                  <div key={index} className="flex-1 flex flex-col items-center h-full">
+                    {/* Value Label - Always visible on mobile */}
+                    <div className="mb-1 text-center">
+                      <span className={`text-[9px] sm:text-xs font-bold ${
+                        chartFilter === 'week' ? 'text-blue-600' :
+                        chartFilter === 'year' ? 'text-purple-600' : 'text-emerald-600'
+                      }`}>
+                        {item.value >= 1000 ? `${(item.value/1000).toFixed(1)}k` : item.value > 0 ? item.value.toFixed(0) : ''}
+                      </span>
+                    </div>
+                    
+                    {/* Bar Container */}
+                    <div className="flex-1 w-full flex items-end justify-center">
+                      <div
+                        className={`w-full max-w-8 sm:max-w-12 rounded-t-lg transition-all duration-500 ${barColor} ${
+                          item.value === 0 ? 'bg-gray-200' : ''
+                        }`}
+                        style={{
+                          height: `${Math.max(heightPercent, item.value > 0 ? 5 : 2)}%`,
+                          minHeight: item.value > 0 ? '8px' : '2px'
+                        }}
+                      />
+                    </div>
+                    
+                    {/* X-Axis Label */}
+                    <div className="mt-2 h-8 flex items-center justify-center">
+                      <span className="text-[9px] sm:text-xs text-gray-500 font-medium text-center leading-tight">
+                        {item.label}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          
+          {/* Total Summary Bar */}
+          <div className={`p-4 text-center ${
+            chartFilter === 'week' ? 'bg-blue-50' :
+            chartFilter === 'year' ? 'bg-purple-50' : 'bg-emerald-50'
+          }`}>
+            <span className="text-sm text-gray-600">إجمالي الفترة: </span>
+            <span className={`text-lg font-black ${
+              chartFilter === 'week' ? 'text-blue-700' :
+              chartFilter === 'year' ? 'text-purple-700' : 'text-emerald-700'
+            }`}>
+              {chartData.reduce((sum, d) => sum + d.value, 0).toFixed(2)} دينار
+            </span>
           </div>
         </div>
 

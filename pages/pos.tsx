@@ -43,8 +43,8 @@ function POS() {
   const [newCustomerPhone, setNewCustomerPhone] = useState('')
   const [showAddCustomer, setShowAddCustomer] = useState(false)
   
-  // Product box size control
-  const [productBoxSize, setProductBoxSize] = useState<'small' | 'large'>('large')
+  // Product box size - always small for more products on screen
+  const productBoxSize = 'small'
   
   // Welcome modal state
   const [showWelcomeModal, setShowWelcomeModal] = useState(false)
@@ -796,38 +796,7 @@ function POS() {
       <div className="flex-1 flex overflow-hidden">
         {/* Products Section - Scrollable */}
         <main className="flex-1 py-4 sm:py-6 px-3 sm:px-6 lg:px-8 overflow-y-auto h-[calc(100vh-140px)]">
-        {/* Product Size Controls */}
-        {!loading && products.length > 0 && (
-          <div className="flex justify-end gap-2 mb-4">
-            <button
-              onClick={() => setProductBoxSize('small')}
-              className={`px-3 py-2 rounded-lg font-medium transition ${
-                productBoxSize === 'small'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-              title="حجم صغير"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setProductBoxSize('large')}
-              className={`px-3 py-2 rounded-lg font-medium transition ${
-                productBoxSize === 'large'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-              title="حجم كبير"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </button>
-          </div>
-        )}
-
+        
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -880,7 +849,29 @@ function POS() {
             </button>
           </div>
         ) : (
-          /* Category Sections with Horizontal Scroll and Arrows */
+          <>
+          {/* Quick Add Box - At Top */}
+          <div
+            onClick={() => setShowCustomItemModal(true)}
+            className="mb-4 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-md"
+          >
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 rounded-lg p-1.5">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-white">منتج سريع</h3>
+                <p className="text-[10px] text-emerald-100">إضافة منتج يدوياً للسلة</p>
+              </div>
+            </div>
+            <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+          
+          {/* Category Sections with Horizontal Scroll and Arrows */}
           <div className="space-y-6 sm:space-y-8">
             {Object.entries(productsByCategory).map(([categoryName, categoryProducts]) => (
               <div key={categoryName} className="relative">
@@ -960,70 +951,48 @@ function POS() {
                       categoryScrollRefs.current[categoryName] = el
                     }}
                     onScroll={() => checkScrollButtons(categoryName)}
-                    className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 px-1 scroll-smooth scrollbar-hide"
+                    className="flex gap-2 overflow-x-auto pb-3 px-1 scroll-smooth scrollbar-hide"
                   >
                     {categoryProducts.map((product) => (
                       <div
                         key={product.id}
                         onClick={() => {
-                          // If product is "item" type, add directly to cart with quantity 1
                           if (product.unit_type === 'item') {
                             addToCart(product, 1)
                           } else {
-                            // For weight/volume products, open quantity modal
                             setQuantityModalProduct(product)
                             setShowQuantityModal(true)
                           }
                         }}
-                        className={`group flex-shrink-0 bg-white rounded-xl overflow-hidden border-2 border-gray-100 hover:border-blue-500 hover:shadow-xl transition-all duration-200 cursor-pointer transform hover:scale-[1.02] ${
-                          productBoxSize === 'small' ? 'w-32 sm:w-36' : 'w-44 sm:w-48 md:w-52'
-                        }`}
+                        className="group flex-shrink-0 bg-white rounded-xl overflow-hidden border-2 border-gray-100 hover:border-blue-500 hover:shadow-lg transition-all duration-200 cursor-pointer w-24 sm:w-28"
                       >
                         {/* Product Image */}
-                        <div className={`relative w-full ${
-                          productBoxSize === 'small' ? 'h-20 sm:h-24' : 'h-28 sm:h-32 md:h-36'
-                        }`}>
+                        <div className="relative w-full h-16 sm:h-20">
                           <Image
                             src={product.image_url || 'https://placehold.co/300x200/e5e7eb/6b7280?text=No+Image'}
                             alt={product.name}
                             fill
-                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 56px, 72px"
-                            className="object-cover group-hover:scale-105 transition-transform duration-200"
+                            sizes="112px"
+                            className="object-cover"
                           />
-                          {/* Stock Badge Overlay */}
-                          {product.stock_quantity !== null && (
-                            <div className={`absolute top-1.5 right-1.5 backdrop-blur-sm text-white px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                              product.stock_quantity <= (product.low_stock_threshold || 10) 
-                                ? 'bg-red-500/90' 
-                                : 'bg-black/60'
-                            }`}>
-                              {product.stock_quantity} متبقي
+                          {/* Stock Badge */}
+                          {product.stock_quantity !== null && product.stock_quantity <= (product.low_stock_threshold || 10) && (
+                            <div className="absolute top-1 right-1 bg-red-500 text-white px-1.5 py-0.5 rounded text-[8px] font-bold">
+                              {product.stock_quantity}
                             </div>
                           )}
-                          {/* Quick Add Overlay */}
-                          <div className="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/10 transition-colors duration-200 flex items-center justify-center">
-                            <div className="bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all duration-200 transform scale-75 group-hover:scale-100 shadow-lg">
-                              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                              </svg>
-                            </div>
-                          </div>
                         </div>
                         
-                        {/* Product Info */}
-                        <div className={`${productBoxSize === 'small' ? 'p-2' : 'p-2.5 sm:p-3'}`}>
-                          <h3 className={`font-bold ${productBoxSize === 'small' ? 'text-[11px] sm:text-xs' : 'text-xs sm:text-sm'} text-gray-900 truncate mb-1.5`}>
+                        {/* Product Info - Compact */}
+                        <div className="p-1.5">
+                          <h3 className="font-semibold text-[10px] sm:text-[11px] text-gray-900 truncate">
                             {product.name}
                           </h3>
-                          
-                          {/* Price */}
-                          <div className="flex items-center justify-between">
-                            <span className={`font-extrabold ${productBoxSize === 'small' ? 'text-sm' : 'text-base sm:text-lg'} text-blue-600`}>
+                          <div className="flex items-center justify-between mt-0.5">
+                            <span className="font-bold text-xs text-blue-600">
                               {product.selling_price.toFixed(2)}
                             </span>
-                            <span className={`${productBoxSize === 'small' ? 'text-[9px]' : 'text-[10px] sm:text-xs'} text-gray-500 font-medium bg-gray-100 px-1.5 py-0.5 rounded`}>
-                              TND
-                            </span>
+                            <span className="text-[8px] text-gray-400">TND</span>
                           </div>
                         </div>
                       </div>
@@ -1033,166 +1002,127 @@ function POS() {
               </div>
             ))}
           </div>
+          </>
         )}
       </main>
 
-      {/* Desktop Cart Sidebar - Always visible on lg+ screens, STICKY */}
-      <aside className="hidden lg:flex lg:w-96 bg-gradient-to-b from-gray-50 to-white border-l border-gray-200 flex-col h-[calc(100vh-140px)] sticky top-[140px] overflow-hidden">
-        {/* Cart Header - Fixed */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5 text-white flex-shrink-0">
+      {/* Desktop Cart Sidebar - Clean & Modern */}
+      <aside className="hidden lg:flex lg:w-80 bg-white border-l border-gray-100 flex-col h-[calc(100vh-140px)] sticky top-[140px] overflow-hidden">
+        {/* Cart Header */}
+        <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <h2 className="text-lg font-bold">عربة التسوق</h2>
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold">
+            <h2 className="text-base font-bold text-gray-900">السلة</h2>
+            <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">
               {getTotalItems()}
-            </div>
+            </span>
           </div>
         </div>
 
         {cart.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-gray-500 p-8">
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-8 mb-4">
-              <svg className="w-24 h-24 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          <div className="flex-1 flex flex-col items-center justify-center p-6">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+              <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">السلة فارغة</h3>
-            <p className="text-sm text-gray-500 text-center">ابدأ بإضافة المنتجات</p>
+            <p className="text-sm text-gray-500">السلة فارغة</p>
           </div>
         ) : (
           <div className="flex-1 flex flex-col min-h-0">
-            {/* Cart Items - Scrollable */}
-            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 scrollbar-hide">
+            {/* Cart Items */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {cart.map((item) => (
                 <CartItem key={item.product.id} item={item} />
               ))}
             </div>
             
-            {/* Checkout Footer - Fixed at bottom */}
-            <div className="border-t-2 border-gray-100 p-4 bg-white shadow-lg flex-shrink-0">
-              {/* Credit System */}
-              <div className="mb-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl border-2 border-orange-200 p-3">
-                <div className="flex items-center mb-2">
-                  <input
-                    type="checkbox"
-                    id="credit-checkbox-desktop"
-                    checked={isCredit}
-                    onChange={(e) => {
-                      setIsCredit(e.target.checked)
-                      if (!e.target.checked) {
-                        setSelectedCustomerId('')
-                      }
-                    }}
-                    className="w-5 h-5 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
-                  />
-                  <label htmlFor="credit-checkbox-desktop" className="mr-2 text-sm font-bold text-gray-800">
-                    💳 بيع بالأجل
-                  </label>
-                </div>
+            {/* Checkout Footer */}
+            <div className="border-t border-gray-100 p-4 bg-gray-50 flex-shrink-0 space-y-3">
+              {/* Credit Toggle */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isCredit}
+                  onChange={(e) => {
+                    setIsCredit(e.target.checked)
+                    if (!e.target.checked) setSelectedCustomerId('')
+                  }}
+                  className="w-4 h-4 text-orange-500 rounded border-gray-300 focus:ring-orange-500"
+                />
+                <span className="text-sm font-medium text-gray-700">💳 بيع بالأجل</span>
+              </label>
 
-                {isCredit && (
-                  <div className="space-y-2">
-                    {!showAddCustomer ? (
+              {isCredit && (
+                <div className="space-y-2">
+                  {!showAddCustomer ? (
+                    <div className="flex gap-2">
+                      <select
+                        value={selectedCustomerId}
+                        onChange={(e) => setSelectedCustomerId(e.target.value)}
+                        className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-1 focus:ring-orange-500 bg-white"
+                      >
+                        <option value="">اختر العميل</option>
+                        {creditCustomers.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => setShowAddCustomer(true)}
+                        className="px-3 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600"
+                      >+</button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 bg-white p-3 rounded-lg border border-gray-200">
+                      <input
+                        type="text"
+                        placeholder="اسم العميل"
+                        value={newCustomerName}
+                        onChange={(e) => setNewCustomerName(e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg"
+                      />
+                      <input
+                        type="tel"
+                        placeholder="رقم الهاتف"
+                        value={newCustomerPhone}
+                        onChange={(e) => setNewCustomerPhone(e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg"
+                      />
                       <div className="flex gap-2">
-                        <select
-                          value={selectedCustomerId}
-                          onChange={(e) => setSelectedCustomerId(e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
-                        >
-                          <option value="">اختر العميل</option>
-                          {creditCustomers.map((customer) => (
-                            <option key={customer.id} value={customer.id}>
-                              {customer.name} {customer.phone ? `(${customer.phone})` : ''}
-                            </option>
-                          ))}
-                        </select>
-                        <button
-                          onClick={() => setShowAddCustomer(true)}
-                          className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-sm font-semibold whitespace-nowrap shadow-md"
-                        >
-                          + جديد
-                        </button>
+                        <button onClick={addCreditCustomer} className="flex-1 py-2 bg-green-500 text-white rounded-lg text-sm">حفظ</button>
+                        <button onClick={() => { setShowAddCustomer(false); setNewCustomerName(''); setNewCustomerPhone('') }} className="flex-1 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm">إلغاء</button>
                       </div>
-                    ) : (
-                      <div className="space-y-2 bg-orange-50 p-3 rounded-lg">
-                        <input
-                          type="text"
-                          placeholder="اسم العميل *"
-                          value={newCustomerName}
-                          onChange={(e) => setNewCustomerName(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
-                        />
-                        <input
-                          type="tel"
-                          placeholder="رقم الهاتف (اختياري)"
-                          value={newCustomerPhone}
-                          onChange={(e) => setNewCustomerPhone(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={addCreditCustomer}
-                            className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
-                          >
-                            حفظ
-                          </button>
-                          <button
-                            onClick={() => {
-                              setShowAddCustomer(false)
-                              setNewCustomerName('')
-                              setNewCustomerPhone('')
-                            }}
-                            className="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm"
-                          >
-                            إلغاء
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 mb-3 border-2 border-blue-200">
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-sm font-semibold text-gray-600">الإجمالي</span>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-blue-600">{getTotalPrice().toFixed(2)}</div>
-                    <div className="text-xs text-blue-500 font-medium">TND</div>
-                  </div>
+                    </div>
+                  )}
                 </div>
-                <div className="text-xs text-gray-500 mt-2 pt-2 border-t border-blue-200">
-                  {getTotalItems()} {getTotalItems() !== 1 ? 'عناصر' : 'عنصر'} • {cart.length} {cart.length !== 1 ? 'منتجات' : 'منتج'}
+              )}
+
+              {/* Total */}
+              <div className="bg-white rounded-lg p-3 border border-gray-200">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">{getTotalItems()} عنصر</span>
+                  <div className="text-left">
+                    <span className="text-xl font-black text-gray-900">{getTotalPrice().toFixed(2)}</span>
+                    <span className="text-xs text-gray-400 mr-1">TND</span>
+                  </div>
                 </div>
               </div>
               
+              {/* Checkout Button */}
               <button
                 onClick={handleCheckout}
                 disabled={processingCheckout}
-                className={`w-full ${isCredit ? 'bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800' : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'} text-white py-3.5 rounded-xl transition-all flex items-center justify-center font-bold shadow-lg transform hover:scale-[1.02] active:scale-100`}
+                className={`w-full py-3 rounded-lg font-bold text-white transition ${
+                  isCredit ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-500 hover:bg-green-600'
+                } disabled:opacity-50`}
               >
-                {processingCheckout ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    جاري المعالجة...
-                  </>
-                ) : (
-                  <>{isCredit ? '💳 تسجيل كدين' : '💰 إتمام الشراء'}</>
-                )}
+                {processingCheckout ? 'جاري...' : isCredit ? '💳 تسجيل كدين' : '✓ إتمام البيع'}
               </button>
               
               <button
                 onClick={clearCart}
-                className="w-full mt-2 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl transition font-semibold"
+                className="w-full py-2 text-sm text-gray-500 hover:text-red-500 transition"
               >
-                🗑️ تفريغ السلة
+                تفريغ السلة
               </button>
             </div>
           </div>
@@ -1200,213 +1130,158 @@ function POS() {
       </aside>
       </div>
 
-      {/* Mobile Cart Modal */}
+      {/* Mobile Cart Modal - Clean & Simple */}
       {showCart && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end z-40">
-          <div className="bg-gray-50 w-full max-w-md h-full overflow-y-auto shadow-xl flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-bold">عربة التسوق</h2>
-              <button
-                onClick={() => setShowCart(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
-              >
-                &times;
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={() => setShowCart(false)}>
+          <div 
+            className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl max-h-[85vh] flex flex-col animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Handle Bar */}
+            <div className="flex justify-center pt-3 pb-2">
+              <div className="w-10 h-1 bg-gray-300 rounded-full"></div>
+            </div>
+            
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold text-gray-900">السلة</h2>
+                <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">{getTotalItems()}</span>
+              </div>
+              <button onClick={() => setShowCart(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
             {cart.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-gray-500 p-8">
-                <div className="bg-white rounded-full p-6 mb-4">
-                  <svg className="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              <div className="flex-1 flex flex-col items-center justify-center py-12">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">عربة التسوق فارغة</h3>
-                <p className="text-sm text-gray-500 mb-6">أضف بعض المنتجات للبدء</p>
-                <button 
-                  onClick={() => setShowCart(false)}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-lg"
-                >
-                  متابعة التسوق
+                <p className="text-gray-500 mb-4">السلة فارغة</p>
+                <button onClick={() => setShowCart(false)} className="px-6 py-2 bg-blue-500 text-white rounded-lg font-medium">
+                  تصفح المنتجات
                 </button>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col">
-                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              <>
+                {/* Cart Items */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-2 max-h-[40vh]">
                   {cart.map((item) => (
                     <CartItem key={item.product.id} item={item} />
                   ))}
                 </div>
                 
-                <div className="border-t border-gray-200 p-4 bg-white">
-                  {/* Credit System */}
-                  <div className="mb-4 bg-white rounded-lg border border-gray-200 p-3">
-                    <div className="flex items-center mb-3">
-                      <input
-                        type="checkbox"
-                        id="credit-checkbox"
-                        checked={isCredit}
-                        onChange={(e) => {
-                          setIsCredit(e.target.checked)
-                          if (!e.target.checked) {
-                            setSelectedCustomerId('')
-                          }
-                        }}
-                        className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
-                      />
-                      <label htmlFor="credit-checkbox" className="mr-2 text-sm font-medium text-gray-700">
-                        💳 بيع بالأجل (دين)
-                      </label>
-                    </div>
+                {/* Footer */}
+                <div className="border-t border-gray-100 p-4 space-y-3 bg-gray-50">
+                  {/* Credit Toggle */}
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isCredit}
+                      onChange={(e) => {
+                        setIsCredit(e.target.checked)
+                        if (!e.target.checked) setSelectedCustomerId('')
+                      }}
+                      className="w-4 h-4 text-orange-500 rounded border-gray-300"
+                    />
+                    <span className="text-sm font-medium text-gray-700">💳 بيع بالأجل</span>
+                  </label>
 
-                    {isCredit && (
-                      <div className="space-y-2">
-                        {!showAddCustomer ? (
+                  {isCredit && (
+                    <div className="space-y-2">
+                      {!showAddCustomer ? (
+                        <div className="flex gap-2">
+                          <select
+                            value={selectedCustomerId}
+                            onChange={(e) => setSelectedCustomerId(e.target.value)}
+                            className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white"
+                          >
+                            <option value="">اختر العميل</option>
+                            {creditCustomers.map((c) => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </select>
+                          <button onClick={() => setShowAddCustomer(true)} className="px-3 py-2 bg-orange-500 text-white rounded-lg text-sm">+</button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2 bg-white p-3 rounded-lg border border-gray-200">
+                          <input
+                            type="text"
+                            placeholder="اسم العميل"
+                            value={newCustomerName}
+                            onChange={(e) => setNewCustomerName(e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg"
+                          />
+                          <input
+                            type="tel"
+                            placeholder="رقم الهاتف"
+                            value={newCustomerPhone}
+                            onChange={(e) => setNewCustomerPhone(e.target.value)}
+                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg"
+                          />
                           <div className="flex gap-2">
-                            <select
-                              value={selectedCustomerId}
-                              onChange={(e) => setSelectedCustomerId(e.target.value)}
-                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
-                            >
-                              <option value="">اختر العميل</option>
-                              {creditCustomers.map((customer) => (
-                                <option key={customer.id} value={customer.id}>
-                                  {customer.name} {customer.phone ? `(${customer.phone})` : ''}
-                                </option>
-                              ))}
-                            </select>
-                            <button
-                              onClick={() => setShowAddCustomer(true)}
-                              className="px-3 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-sm whitespace-nowrap"
-                            >
-                              + جديد
-                            </button>
+                            <button onClick={addCreditCustomer} className="flex-1 py-2 bg-green-500 text-white rounded-lg text-sm">حفظ</button>
+                            <button onClick={() => { setShowAddCustomer(false); setNewCustomerName(''); setNewCustomerPhone('') }} className="flex-1 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm">إلغاء</button>
                           </div>
-                        ) : (
-                          <div className="space-y-2 bg-orange-50 p-3 rounded-lg">
-                            <input
-                              type="text"
-                              placeholder="اسم العميل *"
-                              value={newCustomerName}
-                              onChange={(e) => setNewCustomerName(e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
-                            />
-                            <input
-                              type="tel"
-                              placeholder="رقم الهاتف (اختياري)"
-                              value={newCustomerPhone}
-                              onChange={(e) => setNewCustomerPhone(e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
-                            />
-                            <div className="flex gap-2">
-                              <button
-                                onClick={addCreditCustomer}
-                                className="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
-                              >
-                                حفظ
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setShowAddCustomer(false)
-                                  setNewCustomerName('')
-                                  setNewCustomerPhone('')
-                                }}
-                                className="flex-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm"
-                              >
-                                إلغاء
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-                  <div className="bg-blue-50 rounded-lg p-4 mb-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700 font-medium">المجموع الفرعي</span>
-                      <span className="text-2xl font-bold text-blue-600">{getTotalPrice().toFixed(2)} TND</span>
+                  {/* Total & Checkout */}
+                  <div className="bg-white rounded-xl p-4 border border-gray-200">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-gray-500">{getTotalItems()} عنصر</span>
+                      <div>
+                        <span className="text-2xl font-black text-gray-900">{getTotalPrice().toFixed(2)}</span>
+                        <span className="text-sm text-gray-400 mr-1">TND</span>
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {getTotalItems()} {getTotalItems() !== 1 ? 'عناصر' : 'عنصر'} في العربة
-                    </div>
+                    
+                    <button
+                      onClick={handleCheckout}
+                      disabled={processingCheckout}
+                      className={`w-full py-3.5 rounded-xl font-bold text-white transition ${
+                        isCredit ? 'bg-orange-500 active:bg-orange-600' : 'bg-green-500 active:bg-green-600'
+                      } disabled:opacity-50`}
+                    >
+                      {processingCheckout ? 'جاري...' : isCredit ? '💳 تسجيل كدين' : '✓ إتمام البيع'}
+                    </button>
                   </div>
                   
-                  <button
-                    onClick={handleCheckout}
-                    disabled={processingCheckout}
-                    className={`w-full ${isCredit ? 'bg-orange-600 hover:bg-orange-700' : 'bg-green-600 hover:bg-green-700'} text-white py-3 rounded-lg transition flex items-center justify-center font-medium`}
-                  >
-                    {processingCheckout ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        جاري المعالجة...
-                      </>
-                    ) : (
-                      <>{isCredit ? '💳 تسجيل كدين' : '💰 إتمام الشراء'} ({getTotalPrice().toFixed(2)} دينار)</>
-                    
-                    )}
-                  </button>
-                  
-                  <button
-                    onClick={clearCart}
-                    className="w-full mt-2 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg transition text-sm"
-                  >
-                    تفريغ العربة
+                  <button onClick={clearCart} className="w-full py-2 text-sm text-gray-400 hover:text-red-500">
+                    تفريغ السلة
                   </button>
                 </div>
-              </div>
+              </>
             )}
           </div>
         </div>
       )}
 
-      {/* Floating Quick Add Button - For adding rare/custom items */}
-      <button
-        onClick={() => setShowCustomItemModal(true)}
-        className="fixed bottom-8 left-8 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-full w-14 h-14 shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 z-50 group border-2 border-white/20"
-        aria-label="إضافة منتج سريع"
-        title="إضافة منتج سريع"
-      >
-        <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
-        {/* Tooltip on hover */}
-        <span className="absolute left-16 bg-gray-900 text-white text-xs font-semibold px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg">
-          + إضافة سريعة
-        </span>
-      </button>
-
       {/* Floating Cart Button - Mobile Only */}
       <button
         onClick={() => setShowCart(true)}
-        className="lg:hidden fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white rounded-full w-16 h-16 shadow-2xl flex items-center justify-center transition-all transform hover:scale-110 z-50"
-        aria-label="Open Cart"
+        className="lg:hidden fixed bottom-6 right-4 bg-blue-600 text-white rounded-2xl px-4 py-3 shadow-lg flex items-center gap-2 z-50 active:scale-95 transition"
       >
-        <div className="relative">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-          {getTotalItems() > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-pulse">
-              {getTotalItems()}
-            </span>
-          )}
-        </div>
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+        </svg>
+        {getTotalItems() > 0 ? (
+          <span className="font-bold">{getTotalPrice().toFixed(2)}</span>
+        ) : (
+          <span className="font-medium">السلة</span>
+        )}
+        {getTotalItems() > 0 && (
+          <span className="bg-white text-blue-600 text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+            {getTotalItems()}
+          </span>
+        )}
       </button>
       
       {/* Quantity Modal */}
