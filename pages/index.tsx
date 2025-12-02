@@ -275,15 +275,15 @@ export default function Home() {
               <div className="w-20 h-1 bg-red-500 mx-auto rounded"></div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 max-w-7xl mx-auto">
               {problems.map((problem, idx) => (
-                <div key={idx} className="bg-white rounded-2xl p-5 border border-gray-200 hover:border-red-300 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-[28px]">{problem.icon}</span>
-                    <div className="w-8 h-0.5 bg-red-400 group-hover:w-12 transition-all duration-300"></div>
+                <div key={idx} className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-red-400 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group cursor-pointer" style={{animationDelay: `${idx * 100}ms`}}>
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="text-[36px] group-hover:scale-110 transition-transform duration-300">{problem.icon}</span>
+                    <div className="w-10 h-1 bg-red-400 group-hover:w-16 transition-all duration-500 rounded"></div>
                   </div>
-                  <h3 className="font-bold text-gray-900 text-[17px] sm:text-[18px] md:text-[19px] mb-2 leading-[1.5]">{problem.title}</h3>
-                  <p className="text-[15px] sm:text-[16px] md:text-[17px] text-gray-500 leading-[1.7]">{problem.desc}</p>
+                  <h3 className="font-bold text-gray-900 text-[18px] md:text-[20px] lg:text-[22px] mb-3 leading-[1.4]">{problem.title}</h3>
+                  <p className="text-[16px] md:text-[17px] lg:text-[18px] text-gray-500 leading-[1.7]">{problem.desc}</p>
                 </div>
               ))}
             </div>
@@ -299,19 +299,19 @@ export default function Home() {
         </section>
 
         {/* Features Section */}
-        <section id="features" className="py-16 md:py-24 bg-white">
+        <section id="features" className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-[24px] sm:text-[28px] md:text-[36px] lg:text-[42px] font-bold text-gray-900 mb-3 leading-[1.3]">كل ما تحتاجه لادارة محلك</h2>
               <p className="text-[16px] sm:text-[18px] md:text-[20px] text-gray-600 leading-[1.7]">نظام متكامل يوفر وقتك ويزيد ارباحك</p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6 max-w-6xl mx-auto">
               {features.map((feature, idx) => (
-                <div key={idx} className="bg-gray-50 rounded-2xl p-5 md:p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                  <div className="text-[32px] md:text-[36px] mb-3">{feature.icon}</div>
-                  <h3 className="text-[17px] sm:text-[18px] md:text-[19px] font-bold text-gray-900 mb-2 leading-[1.4]">{feature.title}</h3>
-                  <p className="text-[15px] sm:text-[16px] md:text-[17px] text-gray-600 leading-[1.7]">{feature.desc}</p>
+                <div key={idx} className="bg-white border-2 border-gray-100 rounded-2xl p-6 md:p-7 hover:shadow-2xl hover:-translate-y-2 hover:border-gray-300 transition-all duration-500 group cursor-pointer">
+                  <div className="text-[40px] md:text-[48px] mb-4 group-hover:scale-110 transition-transform duration-300">{feature.icon}</div>
+                  <h3 className="text-[18px] md:text-[20px] lg:text-[22px] font-bold text-gray-900 mb-3 leading-[1.4]">{feature.title}</h3>
+                  <p className="text-[16px] md:text-[17px] lg:text-[18px] text-gray-600 leading-[1.7]">{feature.desc}</p>
                 </div>
               ))}
             </div>
@@ -319,68 +319,68 @@ export default function Home() {
         </section>
 
         {/* Screenshot Section */}
-        <section className="py-16 md:py-20 bg-gray-50">
+        <section className="py-20 md:py-28 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
               <h2 className="text-[24px] sm:text-[28px] md:text-[36px] lg:text-[42px] font-bold text-gray-900 mb-3 leading-[1.3]">واجهة بسيطة وسهلة</h2>
               <p className="text-[16px] sm:text-[18px] md:text-[20px] text-gray-600 leading-[1.7]">لا تحتاج خبرة تقنية - ابدا العمل في دقائق</p>
             </div>
             
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-gray-100 rounded-3xl p-4 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-500">
-                <img src="/test1.png" alt="واجهة النظام" className="w-full rounded-2xl shadow-lg" />
+            <div className="max-w-5xl mx-auto">
+              <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl p-6 md:p-10 shadow-2xl hover:shadow-3xl transition-all duration-700 hover:scale-[1.02] group">
+                <img src="/test1.png" alt="واجهة النظام" className="w-full rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-500" />
               </div>
             </div>
           </div>
         </section>
 
         {/* Pricing Section */}
-        <section id="pricing" className="py-16 md:py-24 bg-white">
+        <section id="pricing" className="py-20 md:py-28 bg-gradient-to-b from-gray-50 to-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-[24px] sm:text-[28px] md:text-[36px] lg:text-[42px] font-bold text-gray-900 mb-3 leading-[1.3]">اسعار بسيطة وواضحة</h2>
               <p className="text-[16px] sm:text-[18px] md:text-[20px] text-gray-600 leading-[1.7]">جميع الباقات تشمل كل المميزات</p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
               {/* Monthly */}
-              <div className="bg-white rounded-2xl p-6 md:p-8 border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300">
-                <h3 className="text-[18px] md:text-[20px] font-bold text-gray-900 mb-1">شهري</h3>
-                <p className="text-gray-500 text-[14px] md:text-[15px] mb-4">مرونة كاملة</p>
-                <div className="mb-6">
-                  <span className="text-[40px] md:text-[48px] font-black text-gray-900">{monthlyPrice}</span>
-                  <span className="text-gray-500 text-[16px] mr-1">د.ت/شهر</span>
+              <div className="bg-white rounded-3xl p-7 md:p-9 border-2 border-gray-100 hover:border-gray-300 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group cursor-pointer">
+                <h3 className="text-[20px] md:text-[22px] lg:text-[24px] font-bold text-gray-900 mb-2">شهري</h3>
+                <p className="text-gray-500 text-[16px] md:text-[17px] mb-5">مرونة كاملة</p>
+                <div className="mb-7">
+                  <span className="text-[48px] md:text-[56px] lg:text-[64px] font-black text-gray-900">{monthlyPrice}</span>
+                  <span className="text-gray-500 text-[18px] md:text-[20px] mr-1">د.ت/شهر</span>
                 </div>
-                <button onClick={() => openPaymentModal('شهري', '19', 'شهر')} className="w-full bg-gray-100 text-gray-900 py-3.5 rounded-xl font-bold text-[16px] md:text-[17px] hover:bg-gray-200 hover:scale-105 transition-all duration-300">
+                <button onClick={() => openPaymentModal('شهري', '19', 'شهر')} className="w-full bg-gray-100 text-gray-900 py-4 rounded-xl font-bold text-[17px] md:text-[18px] lg:text-[19px] hover:bg-gray-200 hover:scale-105 transition-all duration-300">
                   اشترك الآن
                 </button>
               </div>
 
               {/* 3 Months - Popular */}
-              <div className="bg-gray-900 rounded-2xl p-6 md:p-8 text-white relative hover:scale-105 transition-all duration-300 shadow-xl">
-                <div className="absolute -top-3 right-4 bg-red-500 text-white text-[13px] px-4 py-1.5 rounded-full font-bold">الأكثر طلبا</div>
-                <h3 className="text-[18px] md:text-[20px] font-bold mb-1">3 أشهر</h3>
-                <p className="text-gray-400 text-[14px] md:text-[15px] mb-4">وفر 10%</p>
-                <div className="mb-6">
-                  <span className="text-[40px] md:text-[48px] font-black">{threeMonthPrice}</span>
-                  <span className="text-gray-400 text-[16px] mr-1">د.ت/شهر</span>
-                  <p className="text-[14px] text-gray-400 mt-1">51 د.ت اجمالي</p>
+              <div className="bg-gray-900 rounded-3xl p-7 md:p-9 text-white relative hover:scale-105 transition-all duration-500 shadow-2xl">
+                <div className="absolute -top-4 right-6 bg-red-500 text-white text-[14px] md:text-[15px] px-5 py-2 rounded-full font-bold shadow-lg">الأكثر طلبا</div>
+                <h3 className="text-[20px] md:text-[22px] lg:text-[24px] font-bold mb-2">3 أشهر</h3>
+                <p className="text-gray-400 text-[16px] md:text-[17px] mb-5">وفر 10%</p>
+                <div className="mb-7">
+                  <span className="text-[48px] md:text-[56px] lg:text-[64px] font-black">{threeMonthPrice}</span>
+                  <span className="text-gray-400 text-[18px] md:text-[20px] mr-1">د.ت/شهر</span>
+                  <p className="text-[15px] md:text-[16px] text-gray-400 mt-2">51 د.ت اجمالي</p>
                 </div>
-                <button onClick={() => openPaymentModal('3 أشهر', '51', '3 أشهر')} className="w-full bg-white text-gray-900 py-3.5 rounded-xl font-bold text-[16px] md:text-[17px] hover:bg-gray-100 transition-all duration-300">
+                <button onClick={() => openPaymentModal('3 أشهر', '51', '3 أشهر')} className="w-full bg-white text-gray-900 py-4 rounded-xl font-bold text-[17px] md:text-[18px] lg:text-[19px] hover:bg-gray-100 transition-all duration-300">
                   اشترك الآن
                 </button>
               </div>
 
               {/* Yearly */}
-              <div className="bg-white rounded-2xl p-6 md:p-8 border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-300">
-                <h3 className="text-[18px] md:text-[20px] font-bold text-gray-900 mb-1">سنوي</h3>
-                <p className="text-gray-500 text-[14px] md:text-[15px] mb-4">وفر 21%</p>
-                <div className="mb-6">
-                  <span className="text-[40px] md:text-[48px] font-black text-gray-900">{yearlyPrice}</span>
-                  <span className="text-gray-500 text-[16px] mr-1">د.ت/شهر</span>
-                  <p className="text-[14px] text-gray-400 mt-1">180 د.ت اجمالي</p>
+              <div className="bg-white rounded-3xl p-7 md:p-9 border-2 border-gray-100 hover:border-gray-300 hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group cursor-pointer">
+                <h3 className="text-[20px] md:text-[22px] lg:text-[24px] font-bold text-gray-900 mb-2">سنوي</h3>
+                <p className="text-gray-500 text-[16px] md:text-[17px] mb-5">وفر 21%</p>
+                <div className="mb-7">
+                  <span className="text-[48px] md:text-[56px] lg:text-[64px] font-black text-gray-900">{yearlyPrice}</span>
+                  <span className="text-gray-500 text-[18px] md:text-[20px] mr-1">د.ت/شهر</span>
+                  <p className="text-[15px] md:text-[16px] text-gray-400 mt-2">180 د.ت اجمالي</p>
                 </div>
-                <button onClick={() => openPaymentModal('سنوي', '180', 'سنة')} className="w-full bg-gray-100 text-gray-900 py-3.5 rounded-xl font-bold text-[16px] md:text-[17px] hover:bg-gray-200 hover:scale-105 transition-all duration-300">
+                <button onClick={() => openPaymentModal('سنوي', '180', 'سنة')} className="w-full bg-gray-100 text-gray-900 py-4 rounded-xl font-bold text-[17px] md:text-[18px] lg:text-[19px] hover:bg-gray-200 hover:scale-105 transition-all duration-300">
                   اشترك الآن
                 </button>
               </div>
@@ -396,17 +396,17 @@ export default function Home() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-16 md:py-24 bg-gray-50">
+        <section className="py-20 md:py-28 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-[24px] sm:text-[28px] md:text-[36px] lg:text-[42px] font-bold text-gray-900 mb-3 leading-[1.3]">أسئلة شائعة</h2>
             </div>
 
-            <div className="max-w-2xl mx-auto space-y-4">
+            <div className="max-w-3xl mx-auto space-y-5">
               {faqs.map((faq, idx) => (
-                <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300">
-                  <h3 className="font-bold text-gray-900 text-[18px] sm:text-[19px] md:text-[20px] mb-3 leading-[1.5]">{faq.q}</h3>
-                  <p className="text-gray-600 text-[16px] sm:text-[17px] md:text-[18px] leading-[1.7]">{faq.a}</p>
+                <div key={idx} className="bg-white rounded-2xl p-7 md:p-8 shadow-sm hover:shadow-xl border-2 border-transparent hover:border-gray-200 transition-all duration-500 cursor-pointer group">
+                  <h3 className="font-bold text-gray-900 text-[19px] md:text-[21px] lg:text-[23px] mb-3 leading-[1.5] group-hover:text-gray-700 transition-colors">{faq.q}</h3>
+                  <p className="text-gray-600 text-[17px] md:text-[18px] lg:text-[20px] leading-[1.8]">{faq.a}</p>
                 </div>
               ))}
             </div>
@@ -414,11 +414,12 @@ export default function Home() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 md:py-24 bg-gray-900 text-white">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-[24px] sm:text-[32px] md:text-[40px] lg:text-[48px] font-bold mb-6 leading-[1.3]">جاهز لتطوير تجارتك؟</h2>
-            <p className="text-gray-400 text-[16px] sm:text-[18px] md:text-[20px] mb-8 max-w-xl mx-auto leading-[1.7]">انضم لمئات التجار الذين يديرون أعمالهم بذكاء مع Kesti Pro</p>
-            <Link href="/signup" className="inline-block bg-white text-gray-900 px-10 py-4 rounded-xl font-bold text-[17px] md:text-[19px] hover:bg-gray-100 hover:scale-105 transition-all duration-300 shadow-lg">
+        <section className="py-20 md:py-32 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+          <div className="container mx-auto px-4 text-center relative z-10">
+            <h2 className="text-[28px] sm:text-[36px] md:text-[48px] lg:text-[56px] font-black mb-6 leading-[1.2] animate-fadeIn">جاهز لتطوير تجارتك؟</h2>
+            <p className="text-gray-300 text-[18px] sm:text-[20px] md:text-[22px] lg:text-[24px] mb-10 max-w-2xl mx-auto leading-[1.7]">انضم لمئات التجار الذين يديرون أعمالهم بذكاء مع Kesti Pro</p>
+            <Link href="/signup" className="inline-block bg-white text-gray-900 px-12 py-5 rounded-2xl font-black text-[18px] md:text-[20px] lg:text-[22px] hover:bg-gray-100 hover:scale-110 transition-all duration-500 shadow-2xl hover:shadow-white/20">
               ابدا مجانا الآن
             </Link>
           </div>
