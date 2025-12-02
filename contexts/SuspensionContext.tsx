@@ -33,10 +33,16 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
   const [isSuspended, setIsSuspended] = useState(false)
   const [isSubscriptionExpired, setIsSubscriptionExpired] = useState(false)
   const [suspensionMessage, setSuspensionMessage] = useState<string | null>(null)
+  const [errorCount, setErrorCount] = useState(0)
   const router = useRouter()
 
   // Function to check if current user is suspended or has expired subscription
   const checkSuspension = async (): Promise<{ suspended: boolean; subscriptionExpired: boolean }> => {
+    // If too many errors, stop trying (prevents infinite 500 error loops)
+    if (errorCount >= 3) {
+      return { suspended: false, subscriptionExpired: false }
+    }
+    
     try {
       const { data: { session } } = await supabase.auth.getSession()
       
@@ -45,6 +51,7 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
         setIsSuspended(false)
         setIsSubscriptionExpired(false)
         setSuspensionMessage(null)
+        setErrorCount(0)
         return { suspended: false, subscriptionExpired: false }
       }
 
@@ -57,8 +64,13 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
 
       if (error || !data) {
         console.error('Error checking user status:', error)
+        // Increment error count to prevent infinite retries on 500 errors
+        setErrorCount(prev => prev + 1)
         return { suspended: false, subscriptionExpired: false }
       }
+      
+      // Reset error count on success
+      setErrorCount(0)
 
       // Check if suspended
       const suspended = !!data.is_suspended

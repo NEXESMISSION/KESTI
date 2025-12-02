@@ -451,7 +451,7 @@ export default function SEO({
       <meta name="msapplication-starturl" content={siteUrl} />
       
       {/* Apple/iOS */}
-      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       <meta name="apple-mobile-web-app-title" content="Kesti Pro" />
       <link rel="apple-touch-icon" href={`${siteUrl}/logo/KESTi.png`} />

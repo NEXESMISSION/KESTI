@@ -4,6 +4,12 @@ const nextConfig = {
   // Production optimizations
   compress: true,
   poweredByHeader: false,
+  // Remove console logs in production
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['warn'], // Keep warnings for important issues
+    } : false,
+  },
   // Improve navigation in production
   experimental: {
     scrollRestoration: true,

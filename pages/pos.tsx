@@ -294,14 +294,24 @@ function POS() {
       const { data, error } = await supabase
         .from('products')
         .select(`
-          *,
+          id,
+          owner_id,
+          name,
+          selling_price,
+          cost_price,
+          unit_type,
+          image_url,
+          category_id,
+          stock_quantity,
+          low_stock_threshold,
+          created_at,
           category:category_id (id, name)
         `)
         .eq('owner_id', ownerId)
         .order('name')
 
       if (error) throw error
-      setProducts(data || [])
+      setProducts((data as unknown as Product[]) || [])
       await fetchCategories(ownerId)
     } catch (err: any) {
       console.error('Error fetching products:', err)
@@ -315,7 +325,7 @@ function POS() {
     try {
       const { data, error } = await supabase
         .from('credit_customers')
-        .select('*')
+        .select('id, owner_id, name, phone, created_at')
         .eq('owner_id', ownerId)
         .order('name')
 
@@ -656,71 +666,77 @@ function POS() {
             
             {/* Right: Icons */}
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* Alerts Button (Low Stock + Auto-Clear Warning) */}
-              <button
-                onClick={() => setShowLowStockModal(true)}
-                className="relative bg-orange-600 hover:bg-orange-700 text-white p-2 sm:p-2.5 rounded-lg transition-all transform hover:scale-105"
-                aria-label="تنبيهات"
-                title="Alerts & Notifications"
-                type="button"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+              {/* Main Action Buttons Group */}
+              <div className="flex items-center gap-2 sm:gap-3 bg-gray-100 rounded-xl p-1.5 sm:p-2">
+                {/* Alerts Button (Low Stock + Auto-Clear Warning) */}
+                <button
+                  onClick={() => setShowLowStockModal(true)}
+                  className="relative bg-orange-500 hover:bg-orange-600 text-white p-2 sm:p-2.5 rounded-lg transition-all transform hover:scale-105 shadow-sm"
+                  aria-label="تنبيهات"
+                  title="Alerts & Notifications"
+                  type="button"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                  />
-                </svg>
-                {totalAlerts > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full min-w-[24px] h-6 flex items-center justify-center text-xs font-bold px-1.5 animate-pulse shadow-lg">
-                    {totalAlerts}
-                  </span>
-                )}
-              </button>
-              
-              {/* Owner Panel Icon Button */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowPinModal(true);
-                }}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
-                title="Owner Dashboard"
-                type="button"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 sm:h-6 sm:w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    />
+                  </svg>
+                  {totalAlerts > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full min-w-[20px] h-5 sm:min-w-[24px] sm:h-6 flex items-center justify-center text-[10px] sm:text-xs font-bold px-1 sm:px-1.5 animate-pulse shadow-lg">
+                      {totalAlerts}
+                    </span>
+                  )}
+                </button>
+                
+                {/* Owner Panel Icon Button */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowPinModal(true);
+                  }}
+                  className="bg-gray-600 hover:bg-gray-700 text-white p-2 sm:p-2.5 rounded-lg transition-all transform hover:scale-105 shadow-sm"
+                  title="Owner Dashboard"
+                  type="button"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 sm:h-6 sm:w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                    />
+                  </svg>
+                </button>
+              </div>
               
-              {/* Logout Icon Button */}
+              {/* Divider */}
+              <div className="h-8 w-px bg-gray-300 mx-1 hidden sm:block" />
+              
+              {/* Logout Button - Separated */}
               <button
                 onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white p-2 sm:p-2.5 rounded-lg transition text-xs sm:text-sm"
+                className="bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white p-2 sm:p-2.5 rounded-lg transition-all duration-200 border border-red-200 hover:border-red-600"
                 aria-label="Logout"
-                title="Logout"
+                title="تسجيل الخروج - Logout"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
+                  className="h-5 w-5 sm:h-6 sm:w-6"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"

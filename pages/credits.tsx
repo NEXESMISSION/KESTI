@@ -46,7 +46,7 @@ function Credits() {
     try {
       const { data, error } = await supabase
         .from('credit_customers')
-        .select('*')
+        .select('id, owner_id, name, phone, created_at')
         .eq('owner_id', ownerId)
         .order('name')
 
@@ -63,8 +63,16 @@ function Credits() {
       let query = supabase
         .from('credit_sales')
         .select(`
-          *,
-          customer:customer_id (id, name, phone)
+          id,
+          owner_id,
+          customer_id,
+          total_amount,
+          paid_amount,
+          remaining_amount,
+          is_paid,
+          created_at,
+          paid_at,
+          customer:customer_id (id, owner_id, name, phone, created_at)
         `)
         .eq('owner_id', ownerId)
 
@@ -107,7 +115,7 @@ function Credits() {
       const { data, error } = await query
 
       if (error) throw error
-      setCreditSales(data || [])
+      setCreditSales((data as unknown as CreditSale[]) || [])
     } catch (err: any) {
       console.error('Error fetching credit sales:', err)
     } finally {

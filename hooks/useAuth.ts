@@ -22,7 +22,7 @@ export default function useAuth() {
         if (session) {
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('*')
+            .select('id, full_name, email, role, subscription_ends_at, is_suspended, pin_code, history_auto_clear_days, history_auto_clear_minutes, last_history_clear, welcome_shown, pending_alert_message')
             .eq('id', session.user.id)
             .single()
             
@@ -49,7 +49,7 @@ export default function useAuth() {
         const fetchProfile = async () => {
           const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('*')
+            .select('id, full_name, email, role, subscription_ends_at, is_suspended, pin_code, history_auto_clear_days, history_auto_clear_minutes, last_history_clear, welcome_shown, pending_alert_message')
             .eq('id', session.user.id)
             .single()
             

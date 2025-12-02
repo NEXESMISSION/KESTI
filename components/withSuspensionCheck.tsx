@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabase'
 import { ComponentType } from 'react'
@@ -12,6 +12,7 @@ export function withSuspensionCheck<P extends object>(
     const [loading, setLoading] = useState(true)
     const [isSuspended, setIsSuspended] = useState(false)
     const [isSubscriptionExpired, setIsSubscriptionExpired] = useState(false)
+    const errorCountRef = useRef(0)
 
     useEffect(() => {
       // Wait for router to be ready
@@ -20,10 +21,17 @@ export function withSuspensionCheck<P extends object>(
       let isNavigating = false
       let lastCheckTime = 0
       const CHECK_DEBOUNCE = 1000 // 1 second debounce
+      const MAX_ERRORS = 3 // Stop retrying after 3 errors
 
       const checkUserStatus = async () => {
         // Prevent duplicate navigation attempts
         if (isNavigating) return
+        
+        // Stop retrying if too many errors (prevents 500 error flood)
+        if (errorCountRef.current >= MAX_ERRORS) {
+          setLoading(false)
+          return
+        }
         
         // Debounce checks to prevent rapid fire
         const now = Date.now()
@@ -35,6 +43,7 @@ export function withSuspensionCheck<P extends object>(
           
           if (!session) {
             setLoading(false)
+            errorCountRef.current = 0
             return
           }
           
@@ -47,9 +56,13 @@ export function withSuspensionCheck<P extends object>(
             
           if (error) {
             console.error('Error checking user status:', error)
+            errorCountRef.current += 1
             setLoading(false)
             return
           }
+          
+          // Reset error count on success
+          errorCountRef.current = 0
           
           // Check suspension status
           if (data?.is_suspended === true) {

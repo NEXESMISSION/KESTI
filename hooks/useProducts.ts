@@ -27,7 +27,7 @@ export default function useProducts() {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('id, owner_id, name, selling_price, cost_price, unit_type, image_url, category_id, stock_quantity, low_stock_threshold, created_at')
         .order('name')
       
       if (error) throw error
@@ -135,7 +135,7 @@ export default function useProducts() {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('id, owner_id, name, selling_price, cost_price, unit_type, image_url, category_id, stock_quantity, low_stock_threshold, created_at')
         .eq('id', id)
         .single()
       
