@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
-import { safeErrorResponse, checkRateLimit, getClientIp } from '@/lib/api-security'
+import { safeErrorResponse, checkRateLimit, getClientIp, verifyAuth } from '@/lib/api-security'
 
 // Secret key for cron job authentication (set in environment)
 const CRON_SECRET = process.env.CRON_SECRET
@@ -18,12 +18,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return safeErrorResponse(res, 429, 'Too many requests')
   }
 
-  // SECURITY: Verify cron secret if configured
-  if (CRON_SECRET) {
-    const authHeader = req.headers.authorization
-    if (authHeader !== `Bearer ${CRON_SECRET}`) {
-      return safeErrorResponse(res, 401, 'Unauthorized')
+  // SECURITY: Verify authentication - either cron secret OR valid Supabase session
+  const authHeader = req.headers.authorization
+  let isAuthorized = false
+
+  // Check for cron secret first
+  if (CRON_SECRET && authHeader === `Bearer ${CRON_SECRET}`) {
+    isAuthorized = true
+  }
+
+  // If no cron secret auth, check for valid Supabase session
+  if (!isAuthorized) {
+    const auth = await verifyAuth(req)
+    if (auth.authenticated) {
+      isAuthorized = true
     }
+  }
+
+  if (!isAuthorized) {
+    return safeErrorResponse(res, 401, 'Unauthorized')
   }
 
   try {

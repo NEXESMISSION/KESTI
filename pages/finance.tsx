@@ -88,10 +88,17 @@ function Finance() {
 
   const triggerAutoClearCheck = async () => {
     try {
+      // Get current session for auth
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) return // Skip if not authenticated
+      
       // Trigger the auto-clear check in background
       await fetch('/api/check-and-auto-clear', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        }
       })
     } catch (error) {
       console.error('Auto-clear check failed:', error)
