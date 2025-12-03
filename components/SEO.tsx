@@ -32,7 +32,6 @@ retail pos tunisia, restaurant pos tunisia, pharmacy pos tunisia, supermarket po
 نظام كيستي, système kesti, kesti system tunisia, تطبيق كيستي,
 free pos trial tunisia, تجربة مجانية نظام كاشير, essai gratuit caisse tunisie,
 19 دينار شهريا, 19 tnd pos, affordable pos tunisia, نظام كاشير رخيص تونس,
-barcode scanner tunisia, مسح الباركود, scan barcode pos, كاشير بالباركود,
 whatsapp receipts, فواتير واتساب, receipt whatsapp tunisia, كيستي واتساب,
 multi-location pos, فروع متعددة, gestion multi-magasins, نقاط بيع متعددة,
 employee management pos, ادارة الموظفين, gestion employés tunisia, موظفين كاشير,
@@ -53,7 +52,7 @@ browser-based pos, cloud-based pos, web-based pos tunisia, نظام سحابي
 const FULL_DESCRIPTION = `
 Kesti Pro (كيستي برو) هو أقوى وأسهل نظام نقاط بيع احترافي في تونس لإدارة المبيعات والمخزون والأرباح. 
 يعمل على جميع الأجهزة (هاتف، تابلت، كمبيوتر) بدون تثبيت - فقط افتح المتصفح وابدأ البيع. 
-مميزات قوية: تسجيل مبيعات فوري في ثانيتين، مسح باركود بكاميرا الهاتف، تتبع مخزون تلقائي مع تنبيهات، حساب أرباح صافية يومية، تقارير مالية تفصيلية، إدارة الموظفين والصلاحيات، دعم فروع متعددة، إرسال فواتير واتساب، تتبع الديون والمصروفات، نسخ احتياطي تلقائي. 
+مميزات قوية: تسجيل مبيعات فوري في ثانيتين، تتبع مخزون تلقائي مع تنبيهات، حساب أرباح صافية يومية، تقارير مالية تفصيلية، إدارة الموظفين والصلاحيات، دعم فروع متعددة، إرسال فواتير واتساب، تتبع الديون والمصروفات، نسخ احتياطي تلقائي. 
 مثالي للسوبرماركت، الصيدليات، المطاعم، المقاهي، محلات الملابس، محلات الإلكترونيات، وجميع المحلات التجارية في تونس. 
 السعر: فقط 19 دينار/شهر (باقة شهرية) أو 17 دينار/شهر (باقة 3 أشهر). تجربة مجانية 15 يوم بكل المميزات بدون بطاقة بنكية. 
 دعم عملاء فوري عبر واتساب بالعربية والفرنسية. 
@@ -261,7 +260,6 @@ export default function SEO({
       'Employee Management',
       'Multi-device Support',
       'Multi-location Support',
-      'Barcode Scanning',
       'WhatsApp Receipts',
       'Expense Tracking',
       'Profit Calculation',
