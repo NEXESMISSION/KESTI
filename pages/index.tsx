@@ -332,12 +332,16 @@ export default function Home() {
                   </svg>
                 </a>
               </div>
-            </div>
           </div>
         </section>
 
         {/* Video Explainer Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-b from-white to-gray-50">
+        <SEO 
+          title="Kesti Pro - أقوى نظام كاشير في تونس | نظام نقاط البيع الاحترافي رقم 1"
+          description="كيستي برو - النظام الأول في تونس لإدارة المبيعات والمخزون. يعمل على كل الأجهزة بدون تثبيت. مسح باركود، تقارير تلقائية، حساب أرباح فوري. جرب مجاناً 15 يوم! السعر: 19 د.ت/شهر فقط. مثالي للسوبرماركت، الصيدليات، المطاعم، المحلات. دعم واتساب فوري. Kesti Pro - Tunisia's #1 POS System."
+          keywords="kesti, kesti pro, كيستي, كيستي برو, نظام كاشير تونس, نظام نقاط البيع تونس, pos system tunisia, caisse tunisie, برنامج كاشير, افضل نظام كاشير, كيستي برو تونس, kestipro, kestipro.com"
+        />
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
               <h2 className="text-[24px] sm:text-[28px] md:text-[36px] lg:text-[42px] font-bold text-gray-900 mb-3 leading-[1.3]">

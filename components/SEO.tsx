@@ -13,7 +13,7 @@ interface SEOProps {
 
 // Comprehensive keywords for maximum search engine visibility
 const FULL_KEYWORDS = `
-kesti, KESTI, KestiPro, Kesti Pro, kestipro, kestipro.com, kesti tunisia, kesti tn, kesti تونس,
+kesti, KESTI, KestiPro, Kesti Pro, kestipro, kestipro.com, kesti tunisia, kesti tn, kesti تونس, www.kestipro.com,
 نظام نقاط البيع تونس, POS System Tunisia, Kesti TN, نظام كاشير تونس, برنامج محاسبة تونس,
 إدارة المبيعات تونس, نظام المخزون تونس, Point of Sale Tunisia, Caisse Enregistreuse Tunisie,
 logiciel de gestion Tunisie, système de caisse Tunisie, gestion stock Tunisie, pos tunisia,
@@ -27,28 +27,44 @@ best pos system tunisia, افضل برنامج كاشير تونس, افضل ن�
 cloud pos tunisia, online pos tunisia, web pos tunisia, mobile pos tunisia,
 نظام نقاط البيع السحابي, كاشير اونلاين, برنامج كاشير موبايل,
 small business software tunisia, برنامج المحلات الصغيرة, logiciel petite entreprise tunisie,
-retail pos tunisia, restaurant pos tunisia, pharmacy pos tunisia,
+retail pos tunisia, restaurant pos tunisia, pharmacy pos tunisia, supermarket pos tunisia,
 كيستي برو تونس, Kesti Pro Tunisie, Kesti Pro Tunisia, kesti pro tn,
 نظام كيستي, système kesti, kesti system tunisia, تطبيق كيستي,
 free pos trial tunisia, تجربة مجانية نظام كاشير, essai gratuit caisse tunisie,
-30 دينار شهريا, 30 tnd pos, affordable pos tunisia, نظام كاشير رخيص تونس
+19 دينار شهريا, 19 tnd pos, affordable pos tunisia, نظام كاشير رخيص تونس,
+barcode scanner tunisia, مسح الباركود, scan barcode pos, كاشير بالباركود,
+whatsapp receipts, فواتير واتساب, receipt whatsapp tunisia, كيستي واتساب,
+multi-location pos, فروع متعددة, gestion multi-magasins, نقاط بيع متعددة,
+employee management pos, ادارة الموظفين, gestion employés tunisia, موظفين كاشير,
+profit calculator, حساب الارباح, calculateur bénéfice, ربح صافي,
+expense tracking, تتبع المصروفات, suivi dépenses, مصاريف تونس,
+credit sales tracking, مبيعات بالدين, vente à crédit tunisie, ديون العملاء,
+automatic reports, تقارير تلقائية, rapports automatiques, تقارير مالية,
+كيستي برو للسوبرماركت, kesti pro supermarket, كيستي برو للصيدلية, kesti pharmacy,
+كيستي برو للمطاعم, kesti restaurant, كيستي برو للمقاهي, kesti café,
+كيستي برو للملابس, kesti clothing, كيستي برو للالكترونيات, kesti electronics,
+أفضل نظام كاشير في تونس, meilleur système caisse tunisie, best tunisia pos,
+برنامج كاشير سهل, easy pos system, système caisse simple, كاشير بسيط,
+كاشير بدون تثبيت, no installation pos, sans installation, يعمل على المتصفح,
+browser-based pos, cloud-based pos, web-based pos tunisia, نظام سحابي
 `.trim().replace(/\n/g, ', ')
 
 // Long-form description for better SEO
 const FULL_DESCRIPTION = `
-Kesti Pro (كيستي برو) هو نظام نقاط البيع الاحترافي الأول في تونس لإدارة المبيعات والمخزون. 
-يعمل على جميع الأجهزة (هاتف، تابلت، كمبيوتر) بدون تثبيت. 
-مميزات: تسجيل مبيعات سريع، مسح باركود بالكاميرا، تتبع المخزون، حساب الأرباح، تقارير مفصلة، إدارة الموظفين، دعم فروع متعددة. 
-مثالي للسوبرماركت، الصيدليات، المطاعم، محلات الملابس. 
-السعر: 30 دينار/شهر فقط. تجربة مجانية 15 يوم. 
-Kesti Pro - POS System Tunisia | Point of Sale | Caisse Enregistreuse Tunisie.
+Kesti Pro (كيستي برو) هو أقوى وأسهل نظام نقاط بيع احترافي في تونس لإدارة المبيعات والمخزون والأرباح. 
+يعمل على جميع الأجهزة (هاتف، تابلت، كمبيوتر) بدون تثبيت - فقط افتح المتصفح وابدأ البيع. 
+مميزات قوية: تسجيل مبيعات فوري في ثانيتين، مسح باركود بكاميرا الهاتف، تتبع مخزون تلقائي مع تنبيهات، حساب أرباح صافية يومية، تقارير مالية تفصيلية، إدارة الموظفين والصلاحيات، دعم فروع متعددة، إرسال فواتير واتساب، تتبع الديون والمصروفات، نسخ احتياطي تلقائي. 
+مثالي للسوبرماركت، الصيدليات، المطاعم، المقاهي، محلات الملابس، محلات الإلكترونيات، وجميع المحلات التجارية في تونس. 
+السعر: فقط 19 دينار/شهر (باقة شهرية) أو 17 دينار/شهر (باقة 3 أشهر). تجربة مجانية 15 يوم بكل المميزات بدون بطاقة بنكية. 
+دعم عملاء فوري عبر واتساب بالعربية والفرنسية. 
+Kesti Pro - أفضل نظام كاشير في تونس | Tunisia's #1 POS System | Système de Caisse N°1 en Tunisie.
 `.trim().replace(/\n/g, ' ')
 
 export default function SEO({
-  title = 'Kesti Pro - نظام نقاط البيع الأول في تونس | POS System Tunisia | Caisse Tunisie',
+  title = 'Kesti Pro - أقوى نظام كاشير في تونس | نظام نقاط البيع الاحترافي | POS System Tunisia',
   description = FULL_DESCRIPTION,
   keywords = FULL_KEYWORDS,
-  ogImage = '/logo/logo no bg low qulity.png',
+  ogImage = '/logo/KESTI.png',
   ogType = 'website',
   canonicalUrl,
   noindex = false,
@@ -145,13 +161,13 @@ export default function SEO({
     logo: {
       '@type': 'ImageObject',
       '@id': `${siteUrl}/#logo`,
-      url: `${siteUrl}/logo/logo no bg low qulity.png`,
-      contentUrl: `${siteUrl}/logo/logo no bg low qulity.png`,
+      url: `${siteUrl}/logo/KESTI.png`,
+      contentUrl: `${siteUrl}/logo/KESTI.png`,
       width: 512,
       height: 512,
       caption: 'Kesti Pro - نظام نقاط البيع في تونس'
     },
-    image: `${siteUrl}/logo/logo no bg low qulity.png`,
+    image: `${siteUrl}/logo/KESTI.png`,
     description: description,
     foundingDate: '2024',
     address: {
@@ -234,7 +250,7 @@ export default function SEO({
     url: siteUrl,
     downloadUrl: `${siteUrl}/signup`,
     installUrl: `${siteUrl}/signup`,
-    screenshot: `${siteUrl}/logo/logo no bg low qulity.png`,
+    screenshot: `${siteUrl}/logo/KESTI.png`,
     softwareVersion: '2.0',
     releaseNotes: 'Latest version with enhanced inventory management and multi-location support.',
     featureList: [
@@ -445,7 +461,7 @@ export default function SEO({
       
       {/* Microsoft/Bing Specific */}
       <meta name="msapplication-TileColor" content="#6FC605" />
-      <meta name="msapplication-TileImage" content={`${siteUrl}/logo/logo no bg low qulity.png`} />
+      <meta name="msapplication-TileImage" content={`${siteUrl}/logo/KESTI.png`} />
       <meta name="msapplication-config" content="/browserconfig.xml" />
       <meta name="msapplication-tooltip" content="Kesti Pro - POS System Tunisia" />
       <meta name="msapplication-starturl" content={siteUrl} />
@@ -454,7 +470,7 @@ export default function SEO({
       <meta name="mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       <meta name="apple-mobile-web-app-title" content="Kesti Pro" />
-      <link rel="apple-touch-icon" href={`${siteUrl}/logo/logo no bg low qulity.png`} />
+      <link rel="apple-touch-icon" href={`${siteUrl}/logo/KESTI.png`} />
       
       {/* Theme & Colors */}
       <meta name="theme-color" content="#6FC605" />
@@ -527,4 +543,5 @@ export default function SEO({
     </Head>
   )
 }
+
 

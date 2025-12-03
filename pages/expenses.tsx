@@ -18,7 +18,6 @@ interface Expense {
 
 function Expenses() {
   const router = useRouter()
-  const { showLoading, hideLoading } = useLoading()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -35,7 +34,7 @@ function Expenses() {
   const [filtersExpanded, setFiltersExpanded] = useState(false)
   
   const [error, setError] = useState<string | null>(null)
-  const [savedTemplates, setSavedTemplates] = useState<ExpenseTemplate[]>([])
+  const [success, setSuccess] = useState<string | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
   
