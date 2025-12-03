@@ -3,8 +3,9 @@ import { useRouter } from 'next/router'
 import { useRef } from 'react'
 import Image from 'next/image'
 import { supabase, Profile } from '@/lib/supabase'
-import { useLoading } from '@/contexts/LoadingContext'
+import AutoClearWarning from '@/components/AutoClearWarning'
 import SubscriptionBadge from '@/components/SubscriptionBadge'
+import SubscriptionModal from '@/components/SubscriptionModal'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 
 interface Expense {
@@ -34,8 +35,9 @@ function Expenses() {
   const [filtersExpanded, setFiltersExpanded] = useState(false)
   
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [savedTemplates, setSavedTemplates] = useState<ExpenseTemplate[]>([])
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
   
   // Saved templates feature
   const [savedTemplates, setSavedTemplates] = useState<Array<{description: string, amount: string, category: string}>>([])
@@ -324,7 +326,7 @@ function Expenses() {
             <Image src="/logo/logo no bg low qulity.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             <div className="flex items-center gap-2 sm:gap-3">
-              <SubscriptionBadge profile={profile} />
+              <SubscriptionBadge profile={profile} onClick={() => setShowSubscriptionModal(true)} />
               
               {/* Back to POS */}
               <button
@@ -735,6 +737,15 @@ function Expenses() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Subscription Modal */}
+      {profile && (
+        <SubscriptionModal
+          isOpen={showSubscriptionModal}
+          onClose={() => setShowSubscriptionModal(false)}
+          profile={profile}
+        />
       )}
     </div>
   )

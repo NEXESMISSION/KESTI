@@ -6,6 +6,7 @@ import { useLoading } from '@/contexts/LoadingContext'
 import ProductForm from '@/components/ProductForm'
 import BulkProductImport from '@/components/BulkProductImport'
 import SubscriptionBadge from '@/components/SubscriptionBadge'
+import SubscriptionModal from '@/components/SubscriptionModal'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import AlertDialog from '@/components/AlertDialog'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
@@ -51,6 +52,7 @@ function Products() {
   const [uploadingImageFor, setUploadingImageFor] = useState<string | null>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean, productId: string, productName: string }>({ show: false, productId: '', productName: '' })
   const [alertDialog, setAlertDialog] = useState<{ show: boolean, title: string, message: string, type: 'error' | 'warning' | 'info' }>({ show: false, title: '', message: '', type: 'error' })
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
 
   useEffect(() => {
     checkAuthAndFetch()
@@ -327,7 +329,7 @@ function Products() {
           <Image src="/logo/logo no bg low qulity.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
           
           <div className="flex items-center gap-2 sm:gap-3">
-            <SubscriptionBadge profile={profile} />
+            <SubscriptionBadge profile={profile} onClick={() => setShowSubscriptionModal(true)} />
             
             <button
               onClick={() => window.location.href = '/pos'}
@@ -767,6 +769,15 @@ function Products() {
         type={alertDialog.type}
         buttonText="حسناً"
       />
+
+      {/* Subscription Modal */}
+      {profile && (
+        <SubscriptionModal
+          isOpen={showSubscriptionModal}
+          onClose={() => setShowSubscriptionModal(false)}
+          profile={profile}
+        />
+      )}
     </div>
   )
 }

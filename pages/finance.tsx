@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { supabase, Profile } from '@/lib/supabase'
 import { useLoading } from '@/contexts/LoadingContext'
 import SubscriptionBadge from '@/components/SubscriptionBadge'
+import SubscriptionModal from '@/components/SubscriptionModal'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 import AutoClearWarning from '@/components/AutoClearWarning'
 import AdminAlert from '@/components/AdminAlert'
@@ -81,6 +82,7 @@ function Finance() {
   const [chartStartDate, setChartStartDate] = useState('')
   const [chartEndDate, setChartEndDate] = useState('')
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
 
   useEffect(() => {
     checkAuthAndFetch()
@@ -472,7 +474,7 @@ function Finance() {
             <Image src="/logo/logo no bg low qulity.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             <div className="flex items-center gap-2 sm:gap-3">
-              <SubscriptionBadge profile={profile} />
+              <SubscriptionBadge profile={profile} onClick={() => setShowSubscriptionModal(true)} />
               
               {/* Back to POS */}
               <button
@@ -929,6 +931,15 @@ function Finance() {
           </>
         )}
       </main>
+
+      {/* Subscription Modal */}
+      {profile && (
+        <SubscriptionModal
+          isOpen={showSubscriptionModal}
+          onClose={() => setShowSubscriptionModal(false)}
+          profile={profile}
+        />
+      )}
     </div>
   )
 }

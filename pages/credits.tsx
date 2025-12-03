@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import { supabase, CreditSale, CreditCustomer } from '@/lib/supabase'
+import { supabase, CreditSale, CreditCustomer, Profile } from '@/lib/supabase'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 import AutoClearWarning from '@/components/AutoClearWarning'
+import SubscriptionBadge from '@/components/SubscriptionBadge'
+import SubscriptionModal from '@/components/SubscriptionModal'
 
 function Credits() {
   const router = useRouter()
@@ -17,6 +19,8 @@ function Credits() {
   const [customers, setCustomers] = useState<CreditCustomer[]>([])
   const [paymentModal, setPaymentModal] = useState<{ show: boolean, saleId: string, amount: number }>({ show: false, saleId: '', amount: 0 })
   const [paymentAmount, setPaymentAmount] = useState('')
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
 
   useEffect(() => {
     checkAuthAndFetch()
@@ -240,6 +244,7 @@ function Credits() {
             <Image src="/logo/logo no bg low qulity.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             <div className="flex items-center gap-2 sm:gap-3">
+              <SubscriptionBadge profile={profile} onClick={() => setShowSubscriptionModal(true)} />
               <button
                 onClick={() => window.location.href = '/pos'}
                 className="bg-gray-600 hover:bg-gray-700 text-white p-2 sm:p-2.5 rounded-lg transition"
@@ -449,6 +454,15 @@ function Credits() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Subscription Modal */}
+      {profile && (
+        <SubscriptionModal
+          isOpen={showSubscriptionModal}
+          onClose={() => setShowSubscriptionModal(false)}
+          profile={profile}
+        />
       )}
     </div>
   )
