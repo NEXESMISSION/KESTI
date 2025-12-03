@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useRef } from 'react'
 import Image from 'next/image'
-import { supabase } from '@/lib/supabase'
+import { supabase, Profile } from '@/lib/supabase'
+import { useLoading } from '@/contexts/LoadingContext'
+import SubscriptionBadge from '@/components/SubscriptionBadge'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 
 interface Expense {
@@ -15,6 +17,7 @@ interface Expense {
 
 function Expenses() {
   const router = useRouter()
+  const { showLoading, hideLoading } = useLoading()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -32,6 +35,7 @@ function Expenses() {
   
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
   
   // Saved templates feature
   const [savedTemplates, setSavedTemplates] = useState<Array<{description: string, amount: string, category: string}>>([])
@@ -58,6 +62,7 @@ function Expenses() {
   }, [])
 
   const checkAuthAndFetch = async () => {
+    setLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
@@ -65,10 +70,23 @@ function Expenses() {
         return
       }
 
+      // Fetch profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+      
+      if (profileData) {
+        setProfile(profileData)
+      }
+
       await fetchExpenses(session.user.id)
     } catch (err) {
       console.error('Error:', err)
       router.push('/login')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -306,6 +324,8 @@ function Expenses() {
             <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             <div className="flex items-center gap-2 sm:gap-3">
+              <SubscriptionBadge profile={profile} />
+              
               {/* Back to POS */}
               <button
                 onClick={() => window.location.href = '/pos'}
@@ -360,6 +380,16 @@ function Expenses() {
       </div>
 
       <main className="max-w-7xl mx-auto py-4 px-3 sm:px-4 lg:px-8">
+        {/* Show loading spinner until data is loaded */}
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 font-semibold">جاري تحميل المصروفات...</p>
+            </div>
+          </div>
+        ) : (
+          <>
         {/* Success/Error Messages */}
         {success && (
           <div className="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-lg flex justify-between items-center">
@@ -471,11 +501,7 @@ function Expenses() {
         </div>
 
         {/* Expenses List */}
-        {loading ? (
-          <div className="flex justify-center items-center h-40 sm:h-64">
-            <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600"></div>
-          </div>
-        ) : filteredExpenses.length === 0 ? (
+        {filteredExpenses.length === 0 ? (
           <div className="text-center py-8 sm:py-12 bg-white rounded-xl shadow">
             <svg className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -591,6 +617,8 @@ function Expenses() {
                 </table>
               </div>
             </div>
+          </>
+        )}
           </>
         )}
       </main>

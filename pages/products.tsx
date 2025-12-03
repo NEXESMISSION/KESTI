@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import { supabase, Product, ProductCategory } from '@/lib/supabase'
+import { supabase, Product, ProductCategory, Profile } from '@/lib/supabase'
+import { useLoading } from '@/contexts/LoadingContext'
 import ProductForm from '@/components/ProductForm'
 import BulkProductImport from '@/components/BulkProductImport'
+import SubscriptionBadge from '@/components/SubscriptionBadge'
+import ConfirmDialog from '@/components/ConfirmDialog'
+import AlertDialog from '@/components/AlertDialog'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 
 type ViewMode = 'products' | 'stock'
 
 function Products() {
   const router = useRouter()
+  const { showLoading, hideLoading } = useLoading()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<ProductCategory[]>([])
   const [loading, setLoading] = useState(true)
@@ -18,6 +23,7 @@ function Products() {
   const [userId, setUserId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showBulkImport, setShowBulkImport] = useState(false)
+  const [profile, setProfile] = useState<Profile | null>(null)
   
   // View mode - products or stock
   const [viewMode, setViewMode] = useState<ViewMode>('products')
@@ -42,6 +48,9 @@ function Products() {
   const [newStockValue, setNewStockValue] = useState<string>('')
   const [updatingStock, setUpdatingStock] = useState(false)
   const [updateSuccess, setUpdateSuccess] = useState<string | null>(null)
+  const [uploadingImageFor, setUploadingImageFor] = useState<string | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<{ show: boolean, productId: string, productName: string }>({ show: false, productId: '', productName: '' })
+  const [alertDialog, setAlertDialog] = useState<{ show: boolean, title: string, message: string, type: 'error' | 'warning' | 'info' }>({ show: false, title: '', message: '', type: 'error' })
 
   useEffect(() => {
     checkAuthAndFetch()
@@ -49,6 +58,7 @@ function Products() {
   }, [])
 
   const checkAuthAndFetch = async () => {
+    setLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
@@ -56,6 +66,18 @@ function Products() {
         return
       }
       setUserId(session.user.id)
+      
+      // Fetch profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+      
+      if (profileData) {
+        setProfile(profileData)
+      }
+      
       await Promise.all([
         fetchProducts(session.user.id),
         fetchCategories(session.user.id)
@@ -63,6 +85,8 @@ function Products() {
     } catch (err) {
       console.error('Error:', err)
       router.push('/login')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -99,15 +123,107 @@ function Products() {
     }
   }
 
+  const handleImageUpload = async (productId: string, file: File) => {
+    if (!userId) return
+    
+    setUploadingImageFor(productId)
+    showLoading('جاري رفع الصورة...')
+    
+    try {
+      // Create unique filename
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${userId}/${productId}-${Date.now()}.${fileExt}`
+      
+      // Upload to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        })
+      
+      if (uploadError) throw uploadError
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName)
+      
+      // Update product with new image URL
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ image_url: publicUrl })
+        .eq('id', productId)
+      
+      if (updateError) throw updateError
+      
+      // Refresh products list
+      await fetchProducts(userId)
+      
+      setUpdateSuccess(productId)
+      setTimeout(() => setUpdateSuccess(null), 2000)
+    } catch (err: any) {
+      console.error('Error uploading image:', err)
+      setError('فشل رفع الصورة')
+      setTimeout(() => setError(null), 3000)
+    } finally {
+      setUploadingImageFor(null)
+      hideLoading()
+    }
+  }
+  
+  const handleImageClick = (productId: string) => {
+    const input = document.getElementById(`image-input-${productId}`) as HTMLInputElement
+    if (input) input.click()
+  }
+  
+  const handleImageChange = (productId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setAlertDialog({
+          show: true,
+          title: 'نوع الملف غير صحيح',
+          message: 'يرجى اختيار ملف صورة فقط (JPG, PNG, GIF, إلخ)',
+          type: 'error'
+        })
+        // Clear the file input
+        e.target.value = ''
+        return
+      }
+      
+      // Validate file size (5MB = 5 * 1024 * 1024 bytes)
+      const maxSize = 5 * 1024 * 1024 // 5MB
+      if (file.size > maxSize) {
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2)
+        setAlertDialog({
+          show: true,
+          title: 'الملف كبير جداً',
+          message: `حجم الصورة: ${fileSizeMB} ميغابايت\n\nالحد الأقصى المسموح: 5 ميغابايت\n\nيرجى ضغط الصورة أو اختيار صورة أصغر`,
+          type: 'warning'
+        })
+        // Clear the file input
+        e.target.value = ''
+        return
+      }
+      
+      handleImageUpload(productId, file)
+    }
+  }
+
   const handleDeleteProduct = async (productId: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return
+    showLoading('جاري حذف المنتج...')
     try {
       const { error } = await supabase.from('products').delete().eq('id', productId)
       if (error) throw error
       setProducts(products.filter(p => p.id !== productId))
     } catch (err: any) {
       console.error('Error deleting product:', err)
-      alert('فشل حذف المنتج')
+      setError('فشل حذف المنتج')
+      setTimeout(() => setError(null), 3000)
+    } finally {
+      hideLoading()
     }
   }
 
@@ -209,15 +325,20 @@ function Products() {
       <header className="bg-white shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto py-3 px-4 flex justify-between items-center">
           <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
-          <button
-            onClick={() => window.location.href = '/pos'}
-            className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg transition"
-            title="نقطة البيع"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-          </button>
+          
+          <div className="flex items-center gap-2 sm:gap-3">
+            <SubscriptionBadge profile={profile} />
+            
+            <button
+              onClick={() => window.location.href = '/pos'}
+              className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded-lg transition"
+              title="نقطة البيع"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -263,6 +384,16 @@ function Products() {
       </div>
 
       <main className="max-w-7xl mx-auto py-4 px-4">
+        {/* Show loading spinner until data is loaded */}
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 font-semibold">جاري تحميل المنتجات...</p>
+            </div>
+          </div>
+        ) : (
+          <>
         {/* View Toggle - Products / Stock */}
         <div className="bg-white rounded-2xl shadow-lg p-2 mb-4">
           <div className="flex gap-2">
@@ -405,11 +536,7 @@ function Products() {
         </div>
 
         {/* Products/Stock List */}
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
-          </div>
-        ) : filteredProducts.length === 0 ? (
+        {filteredProducts.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-xl shadow">
             <div className="text-5xl mb-4">📦</div>
             <h3 className="text-lg font-semibold text-gray-900">لا توجد منتجات</h3>
@@ -426,11 +553,38 @@ function Products() {
               >
                 {/* Product Image & Name */}
                 <div className="p-3 flex items-center gap-3">
-                  <div className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                    {product.image_url ? (
-                      <Image src={product.image_url} alt={product.name} width={56} height={56} className="w-full h-full object-cover" />
+                  {/* Hidden file input */}
+                  <input
+                    type="file"
+                    id={`image-input-${product.id}`}
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageChange(product.id, e)}
+                  />
+                  
+                  {/* Clickable Image with + Icon */}
+                  <div 
+                    className="relative w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer group"
+                    onClick={() => handleImageClick(product.id)}
+                  >
+                    {uploadingImageFor === product.id ? (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-600 border-t-transparent"></div>
+                      </div>
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl text-gray-300">📦</div>
+                      <>
+                        {product.image_url ? (
+                          <Image src={product.image_url} alt={product.name} width={56} height={56} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-2xl text-gray-300">📦</div>
+                        )}
+                        {/* + Icon Overlay */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+                          </svg>
+                        </div>
+                      </>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -461,7 +615,7 @@ function Products() {
                         تعديل
                       </button>
                       <button
-                        onClick={() => handleDeleteProduct(product.id)}
+                        onClick={() => setDeleteConfirm({ show: true, productId: product.id, productName: product.name })}
                         className="flex-1 py-2.5 text-sm text-red-600 font-medium hover:bg-red-50 transition"
                       >
                         حذف
@@ -556,6 +710,8 @@ function Products() {
             ))}
           </div>
         )}
+          </>
+        )}
       </main>
 
       {/* Product Form Modal */}
@@ -577,6 +733,39 @@ function Products() {
           setShowBulkImport(false)
           if (userId) fetchProducts(userId)
         }}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.show}
+        onClose={() => setDeleteConfirm({ show: false, productId: '', productName: '' })}
+        onConfirm={() => handleDeleteProduct(deleteConfirm.productId)}
+        title="حذف منتج"
+        message={
+          <>
+            هل أنت متأكد من حذف <strong className="text-gray-900">{deleteConfirm.productName}</strong>؟
+            <br />
+            <span className="text-red-600 font-semibold">لن تتمكن من استعادته لاحقاً</span>
+          </>
+        }
+        confirmText="حذف"
+        cancelText="إلغاء"
+        confirmColor="red"
+        icon={
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        }
+      />
+
+      {/* Alert Dialog (for errors/warnings) */}
+      <AlertDialog
+        isOpen={alertDialog.show}
+        onClose={() => setAlertDialog({ show: false, title: '', message: '', type: 'error' })}
+        title={alertDialog.title}
+        message={alertDialog.message}
+        type={alertDialog.type}
+        buttonText="حسناً"
       />
     </div>
   )

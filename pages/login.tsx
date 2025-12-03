@@ -4,6 +4,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Head from 'next/head'
 import { registerCurrentDevice } from '@/utils/deviceManager'
+import { useLoading } from '@/contexts/LoadingContext'
 
 function translateErrorToArabic(error: string): string {
   const errorMap: { [key: string]: string } = {
@@ -39,6 +40,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null)
   const [kickedDeviceMessage, setKickedDeviceMessage] = useState<string | null>(null)
   const router = useRouter()
+  const { showLoading, hideLoading } = useLoading()
   
   useEffect(() => {
     if (router.query.reason === 'device_limit_exceeded') {
@@ -92,6 +94,7 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    showLoading('جاري تسجيل الدخول...')
     
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
@@ -102,12 +105,14 @@ export default function Login() {
       if (signInError) {
         setError(translateErrorToArabic(signInError.message))
         setLoading(false)
+        hideLoading()
         return
       }
       
       if (!data.session) {
         setError(translateErrorToArabic('No session returned from authentication'))
         setLoading(false)
+        hideLoading()
         return
       }
       
@@ -120,12 +125,14 @@ export default function Login() {
       if (profileError) {
         setError(`خطأ في الملف الشخصي: ${translateErrorToArabic(profileError.message)}`)
         setLoading(false)
+        hideLoading()
         return
       }
       
       if (!profile) {
         setError(translateErrorToArabic('No profile found for user'))
         setLoading(false)
+        hideLoading()
         return
       }
       
@@ -156,14 +163,17 @@ export default function Login() {
         } else {
           setError(`دور غير معروف: ${userRole}`)
           setLoading(false)
+          hideLoading()
         }
       }
     } catch (err: any) {
       console.error('Login error:', err)
       setError(translateErrorToArabic(err.message || 'Failed to login. Please check your credentials.'))
       setLoading(false)
+      hideLoading()
     } finally {
       setLoading(false)
+      hideLoading()
     }
   }
 

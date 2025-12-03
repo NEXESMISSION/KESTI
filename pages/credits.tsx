@@ -348,11 +348,7 @@ function Credits() {
         </div>
 
         {/* Credit Sales List */}
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
-          </div>
-        ) : creditSales.length === 0 ? (
+        {creditSales.length === 0 ? (
           <div className="bg-white rounded-xl shadow p-8 text-center">
             <div className="text-6xl mb-4">💳</div>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">لا توجد ديون</h3>

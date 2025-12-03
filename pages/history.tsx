@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { supabase, CreditSale, Profile } from '@/lib/supabase'
+import { useLoading } from '@/contexts/LoadingContext'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 import { getSubscriptionDaysLeft } from '@/lib/auth'
 import * as XLSX from 'xlsx'
@@ -43,6 +44,7 @@ interface Expense {
 
 function History() {
   const router = useRouter()
+  const { showLoading, hideLoading } = useLoading()
   const [sales, setSales] = useState<Sale[]>([])
   const [creditSales, setCreditSales] = useState<CreditSaleWithItems[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
@@ -72,6 +74,7 @@ function History() {
   }, [timeFilter, startDate, endDate, minAmount, maxAmount, paymentMethod, sortBy])
 
   const checkAuthAndFetch = async () => {
+    setLoading(true)
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
@@ -98,6 +101,8 @@ function History() {
     } catch (err) {
       console.error('Error:', err)
       router.push('/login')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -582,6 +587,16 @@ function History() {
       </div>
 
       <main className="max-w-7xl mx-auto py-4 px-3 sm:px-4 lg:px-8">
+        {/* Show loading spinner until data is loaded */}
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 font-semibold">جاري تحميل السجل...</p>
+            </div>
+          </div>
+        ) : (
+          <>
         {/* Stats Summary */}
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="bg-white rounded-xl shadow p-3 text-center">
@@ -690,12 +705,7 @@ function History() {
             </p>
           </div>
           
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <p className="mt-2 text-gray-500">تحميل السجل المالي...</p>
-            </div>
-          ) : (viewMode === 'all' && filteredSales.length === 0 && creditSales.length === 0 && filteredExpenses.length === 0) ||
+          {(viewMode === 'all' && filteredSales.length === 0 && creditSales.length === 0 && filteredExpenses.length === 0) ||
              (viewMode === 'sales' && filteredSales.length === 0) ||
              (viewMode === 'credits' && creditSales.length === 0) ||
              (viewMode === 'expenses' && filteredExpenses.length === 0) ? (
@@ -897,6 +907,8 @@ function History() {
             </div>
           )}
         </div>
+          </>
+        )}
       </main>
 
       {/* Subscription Modal */}

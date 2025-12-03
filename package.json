@@ -4,17 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:clean": "rm -rf .next && next dev",
+    "dev:clean": "if exist .next rmdir /s /q .next && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "clear-cache": "rm -rf .next"
+    "clear-cache": "if exist .next rmdir /s /q .next"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.39.0",
     "dotenv": "^17.2.3",
-    "next": "^15.5.4",
+    "next": "^15.5.7",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "xlsx": "^0.18.5"

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import { supabase } from '@/lib/supabase'
+import { supabase, Profile } from '@/lib/supabase'
+import { useLoading } from '@/contexts/LoadingContext'
+import SubscriptionBadge from '@/components/SubscriptionBadge'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 import AutoClearWarning from '@/components/AutoClearWarning'
 import AdminAlert from '@/components/AdminAlert'
@@ -46,6 +48,7 @@ interface FinancialMetrics {
 
 function Finance() {
   const router = useRouter()
+  const { showLoading, hideLoading } = useLoading()
   const [saleItems, setSaleItems] = useState<SaleItem[]>([])
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [metrics, setMetrics] = useState<FinancialMetrics>({
@@ -77,6 +80,7 @@ function Finance() {
   const [chartFilter, setChartFilter] = useState<'week' | 'year' | 'custom'>('week')
   const [chartStartDate, setChartStartDate] = useState('')
   const [chartEndDate, setChartEndDate] = useState('')
+  const [profile, setProfile] = useState<Profile | null>(null)
 
   useEffect(() => {
     checkAuthAndFetch()
@@ -110,6 +114,17 @@ function Finance() {
       if (!session) {
         router.push('/login')
         return
+      }
+
+      // Fetch profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+      
+      if (profileData) {
+        setProfile(profileData)
       }
 
       setUserId(session.user.id)
@@ -457,6 +472,8 @@ function Finance() {
             <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             <div className="flex items-center gap-2 sm:gap-3">
+              <SubscriptionBadge profile={profile} />
+              
               {/* Back to POS */}
               <button
                 onClick={() => window.location.href = '/pos'}
@@ -531,6 +548,16 @@ function Finance() {
       </div>
 
       <main className="max-w-7xl mx-auto py-4 sm:py-6 px-3 sm:px-4 lg:px-8">
+        {/* Show loading spinner until data is loaded */}
+        {loading ? (
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 font-semibold">جاري تحميل البيانات المالية...</p>
+            </div>
+          </div>
+        ) : (
+          <>
         {/* Page Title */}
         <div className="mb-5 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">لوحة المالية</h1>
@@ -899,6 +926,8 @@ function Finance() {
             </div>
           </div>
         </div>
+          </>
+        )}
       </main>
     </div>
   )

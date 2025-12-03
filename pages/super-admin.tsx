@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { supabase, Profile, ActiveDevice } from '@/lib/supabase'
+import { useLoading } from '@/contexts/LoadingContext'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 
 function SuperAdmin() {
   const router = useRouter()
+  const { showLoading, hideLoading } = useLoading()
   const [businesses, setBusinesses] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -236,6 +238,7 @@ function SuperAdmin() {
   }
 
   const handleRevokeDevice = async (deviceId: string) => {
+    showLoading('جاري إلغاء الجهاز...')
     try {
       const { data, error } = await supabase.rpc('revoke_device', {
         p_device_id: deviceId,
@@ -251,10 +254,13 @@ function SuperAdmin() {
     } catch (err: any) {
       console.error('Error revoking device:', err)
       setError('Failed to revoke device')
+    } finally {
+      hideLoading()
     }
   }
 
   const handleUpdateDeviceLimit = async (userId: string, newLimit: number) => {
+    showLoading('جاري تحديث حد الأجهزة...')
     try {
       const { error } = await supabase.rpc('update_user_device_limit', {
         p_user_id: userId,
@@ -267,19 +273,16 @@ function SuperAdmin() {
       fetchDeviceData([userId])
     } catch (err: any) {
       console.error('Error updating device limit:', err)
-      setError(err.message || 'Failed to update device limit')
+      setError('Failed to update device limit')
+    } finally {
+      hideLoading()
     }
   }
 
   const handleCreateBusiness = async () => {
     setError(null)
     setSuccess(null)
-
-    if (!newBusiness.fullName || !newBusiness.email || !newBusiness.phoneNumber || !newBusiness.password || !newBusiness.pin) {
-      setError('All fields are required')
-      return
-    }
-
+    showLoading('جاري إنشاء الحساب...')
     try {
       // Create the user account using Supabase admin functions
       // Note: In production, this should be done through an Edge Function for security
@@ -325,10 +328,13 @@ function SuperAdmin() {
       console.error('Error creating business:', err)
       console.error('Error details:', err.message)
       setError(err.message || 'Failed to create business account')
+    } finally {
+      hideLoading()
     }
   }
 
   const extendSubscription = async (userId: string, currentEndsAt: string | null) => {
+    showLoading('جاري تمديد الاشتراك...')
     try {
       const currentDate = currentEndsAt ? new Date(currentEndsAt) : new Date()
       const newDate = new Date(currentDate)
@@ -341,11 +347,13 @@ function SuperAdmin() {
 
       if (error) throw error
 
-      setSuccess('Subscription extended by 30 days')
+      setSuccess('Subscription extended by 30 days!')
       fetchBusinesses()
-    } catch (err: any) {
-      console.error('Error extending subscription:', err)
+    } catch (error: any) {
+      console.error('Error extending subscription:', error)
       setError('Failed to extend subscription')
+    } finally {
+      hideLoading()
     }
   }
 
@@ -358,33 +366,37 @@ function SuperAdmin() {
   const suspendUser = async () => {
     if (!suspendingUserId) return
     
+    showLoading('جاري تعليق الحساب...')
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .update({ 
           is_suspended: true,
-          suspension_message: suspensionMessage.trim() || 'Your account has been suspended by the administrator.'
+          suspension_message: suspensionMessage.trim() || 'Your account has been suspended.'
         })
         .eq('id', suspendingUserId)
 
       if (error) throw error
 
-      setSuccess('Account suspended successfully')
+      setSuccess('User suspended successfully!')
       setShowSuspendModal(false)
       setSuspendingUserId(null)
       setSuspensionMessage('')
       fetchBusinesses()
-    } catch (err: any) {
-      console.error('Error suspending account:', err)
-      setError('Failed to suspend account')
+    } catch (error: any) {
+      console.error('Error suspending user:', error)
+      setError('Failed to suspend user')
+    } finally {
+      hideLoading()
     }
   }
 
   const unsuspendUser = async (userId: string) => {
+    showLoading('جاري إلغاء التعليق...')
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .update({ 
           is_suspended: false,
           suspension_message: null
         })
@@ -392,23 +404,18 @@ function SuperAdmin() {
 
       if (error) throw error
 
-      setSuccess('Account unsuspended successfully')
+      setSuccess('User unsuspended successfully!')
       fetchBusinesses()
-    } catch (err: any) {
-      console.error('Error unsuspending account:', err)
-      setError('Failed to update account status')
+    } catch (error: any) {
+      console.error('Error unsuspending user:', error)
+      setError('Failed to unsuspend user')
+    } finally {
+      hideLoading()
     }
   }
 
-  const handleEditBusiness = (business: Profile) => {
-    setEditingBusiness(business)
-    setNewPassword('') // Reset password field
-    setShowEditModal(true)
-  }
-
-  // Alert system functions
-  const openAlertModal = (businessId: string) => {
-    setAlertUserId(businessId)
+  const openAlertModal = (userId: string) => {
+    setAlertUserId(userId)
     setAlertMessage('')
     setShowAlertModal(true)
   }
@@ -419,6 +426,7 @@ function SuperAdmin() {
       return
     }
 
+    showLoading('جاري إرسال التنبيه...')
     try {
       const { error } = await supabase
         .from('profiles')
@@ -434,12 +442,21 @@ function SuperAdmin() {
     } catch (err: any) {
       console.error('Error sending alert:', err)
       setError('Failed to send alert')
+    } finally {
+      hideLoading()
     }
+  }
+
+  const handleEditBusiness = (business: Profile) => {
+    setEditingBusiness(business)
+    setShowEditModal(true)
+    setNewPassword('')
   }
 
   const handleUpdateBusiness = async () => {
     if (!editingBusiness) return
 
+    showLoading('جاري تحديث البيانات...')
     try {
       // Update profile information
       const { error: profileError } = await supabase
@@ -482,10 +499,13 @@ function SuperAdmin() {
     } catch (err: any) {
       console.error('Error updating business:', err)
       setError(err.message || 'Failed to update business account')
+    } finally {
+      hideLoading()
     }
   }
 
   const handleDeleteBusiness = async (businessId: string, businessEmail: string) => {
+    showLoading('جاري حذف الحساب...')
     try {
       // First, delete from profiles table
       const { error: profileError } = await supabase
@@ -519,11 +539,14 @@ function SuperAdmin() {
     } catch (err: any) {
       console.error('Error deleting business:', err)
       setError('Failed to delete business account')
+    } finally {
+      hideLoading()
     }
   }
 
   const handleClearHistory = async (businessId: string) => {
     setClearingHistory(true)
+    showLoading('جاري مسح السجل...')
     try {
       const response = await fetch('/api/clear-history', {
         method: 'POST',
@@ -544,6 +567,7 @@ function SuperAdmin() {
         .eq('id', businessId)
 
       setSuccess('History cleared successfully! Products and saved expense templates retained.')
+      setClearingHistory(false)
       setConfirmClearHistory(null)
       fetchBusinesses() // Refresh to show updated countdown
     } catch (err: any) {
@@ -551,6 +575,7 @@ function SuperAdmin() {
       setError(err.message || 'Failed to clear history')
     } finally {
       setClearingHistory(false)
+      hideLoading()
     }
   }
 

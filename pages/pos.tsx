@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { supabase, Product, ProductCategory, CreditCustomer } from '@/lib/supabase'
 import { useCart } from '@/contexts/CartContext'
+import { useLoading } from '@/contexts/LoadingContext'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 import CartItem from '@/components/CartItem'
 import QuantityModal from '@/components/QuantityModal'
@@ -11,6 +12,7 @@ import WelcomeModal from '@/components/WelcomeModal'
 function POS() {
   const router = useRouter()
   const { cart, addToCart, removeFromCart, updateQuantity, clearCart, getTotalPrice, getTotalItems } = useCart()
+  const { showLoading, hideLoading, withLoading } = useLoading()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [showCart, setShowCart] = useState(false)
@@ -334,25 +336,27 @@ function POS() {
     }
 
     try {
-      const { data, error } = await supabase
-        .from('credit_customers')
-        .insert([{
-          owner_id: userId,
-          name: newCustomerName.trim(),
-          phone: newCustomerPhone.trim() || null
-        }])
-        .select()
-        .single()
+      await withLoading((async () => {
+        const { data, error } = await supabase
+          .from('credit_customers')
+          .insert([{
+            owner_id: userId,
+            name: newCustomerName.trim(),
+            phone: newCustomerPhone.trim() || null
+          }])
+          .select()
+          .single()
 
-      if (error) throw error
+        if (error) throw error
 
-      setCreditCustomers([...creditCustomers, data])
-      setSelectedCustomerId(data.id)
-      setNewCustomerName('')
-      setNewCustomerPhone('')
-      setShowAddCustomer(false)
-      setSuccess('تمت إضافة العميل بنجاح')
-      setTimeout(() => setSuccess(null), 3000)
+        setCreditCustomers([...creditCustomers, data])
+        setSelectedCustomerId(data.id)
+        setNewCustomerName('')
+        setNewCustomerPhone('')
+        setShowAddCustomer(false)
+        setSuccess('تمت إضافة العميل بنجاح')
+        setTimeout(() => setSuccess(null), 3000)
+      })(), 'جاري إضافة العميل...')
     } catch (err: any) {
       console.error('Error adding customer:', err)
       setError('فشل في إضافة العميل')
@@ -398,33 +402,39 @@ function POS() {
 
     setError(null)
     try {
-      // Verify PIN in profile
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('pin_code, role')
-        .eq('id', userId)
-        .single()
+      await withLoading((async () => {
+        // Verify PIN in profile
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('pin_code, role')
+          .eq('id', userId)
+          .single()
 
-      if (error) throw error
+        if (error) throw error
 
-      if (!profile || profile.pin_code !== pin) {
-        setError('Invalid PIN')
-        return
-      }
+        if (!profile || profile.pin_code !== pin) {
+          setError('Invalid PIN')
+          return
+        }
 
-      // Check if user is business owner
-      const userRole = typeof profile.role === 'object' ? 
-        profile.role.toString() : String(profile.role)
+        // Check if user is business owner
+        const userRole = typeof profile.role === 'object' ? 
+          profile.role.toString() : String(profile.role)
 
-      if (userRole === 'business_user') {
-        // Close modal and clear PIN
-        setShowPinModal(false)
-        setPin('')
-        // Navigate to finance page - use window.location for reliable full page load
-        window.location.href = '/finance'
-      } else {
-        setError('Access denied. Not a business owner.')
-      }
+        if (userRole === 'business_user') {
+          // Close modal and clear PIN
+          setShowPinModal(false)
+          setPin('')
+          // Navigate to products page if no products, otherwise to finance
+          if (products.length === 0) {
+            window.location.href = '/products'
+          } else {
+            window.location.href = '/finance'
+          }
+        } else {
+          setError('Access denied. Not a business owner.')
+        }
+      })(), 'جاري التحقق...')
     } catch (err: any) {
       console.error('Error verifying PIN:', err)
       setError('Failed to verify PIN')
@@ -442,6 +452,7 @@ function POS() {
 
     setProcessingCheckout(true)
     setError(null)
+    showLoading(isCredit ? 'جاري تسجيل البيع بالأجل...' : 'جاري إتمام البيع...')
     try {
       if (isCredit) {
         // Handle Credit Sale
@@ -543,6 +554,7 @@ function POS() {
       console.error('Error during checkout:', err)
       setError('فشل في إتمام العملية')
     } finally {
+      hideLoading()
       setProcessingCheckout(false)
     }
   }
@@ -836,25 +848,53 @@ function POS() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-12">
-            <svg
-              className="mx-auto h-16 w-16 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-              />
-            </svg>
-            <h3 className="mt-4 text-xl font-semibold text-gray-900">لا توجد منتجات بعد</h3>
-            <p className="mt-2 text-gray-600">
-              انقر على زر + أعلاه لإضافة أول منتج
-            </p>
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center max-w-md p-8">
+              {/* Icon */}
+              <div className="mb-6 flex justify-center">
+                <div className="bg-blue-100 rounded-full p-6">
+                  <svg
+                    className="w-16 h-16 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                    />
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Title */}
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                لا توجد منتجات في المتجر
+              </h3>
+              
+              {/* Description */}
+              <p className="text-gray-600 mb-6">
+                للبدء في استخدام نظام نقاط البيع، يجب عليك إضافة منتجات أولاً
+              </p>
+              
+              {/* Add Product Button */}
+              <button
+                onClick={() => setShowPinModal(true)}
+                className="inline-flex items-center gap-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>إضافة منتجات</span>
+              </button>
+              
+              {/* Helper Text */}
+              <p className="text-sm text-gray-500 mt-4">
+                سيتم طلب رمز PIN للدخول إلى لوحة التحكم
+              </p>
+            </div>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-12">
@@ -884,27 +924,6 @@ function POS() {
           </div>
         ) : (
           <>
-          {/* Quick Add Box - At Top */}
-          <div
-            onClick={() => setShowCustomItemModal(true)}
-            className="mb-4 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl p-3 flex items-center justify-between cursor-pointer hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-md"
-          >
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 rounded-lg p-1.5">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-bold text-sm text-white">إضافة سريعة</h3>
-                <p className="text-[10px] text-emerald-100">إضافة منتج مخصص للسلة</p>
-              </div>
-            </div>
-            <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </div>
-          
           {/* View Mode: Products (horizontal scroll) or Categories (boxes) */}
           {viewMode === 'products' ? (
             /* Default View: Category Sections with Horizontal Scroll */
@@ -1157,12 +1176,22 @@ function POS() {
       <aside className="hidden lg:flex lg:w-80 bg-white border-l border-gray-100 flex-col h-[calc(100vh-140px)] sticky top-[140px] overflow-hidden">
         {/* Cart Header */}
         <div className="px-4 py-3 border-b border-gray-100 flex-shrink-0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-2">
             <h2 className="text-base font-bold text-gray-900">السلة</h2>
             <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">
               {getTotalItems()}
             </span>
           </div>
+          {/* Custom Item Button */}
+          <button
+            onClick={() => setShowCustomItemModal(true)}
+            className="w-full mt-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg py-2.5 px-3 flex items-center justify-center gap-2 transition-all shadow-sm font-medium text-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <span>منتج مخصص</span>
+          </button>
         </div>
 
         {cart.length === 0 ? (
@@ -1290,15 +1319,27 @@ function POS() {
             </div>
             
             {/* Header */}
-            <div className="flex items-center justify-between px-4 pb-3 border-b border-gray-100">
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-gray-900">السلة</h2>
-                <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">{getTotalItems()}</span>
+            <div className="px-4 pb-3 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold text-gray-900">السلة</h2>
+                  <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">{getTotalItems()}</span>
+                </div>
+                <button onClick={() => setShowCart(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-              <button onClick={() => setShowCart(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              {/* Custom Item Button */}
+              <button
+                onClick={() => setShowCustomItemModal(true)}
+                className="w-full mt-2 bg-gradient-to-r from-emerald-500 to-teal-600 active:from-emerald-600 active:to-teal-700 text-white rounded-lg py-2.5 px-3 flex items-center justify-center gap-2 transition-all shadow-sm font-medium text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
+                <span>منتج مخصص</span>
               </button>
             </div>
 

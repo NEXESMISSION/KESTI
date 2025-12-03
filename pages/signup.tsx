@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Head from 'next/head'
+import { useLoading } from '@/contexts/LoadingContext'
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -18,6 +19,7 @@ export default function Signup() {
   const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [showTermsModal, setShowTermsModal] = useState(false)
   const router = useRouter()
+  const { showLoading, hideLoading } = useLoading()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -30,27 +32,33 @@ export default function Signup() {
       return
     }
 
+    showLoading('جاري إنشاء الحساب...')
+
     if (!formData.fullName || !formData.email || !formData.phoneNumber || !formData.password || !formData.pin) {
       setError('يرجى ملء جميع الحقول المطلوبة')
       setLoading(false)
+      hideLoading()
       return
     }
 
     if (formData.password !== formData.confirmPassword) {
       setError('كلمات المرور غير متطابقة')
       setLoading(false)
+      hideLoading()
       return
     }
 
     if (formData.password.length < 6) {
       setError('كلمة المرور يجب أن تكون 6 أحرف على الأقل')
       setLoading(false)
+      hideLoading()
       return
     }
 
     if (!/^\d{4,6}$/.test(formData.pin)) {
       setError('رمز PIN يجب أن يكون من 4 إلى 6 أرقام')
       setLoading(false)
+      hideLoading()
       return
     }
 
@@ -89,6 +97,7 @@ export default function Signup() {
       setSuccess(false)
     } finally {
       setLoading(false)
+      hideLoading()
     }
   }
 
