@@ -55,6 +55,10 @@ function POS() {
   // Contact modal state
   const [showContact, setShowContact] = useState(false)
   
+  // View mode state: 'products' (default horizontal scroll) or 'categories' (category boxes)
+  const [viewMode, setViewMode] = useState<'products' | 'categories'>('products')
+  const [categoryViewSelected, setCategoryViewSelected] = useState<string | null>(null)
+  
   // Custom quick-add item modal state
   const [showCustomItemModal, setShowCustomItemModal] = useState(false)
   const [customItem, setCustomItem] = useState({
@@ -767,27 +771,57 @@ function POS() {
       {/* Simple Search Bar */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
-          <div className="relative">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="🔍 بحث عن المنتجات..."
-              className="w-full px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-              autoComplete="off"
-              name="product-search"
-              id="product-search"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <div className="flex gap-2 items-center">
+            {/* Search Input */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="🔍 بحث عن المنتجات..."
+                className="w-full px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                autoComplete="off"
+                name="product-search"
+                id="product-search"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            
+            {/* View Mode Toggle Button */}
+            <button
+              onClick={() => {
+                setViewMode(viewMode === 'products' ? 'categories' : 'products')
+                setCategoryViewSelected(null)
+              }}
+              className={`p-2 sm:p-2.5 rounded-lg border-2 transition-all duration-200 flex items-center gap-1.5 ${
+                viewMode === 'categories'
+                  ? 'bg-blue-600 border-blue-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600'
+              }`}
+              title={viewMode === 'products' ? 'عرض الفئات' : 'عرض المنتجات'}
+            >
+              {viewMode === 'products' ? (
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
-              </button>
-            )}
+              ) : (
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+              )}
+              <span className="hidden sm:inline text-sm font-medium">
+                {viewMode === 'products' ? 'الفئات' : 'المنتجات'}
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -871,89 +905,167 @@ function POS() {
             </svg>
           </div>
           
-          {/* Category Sections with Horizontal Scroll and Arrows */}
-          <div className="space-y-6 sm:space-y-8">
-            {Object.entries(productsByCategory).map(([categoryName, categoryProducts]) => (
-              <div key={categoryName} className="relative">
-                {/* Category Header with Scroll Arrows */}
-                <div className="flex items-center justify-between mb-3 sm:mb-4 px-2 sm:px-0">
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
-                    {categoryName}
-                    <span className="text-sm font-normal text-gray-500 mr-2">({categoryProducts.length})</span>
-                  </h2>
+          {/* View Mode: Products (horizontal scroll) or Categories (boxes) */}
+          {viewMode === 'products' ? (
+            /* Default View: Category Sections with Horizontal Scroll */
+            <div className="space-y-6 sm:space-y-8">
+              {Object.entries(productsByCategory).map(([categoryName, categoryProducts]) => (
+                <div key={categoryName} className="relative">
+                  {/* Category Header with Scroll Arrows */}
+                  <div className="flex items-center justify-between mb-3 sm:mb-4 px-2 sm:px-0">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
+                      {categoryName}
+                      <span className="text-sm font-normal text-gray-500 mr-2">({categoryProducts.length})</span>
+                    </h2>
+                    
+                    {/* Scroll Arrow Buttons - Desktop */}
+                    <div className="hidden sm:flex items-center gap-2">
+                      <button
+                        onClick={() => scrollCategory(categoryName, 'left')}
+                        disabled={!canScrollLeft[categoryName]}
+                        className={`p-2 rounded-full transition-all duration-200 ${
+                          canScrollLeft[categoryName]
+                            ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                        aria-label="التمرير لليسار"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => scrollCategory(categoryName, 'right')}
+                        disabled={!canScrollRight[categoryName]}
+                        className={`p-2 rounded-full transition-all duration-200 ${
+                          canScrollRight[categoryName]
+                            ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        }`}
+                        aria-label="التمرير لليمين"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                   
-                  {/* Scroll Arrow Buttons - Desktop */}
-                  <div className="hidden sm:flex items-center gap-2">
-                    <button
-                      onClick={() => scrollCategory(categoryName, 'left')}
-                      disabled={!canScrollLeft[categoryName]}
-                      className={`p-2 rounded-full transition-all duration-200 ${
-                        canScrollLeft[categoryName]
-                          ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
-                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      }`}
-                      aria-label="التمرير لليسار"
+                  {/* Horizontal Scrollable Products with Side Arrows */}
+                  <div className="relative group/category">
+                    {/* Left Scroll Button - Overlay Style */}
+                    {canScrollLeft[categoryName] && (
+                      <button
+                        onClick={() => scrollCategory(categoryName, 'left')}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white text-gray-800 p-3 rounded-full shadow-xl border border-gray-200 opacity-0 group-hover/category:opacity-100 transition-all duration-200 hover:scale-110 hidden sm:flex items-center justify-center"
+                        style={{ transform: 'translate(-50%, -50%)' }}
+                        aria-label="التمرير لليسار"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                    )}
+                    
+                    {/* Right Scroll Button - Overlay Style */}
+                    {canScrollRight[categoryName] && (
+                      <button
+                        onClick={() => scrollCategory(categoryName, 'right')}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white text-gray-800 p-3 rounded-full shadow-xl border border-gray-200 opacity-0 group-hover/category:opacity-100 transition-all duration-200 hover:scale-110 hidden sm:flex items-center justify-center"
+                        style={{ transform: 'translate(50%, -50%)' }}
+                        aria-label="التمرير لليمين"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    )}
+                    
+                    {/* Products Container */}
+                    <div 
+                      ref={(el) => {
+                        categoryScrollRefs.current[categoryName] = el
+                      }}
+                      onScroll={() => checkScrollButtons(categoryName)}
+                      className="flex gap-2 overflow-x-auto pb-3 px-1 scroll-smooth scrollbar-hide"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => scrollCategory(categoryName, 'right')}
-                      disabled={!canScrollRight[categoryName]}
-                      className={`p-2 rounded-full transition-all duration-200 ${
-                        canScrollRight[categoryName]
-                          ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
-                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      }`}
-                      aria-label="التمرير لليمين"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
+                      {categoryProducts.map((product) => (
+                        <div
+                          key={product.id}
+                          onClick={() => {
+                            if (product.unit_type === 'item') {
+                              addToCart(product, 1)
+                            } else {
+                              setQuantityModalProduct(product)
+                              setShowQuantityModal(true)
+                            }
+                          }}
+                          className="group flex-shrink-0 bg-white rounded-xl overflow-hidden border-2 border-gray-100 hover:border-blue-500 hover:shadow-lg transition-all duration-200 cursor-pointer w-24 sm:w-28"
+                        >
+                          {/* Product Image */}
+                          <div className="relative w-full h-16 sm:h-20">
+                            <Image
+                              src={product.image_url || 'https://placehold.co/300x200/e5e7eb/6b7280?text=No+Image'}
+                              alt={product.name}
+                              fill
+                              sizes="112px"
+                              className="object-cover"
+                            />
+                            {/* Stock Badge */}
+                            {product.stock_quantity !== null && product.stock_quantity <= (product.low_stock_threshold || 10) && (
+                              <div className="absolute top-1 right-1 bg-red-500 text-white px-1.5 py-0.5 rounded text-[8px] font-bold">
+                                {product.stock_quantity}
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Product Info - Compact */}
+                          <div className="p-1.5">
+                            <h3 className="font-semibold text-[10px] sm:text-[11px] text-gray-900 truncate">
+                              {product.name}
+                            </h3>
+                            <div className="flex items-center justify-between mt-0.5">
+                              <span className="font-bold text-xs text-blue-600">
+                                {product.selling_price.toFixed(2)}
+                              </span>
+                              <span className="text-[8px] text-gray-400">TND</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                
-                {/* Horizontal Scrollable Products with Side Arrows */}
-                <div className="relative group/category">
-                  {/* Left Scroll Button - Overlay Style */}
-                  {canScrollLeft[categoryName] && (
-                    <button
-                      onClick={() => scrollCategory(categoryName, 'left')}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white text-gray-800 p-3 rounded-full shadow-xl border border-gray-200 opacity-0 group-hover/category:opacity-100 transition-all duration-200 hover:scale-110 hidden sm:flex items-center justify-center"
-                      style={{ transform: 'translate(-50%, -50%)' }}
-                      aria-label="التمرير لليسار"
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                  )}
-                  
-                  {/* Right Scroll Button - Overlay Style */}
-                  {canScrollRight[categoryName] && (
-                    <button
-                      onClick={() => scrollCategory(categoryName, 'right')}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/95 hover:bg-white text-gray-800 p-3 rounded-full shadow-xl border border-gray-200 opacity-0 group-hover/category:opacity-100 transition-all duration-200 hover:scale-110 hidden sm:flex items-center justify-center"
-                      style={{ transform: 'translate(50%, -50%)' }}
-                      aria-label="التمرير لليمين"
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  )}
-                  
-                  {/* Products Container */}
-                  <div 
-                    ref={(el) => {
-                      categoryScrollRefs.current[categoryName] = el
-                    }}
-                    onScroll={() => checkScrollButtons(categoryName)}
-                    className="flex gap-2 overflow-x-auto pb-3 px-1 scroll-smooth scrollbar-hide"
+              ))}
+            </div>
+          ) : (
+            /* Categories View: Show category boxes or products in selected category */
+            <div>
+              {categoryViewSelected ? (
+                /* Show products from selected category */
+                <div>
+                  {/* Back Button */}
+                  <button
+                    onClick={() => setCategoryViewSelected(null)}
+                    className="mb-4 flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all"
                   >
-                    {categoryProducts.map((product) => (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span className="font-medium">رجوع للفئات</span>
+                  </button>
+                  
+                  {/* Category Title */}
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                    {categoryViewSelected}
+                    <span className="text-sm font-normal text-gray-500 mr-2">
+                      ({productsByCategory[categoryViewSelected]?.length || 0})
+                    </span>
+                  </h2>
+                  
+                  {/* Products Grid */}
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-4 gap-2 sm:gap-3">
+                    {productsByCategory[categoryViewSelected]?.map((product) => (
                       <div
                         key={product.id}
                         onClick={() => {
@@ -964,15 +1076,15 @@ function POS() {
                             setShowQuantityModal(true)
                           }
                         }}
-                        className="group flex-shrink-0 bg-white rounded-xl overflow-hidden border-2 border-gray-100 hover:border-blue-500 hover:shadow-lg transition-all duration-200 cursor-pointer w-24 sm:w-28"
+                        className="group bg-white rounded-xl overflow-hidden border-2 border-gray-100 hover:border-blue-500 hover:shadow-lg transition-all duration-200 cursor-pointer"
                       >
                         {/* Product Image */}
-                        <div className="relative w-full h-16 sm:h-20">
+                        <div className="relative w-full aspect-square">
                           <Image
                             src={product.image_url || 'https://placehold.co/300x200/e5e7eb/6b7280?text=No+Image'}
                             alt={product.name}
                             fill
-                            sizes="112px"
+                            sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 20vw"
                             className="object-cover"
                           />
                           {/* Stock Badge */}
@@ -983,25 +1095,60 @@ function POS() {
                           )}
                         </div>
                         
-                        {/* Product Info - Compact */}
-                        <div className="p-1.5">
-                          <h3 className="font-semibold text-[10px] sm:text-[11px] text-gray-900 truncate">
+                        {/* Product Info */}
+                        <div className="p-2">
+                          <h3 className="font-semibold text-xs sm:text-sm text-gray-900 truncate">
                             {product.name}
                           </h3>
-                          <div className="flex items-center justify-between mt-0.5">
-                            <span className="font-bold text-xs text-blue-600">
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="font-bold text-sm text-blue-600">
                               {product.selling_price.toFixed(2)}
                             </span>
-                            <span className="text-[8px] text-gray-400">TND</span>
+                            <span className="text-[10px] text-gray-400">TND</span>
                           </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ) : (
+                /* Show category boxes */
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                  {Object.entries(productsByCategory).map(([categoryName, categoryProducts]) => (
+                    <div
+                      key={categoryName}
+                      onClick={() => setCategoryViewSelected(categoryName)}
+                      className="group bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-2xl p-4 sm:p-6 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                    >
+                      {/* Category Icon */}
+                      <div className="bg-white/20 rounded-xl p-3 w-fit mb-3">
+                        <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                      </div>
+                      
+                      {/* Category Name */}
+                      <h3 className="font-bold text-white text-base sm:text-lg mb-1 truncate">
+                        {categoryName}
+                      </h3>
+                      
+                      {/* Product Count */}
+                      <p className="text-blue-100 text-sm">
+                        {categoryProducts.length} منتج
+                      </p>
+                      
+                      {/* Arrow Icon */}
+                      <div className="flex justify-end mt-2">
+                        <svg className="w-5 h-5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           </>
         )}
       </main>
