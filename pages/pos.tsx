@@ -829,7 +829,7 @@ function POS() {
       {/* Main Content Area with Cart Sidebar on Desktop */}
       <div className="flex-1 flex overflow-hidden">
         {/* Products Section - Scrollable */}
-        <main className="flex-1 py-4 sm:py-6 px-3 sm:px-6 lg:px-8 overflow-y-auto h-[calc(100vh-140px)]">
+        <main className="flex-1 py-4 sm:py-6 px-3 sm:px-6 lg:px-8 pb-16 overflow-y-auto h-[calc(100vh-140px)]">
         
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -896,8 +896,8 @@ function POS() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-bold text-sm text-white">منتج سريع</h3>
-                <p className="text-[10px] text-emerald-100">إضافة منتج يدوياً للسلة</p>
+                <h3 className="font-bold text-sm text-white">إضافة سريعة</h3>
+                <p className="text-[10px] text-emerald-100">إضافة منتج مخصص للسلة</p>
               </div>
             </div>
             <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1711,8 +1711,8 @@ function POS() {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold">إضافة منتج سريع</h2>
-                    <p className="text-sm text-emerald-200">للمنتجات النادرة أو الخاصة</p>
+                    <h2 className="text-lg font-bold">إضافة دخل سريع</h2>
+                    <p className="text-sm text-emerald-200">للمنتجات المخصصة أو الخاصة</p>
                   </div>
                 </div>
                 <button
