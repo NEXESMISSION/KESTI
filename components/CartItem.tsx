@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import { CartItem as CartItemType } from '@/contexts/CartContext'
 import { useCart } from '@/contexts/CartContext'
 
@@ -7,9 +8,51 @@ type CartItemProps = {
 
 export default function CartItem({ item }: CartItemProps) {
   const { product, quantity } = item
-  const { removeFromCart, incrementQuantity, decrementQuantity } = useCart()
+  const { removeFromCart, incrementQuantity, decrementQuantity, updateQuantity } = useCart()
+  const [isEditing, setIsEditing] = useState(false)
+  const [editValue, setEditValue] = useState(String(quantity))
+  const inputRef = useRef<HTMLInputElement>(null)
   
   const totalPrice = item.totalPrice
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.select()
+    }
+  }, [isEditing])
+
+  useEffect(() => {
+    setEditValue(String(quantity))
+  }, [quantity])
+
+  const handleQuantityClick = () => {
+    setEditValue(String(quantity))
+    setIsEditing(true)
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditValue(e.target.value)
+  }
+
+  const handleInputBlur = () => {
+    const newQuantity = parseInt(editValue, 10)
+    if (!isNaN(newQuantity) && newQuantity > 0) {
+      updateQuantity(product.id, newQuantity)
+    } else {
+      setEditValue(String(quantity))
+    }
+    setIsEditing(false)
+  }
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleInputBlur()
+    } else if (e.key === 'Escape') {
+      setEditValue(String(quantity))
+      setIsEditing(false)
+    }
+  }
 
   return (
     <div className="bg-white rounded-lg p-3 border border-gray-100 shadow-sm">
@@ -24,7 +67,25 @@ export default function CartItem({ item }: CartItemProps) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
             </svg>
           </button>
-          <span className="w-8 h-7 flex items-center justify-center font-bold text-sm bg-white border-y border-gray-100">{quantity}</span>
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              type="number"
+              min="1"
+              value={editValue}
+              onChange={handleInputChange}
+              onBlur={handleInputBlur}
+              onKeyDown={handleInputKeyDown}
+              className="w-10 h-7 text-center font-bold text-sm bg-white border-y border-blue-300 outline-none focus:ring-1 focus:ring-blue-400"
+            />
+          ) : (
+            <button
+              onClick={handleQuantityClick}
+              className="w-8 h-7 flex items-center justify-center font-bold text-sm bg-white border-y border-gray-100 hover:bg-blue-50 hover:text-blue-600 cursor-pointer transition"
+            >
+              {quantity}
+            </button>
+          )}
           <button
             onClick={() => decrementQuantity(product.id)}
             className="w-8 h-7 flex items-center justify-center text-gray-600 hover:bg-red-100 hover:text-red-600 transition"

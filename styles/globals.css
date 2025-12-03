@@ -18,6 +18,11 @@ body {
     rgb(var(--background-start-rgb));
 }
 
+/* Disable double-tap zoom on mobile */
+* {
+  touch-action: manipulation;
+}
+
 /* Prevent auto-zoom on mobile when focusing inputs */
 /* iOS zooms when input font-size is less than 16px */
 @media screen and (max-width: 768px) {
