@@ -138,7 +138,7 @@ export default function ResetPassword() {
         <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative z-10">
           <div className="text-center">
             <div className="flex justify-center mb-6">
-              <Image src="/logo/KESTi.png" alt="KESTI" width={200} height={80} className="h-16 w-auto" priority />
+              <Image src="/logo/logo no bg low qulity.png" alt="KESTI" width={200} height={80} className="h-16 w-auto" priority />
             </div>
             
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
@@ -175,7 +175,7 @@ export default function ResetPassword() {
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
-            <Image src="/logo/KESTi.png" alt="KESTI" width={200} height={80} className="h-16 w-auto" priority />
+            <Image src="/logo/logo no bg low qulity.png" alt="KESTI" width={200} height={80} className="h-16 w-auto" priority />
           </div>
           <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mb-2">
             إعادة تعيين كلمة المرور
@@ -287,3 +287,4 @@ export default function ResetPassword() {
     </div>
   )
 }
+

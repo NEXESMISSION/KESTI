@@ -48,7 +48,7 @@ export default function SEO({
   title = 'Kesti Pro - نظام نقاط البيع الأول في تونس | POS System Tunisia | Caisse Tunisie',
   description = FULL_DESCRIPTION,
   keywords = FULL_KEYWORDS,
-  ogImage = '/logo/KESTi.png',
+  ogImage = '/logo/logo no bg low qulity.png',
   ogType = 'website',
   canonicalUrl,
   noindex = false,
@@ -145,13 +145,13 @@ export default function SEO({
     logo: {
       '@type': 'ImageObject',
       '@id': `${siteUrl}/#logo`,
-      url: `${siteUrl}/logo/KESTi.png`,
-      contentUrl: `${siteUrl}/logo/KESTi.png`,
+      url: `${siteUrl}/logo/logo no bg low qulity.png`,
+      contentUrl: `${siteUrl}/logo/logo no bg low qulity.png`,
       width: 512,
       height: 512,
       caption: 'Kesti Pro - نظام نقاط البيع في تونس'
     },
-    image: `${siteUrl}/logo/KESTi.png`,
+    image: `${siteUrl}/logo/logo no bg low qulity.png`,
     description: description,
     foundingDate: '2024',
     address: {
@@ -234,7 +234,7 @@ export default function SEO({
     url: siteUrl,
     downloadUrl: `${siteUrl}/signup`,
     installUrl: `${siteUrl}/signup`,
-    screenshot: `${siteUrl}/logo/KESTi.png`,
+    screenshot: `${siteUrl}/logo/logo no bg low qulity.png`,
     softwareVersion: '2.0',
     releaseNotes: 'Latest version with enhanced inventory management and multi-location support.',
     featureList: [
@@ -445,7 +445,7 @@ export default function SEO({
       
       {/* Microsoft/Bing Specific */}
       <meta name="msapplication-TileColor" content="#6FC605" />
-      <meta name="msapplication-TileImage" content={`${siteUrl}/logo/KESTi.png`} />
+      <meta name="msapplication-TileImage" content={`${siteUrl}/logo/logo no bg low qulity.png`} />
       <meta name="msapplication-config" content="/browserconfig.xml" />
       <meta name="msapplication-tooltip" content="Kesti Pro - POS System Tunisia" />
       <meta name="msapplication-starturl" content={siteUrl} />
@@ -454,7 +454,7 @@ export default function SEO({
       <meta name="mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       <meta name="apple-mobile-web-app-title" content="Kesti Pro" />
-      <link rel="apple-touch-icon" href={`${siteUrl}/logo/KESTi.png`} />
+      <link rel="apple-touch-icon" href={`${siteUrl}/logo/logo no bg low qulity.png`} />
       
       {/* Theme & Colors */}
       <meta name="theme-color" content="#6FC605" />
@@ -527,3 +527,4 @@ export default function SEO({
     </Head>
   )
 }
+

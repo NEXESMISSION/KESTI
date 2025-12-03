@@ -661,7 +661,7 @@ function SuperAdmin() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
             <div>
               <div className="mb-2">
-                <Image src="/logo/KESTi.png" alt="KESTI" width={140} height={45} className="h-10 w-auto" priority />
+                <Image src="/logo/logo no bg low qulity.png" alt="KESTI" width={140} height={45} className="h-10 w-auto" priority />
               </div>
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Super Admin Dashboard</h1>
               <p className="text-sm sm:text-base text-gray-600 mt-1">Manage all business accounts</p>
@@ -1579,3 +1579,4 @@ function SuperAdmin() {
 
 // Export the wrapped component
 export default withSuspensionCheck(SuperAdmin)
+

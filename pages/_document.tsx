@@ -6,9 +6,9 @@ export default function Document() {
       <Head>
         {/* Favicon and Icons */}
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/logo/KESTi.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/logo/KESTi.png" />
-        <link rel="apple-touch-icon" href="/logo/KESTi.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/logo/logo no bg low qulity.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/logo/logo no bg low qulity.png" />
+        <link rel="apple-touch-icon" href="/logo/logo no bg low qulity.png" />
         <link rel="shortcut icon" href="/favicon.ico" />
         
         {/* Preconnect for performance */}
@@ -22,3 +22,4 @@ export default function Document() {
     </Html>
   )
 }
+
