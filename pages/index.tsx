@@ -17,14 +17,23 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0) // 0 is لوحة التحكم (default)
 
   const slides = [
-    { img: '/test1.png', title: 'لوحة التحكم' },
-    { img: '/test2.png', title: 'نقطة البيع' },
-    { img: '/test3.png', title: 'التقارير' },
-    { img: '/test4.png', title: 'المخزون' },
+    { img: '/hero section imges/1.jpg', title: 'لوحة التحكم' },
+    { img: '/hero section imges/2.jpg', title: 'نقطة البيع' },
+    { img: '/hero section imges/3.jpg', title: 'التقارير' },
+    { img: '/hero section imges/4.jpg', title: 'المخزون' },
+    { img: '/hero section imges/5.jpg', title: 'الإحصائيات' },
   ]
 
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slides.length)
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
+
+  // Auto-slide effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length)
+    }, 2500) // Change slide every 2.5 seconds
+    return () => clearInterval(interval)
+  }, [slides.length])
 
   const problems = [
     { title: 'تسجيل المبيعات يدويا', desc: 'تضييع الوقت كل ليلة في الحسابات والتصحيح', icon: '📝' },
@@ -154,6 +163,8 @@ export default function Home() {
                     <span className="text-red-600">وداعا</span> للدفاتر
                     <br />
                     والحسابات اليدوية
+                    <br />
+                    و المتريال الغالي
                   </h1>
                   
                   {/* Subtitle - 18-22px mobile, 24-28px desktop */}

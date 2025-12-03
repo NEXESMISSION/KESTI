@@ -70,10 +70,9 @@ function Finance() {
     monthNetProfit: 0,
   })
   const [loading, setLoading] = useState(true)
-  const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'week' | 'month' | 'custom'>('all')
+  const [timeFilter, setTimeFilter] = useState<'all' | 'today' | 'week' | 'month' | 'custom'>('today')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [filtersExpanded, setFiltersExpanded] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [chartFilter, setChartFilter] = useState<'week' | 'year' | 'custom'>('week')
   const [chartStartDate, setChartStartDate] = useState('')
@@ -301,14 +300,31 @@ function Finance() {
     return `${amount.toFixed(2)} دينار`
   }
 
-  // Calculate chart data based on selected filter
+  // Calculate chart data based on selected filter (with expenses)
   const getChartData = () => {
     const now = new Date()
     const dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
     const monthNames = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']
     
+    const getExpenseForPeriod = (start: Date, end: Date) => {
+      return expenses
+        .filter(exp => {
+          const expDate = new Date(exp.created_at)
+          return expDate >= start && expDate <= end
+        })
+        .reduce((sum, exp) => sum + Number(exp.amount), 0)
+    }
+    
+    const getCostForPeriod = (start: Date, end: Date) => {
+      return saleItems
+        .filter(item => {
+          const itemDate = new Date(item.created_at)
+          return itemDate >= start && itemDate <= end
+        })
+        .reduce((sum, item) => sum + (item.cost_price_at_sale * item.quantity), 0)
+    }
+    
     if (chartFilter === 'week') {
-      // Last 7 days - one bar per day
       const data = []
       for (let i = 6; i >= 0; i--) {
         const date = new Date(now)
@@ -323,15 +339,17 @@ function Finance() {
           })
           .reduce((sum, item) => sum + (item.price_at_sale * item.quantity), 0)
         
+        const dayExpense = getExpenseForPeriod(dayStart, dayEnd) + getCostForPeriod(dayStart, dayEnd)
+        
         data.push({
           label: dayNames[date.getDay()],
           value: dayRevenue,
+          expense: dayExpense,
           date: date.toLocaleDateString('ar-TN', { day: 'numeric', month: 'short' })
         })
       }
       return data
     } else if (chartFilter === 'year') {
-      // Last 12 months - one bar per month
       const data = []
       for (let i = 11; i >= 0; i--) {
         const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
@@ -344,31 +362,31 @@ function Finance() {
           })
           .reduce((sum, item) => sum + (item.price_at_sale * item.quantity), 0)
         
+        const monthExpense = getExpenseForPeriod(monthDate, monthEnd) + getCostForPeriod(monthDate, monthEnd)
+        
         data.push({
           label: monthNames[monthDate.getMonth()].substring(0, 3),
           value: monthRevenue,
+          expense: monthExpense,
           date: monthNames[monthDate.getMonth()]
         })
       }
       return data
     } else {
-      // Custom date range
       if (!chartStartDate || !chartEndDate) {
-        return [{ label: 'اختر التواريخ', value: 0, date: '' }]
+        return [{ label: 'اختر التواريخ', value: 0, expense: 0, date: '' }]
       }
       
       const start = new Date(chartStartDate)
       const end = new Date(chartEndDate)
       end.setHours(23, 59, 59, 999)
       
-      // Calculate number of days between dates
       const diffTime = Math.abs(end.getTime() - start.getTime())
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
       
       const data = []
       
       if (diffDays <= 14) {
-        // Show daily if 14 days or less
         for (let i = 0; i < diffDays; i++) {
           const date = new Date(start)
           date.setDate(date.getDate() + i)
@@ -382,14 +400,16 @@ function Finance() {
             })
             .reduce((sum, item) => sum + (item.price_at_sale * item.quantity), 0)
           
+          const dayExpense = getExpenseForPeriod(dayStart, dayEnd) + getCostForPeriod(dayStart, dayEnd)
+          
           data.push({
             label: `${date.getDate()}/${date.getMonth() + 1}`,
             value: dayRevenue,
+            expense: dayExpense,
             date: date.toLocaleDateString('ar-TN', { day: 'numeric', month: 'short' })
           })
         }
       } else {
-        // Show weekly for longer periods
         const numWeeks = Math.ceil(diffDays / 7)
         for (let i = 0; i < Math.min(numWeeks, 12); i++) {
           const weekStart = new Date(start)
@@ -405,20 +425,23 @@ function Finance() {
             })
             .reduce((sum, item) => sum + (item.price_at_sale * item.quantity), 0)
           
+          const weekExpense = getExpenseForPeriod(weekStart, weekEnd) + getCostForPeriod(weekStart, weekEnd)
+          
           data.push({
             label: `أسبوع ${i + 1}`,
             value: weekRevenue,
+            expense: weekExpense,
             date: `${weekStart.getDate()}/${weekStart.getMonth() + 1} - ${weekEnd.getDate()}/${weekEnd.getMonth() + 1}`
           })
         }
       }
       
-      return data.length > 0 ? data : [{ label: 'لا بيانات', value: 0, date: '' }]
+      return data.length > 0 ? data : [{ label: 'لا بيانات', value: 0, expense: 0, date: '' }]
     }
   }
 
   const chartData = getChartData()
-  const maxValue = Math.max(...chartData.map(d => d.value), 1)
+  const maxValue = Math.max(...chartData.map(d => Math.max(d.value, d.expense || 0)), 1)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -514,121 +537,119 @@ function Finance() {
           <p className="text-sm sm:text-base text-gray-600 mt-1">عرض وتحليل الأداء المالي لنشاطك التجاري</p>
         </div>
 
-        {/* Collapsible Filter Options */}
-        <div className="bg-white rounded-xl shadow mb-4 overflow-hidden">
-          {/* Filter Header - Tap to expand */}
-          <div className="p-3 sm:p-4 flex justify-between items-center cursor-pointer" onClick={() => setFiltersExpanded(!filtersExpanded)}>
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              <h3 className="font-medium text-sm sm:text-base">الفلاتر والفترة الزمنية</h3>
-              <span className="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full">
-                {timeFilter !== 'all' ? '1' : '0'}
-              </span>
-            </div>
-            
-            <svg className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${filtersExpanded ? 'transform rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+        {/* Time Period Filter - Simple Pill Buttons */}
+        <div className="mb-6">
+          <div className="flex flex-wrap gap-2 justify-center">
+            {[
+              { value: 'today', label: 'اليوم' },
+              { value: 'week', label: 'الأسبوع' },
+              { value: 'month', label: 'الشهر' },
+              { value: 'all', label: 'الكل' },
+              { value: 'custom', label: 'مخصص' },
+            ].map((filter) => (
+              <button
+                key={filter.value}
+                onClick={() => {
+                  setTimeFilter(filter.value as any)
+                  if (filter.value !== 'custom') {
+                    setStartDate('')
+                    setEndDate('')
+                  }
+                }}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  timeFilter === filter.value
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
           </div>
-
-          {/* Filter Options - Expandable */}
-          {filtersExpanded && (
-            <div className="border-t border-gray-200 p-3 sm:p-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                {/* Time Period Filter */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">الفترة الزمنية</label>
-                  <select
-                    value={timeFilter}
-                    onChange={(e) => setTimeFilter(e.target.value as any)}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                  >
-                    <option value="all">كل الوقت</option>
-                    <option value="today">اليوم</option>
-                    <option value="week">آخر 7 أيام</option>
-                    <option value="month">آخر 30 يوم</option>
-                    <option value="custom">فترة مخصصة</option>
-                  </select>
-                </div>
-
-                {/* Date Range - Hidden for all/today/week/month */}
-                {timeFilter === 'custom' && (
-                  <>
-                    {/* Start Date */}
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">تاريخ البداية</label>
-                      <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                      />
-                    </div>
-
-                    {/* End Date */}
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">تاريخ النهاية</label>
-                      <input
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
-                      />
-                    </div>
-                  </>
-                )}
-                
-                {/* Clear Filters */}
-                <div className="flex items-end">
-                  <button
-                    onClick={() => {
-                      setTimeFilter('all')
-                      setStartDate('')
-                      setEndDate('')
-                    }}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs sm:text-sm font-medium transition"
-                  >
-                    إعادة تعيين الفلاتر
-                  </button>
-                </div>
-              </div>
+          
+          {/* Custom Date Range */}
+          {timeFilter === 'custom' && (
+            <div className="flex gap-3 justify-center mt-4">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                placeholder="من"
+              />
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                placeholder="إلى"
+              />
             </div>
           )}
         </div>
 
-        {/* Main Profit Card - Clean & Simple */}
-        <div className="mb-6">
-          <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-2xl p-6 sm:p-8 text-white">
-            <div className="text-center">
-              <p className="text-sm sm:text-base opacity-90 mb-2">💰 صافي الربح</p>
-              <p className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">{formatCurrency(metrics.netProfit)}</p>
-              <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-2">
-                <span className="text-xs sm:text-sm">من {metrics.totalSales} عملية بيع</span>
-              </div>
+        {/* Main Stats - Clean Cards */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {/* Net Profit - Hero Card */}
+          <div className={`col-span-2 rounded-2xl p-5 text-white ${metrics.netProfit >= 0 ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' : 'bg-gradient-to-br from-red-500 to-red-600'}`}>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-lg">{metrics.netProfit >= 0 ? '💰' : '📉'}</span>
+              <p className="text-sm opacity-90">صافي الربح</p>
             </div>
+            <p className="text-3xl sm:text-4xl font-bold">{metrics.netProfit.toFixed(2)}</p>
+            <p className="text-xs opacity-70 mt-2">= الإيرادات - تكلفة البضاعة - المصروفات</p>
+          </div>
+          
+          {/* Revenue */}
+          <div className="bg-white rounded-xl shadow-sm border border-green-100 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">↑</span>
+              <span className="text-xs text-gray-600 font-medium">الإيرادات</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{metrics.totalRevenue.toFixed(2)}</p>
+            <p className="text-[10px] text-gray-400 mt-1">إجمالي المبيعات</p>
+          </div>
+          
+          {/* Product Costs */}
+          <div className="bg-white rounded-xl shadow-sm border border-orange-100 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center text-orange-600">📦</span>
+              <span className="text-xs text-gray-600 font-medium">تكلفة البضاعة</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{metrics.totalCosts.toFixed(2)}</p>
+            <p className="text-[10px] text-gray-400 mt-1">سعر شراء المنتجات</p>
+          </div>
+          
+          {/* Expenses */}
+          <div className="bg-white rounded-xl shadow-sm border border-red-100 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600">💸</span>
+              <span className="text-xs text-gray-600 font-medium">المصروفات</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{metrics.totalExpenses.toFixed(2)}</p>
+            <p className="text-[10px] text-gray-400 mt-1">إيجار، كهرباء، رواتب...</p>
+          </div>
+          
+          {/* Gross Profit */}
+          <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">📊</span>
+              <span className="text-xs text-gray-600 font-medium">الربح الإجمالي</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{metrics.grossProfit.toFixed(2)}</p>
+            <p className="text-[10px] text-gray-400 mt-1">الإيرادات - تكلفة البضاعة</p>
           </div>
         </div>
 
-        {/* Quick Stats - Simple 3 Cards */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
-          <div className="bg-white rounded-xl shadow p-4 text-center">
-            <p className="text-2xl mb-2">📊</p>
-            <p className="text-lg sm:text-2xl font-bold text-gray-900">{formatCurrency(metrics.totalRevenue)}</p>
-            <p className="text-xs text-gray-500 mt-1">الإيرادات</p>
+        {/* Sales Count & Profit Margin - Compact Row */}
+        <div className="flex gap-3 mb-6">
+          <div className="flex-1 bg-blue-50 rounded-xl p-3 text-center">
+            <p className="text-2xl font-bold text-blue-600">{metrics.totalSales}</p>
+            <p className="text-xs text-blue-500">عملية بيع</p>
           </div>
-          
-          <div className="bg-white rounded-xl shadow p-4 text-center">
-            <p className="text-2xl mb-2">💸</p>
-            <p className="text-lg sm:text-2xl font-bold text-gray-900">{formatCurrency(metrics.totalCosts + metrics.totalExpenses)}</p>
-            <p className="text-xs text-gray-500 mt-1">المصروفات</p>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow p-4 text-center">
-            <p className="text-2xl mb-2">📈</p>
-            <p className="text-lg sm:text-2xl font-bold text-gray-900">{metrics.profitMargin.toFixed(0)}%</p>
-            <p className="text-xs text-gray-500 mt-1">هامش الربح</p>
+          <div className="flex-1 bg-amber-50 rounded-xl p-3 text-center">
+            <p className="text-2xl font-bold text-amber-600">{metrics.profitMargin.toFixed(0)}%</p>
+            <p className="text-xs text-amber-500">هامش الربح</p>
           </div>
         </div>
 
@@ -747,45 +768,66 @@ function Finance() {
             </div>
           </div>
 
+          {/* Legend */}
+          <div className="px-4 py-2 flex justify-center gap-4 border-b border-gray-100">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-emerald-500"></div>
+              <span className="text-xs text-gray-600">الإيرادات</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded bg-red-400"></div>
+              <span className="text-xs text-gray-600">المصروفات</span>
+            </div>
+          </div>
+
           {/* Chart Area - Optimized for Mobile */}
           <div className="p-3 sm:p-5">
             <div className="h-52 sm:h-64 flex items-end gap-1 sm:gap-2">
               {chartData.map((item, index) => {
-                const heightPercent = maxValue > 0 ? (item.value / maxValue) * 100 : 0
-                const barColor = chartFilter === 'week' 
-                  ? 'bg-gradient-to-t from-blue-600 to-blue-400'
-                  : chartFilter === 'year'
-                  ? 'bg-gradient-to-t from-purple-600 to-purple-400'
-                  : 'bg-gradient-to-t from-emerald-600 to-emerald-400'
+                const revenueHeight = maxValue > 0 ? (item.value / maxValue) * 100 : 0
+                const expenseHeight = maxValue > 0 ? ((item.expense || 0) / maxValue) * 100 : 0
                 
                 return (
                   <div key={index} className="flex-1 flex flex-col items-center h-full">
-                    {/* Value Label - Always visible on mobile */}
-                    <div className="mb-1 text-center">
-                      <span className={`text-[9px] sm:text-xs font-bold ${
-                        chartFilter === 'week' ? 'text-blue-600' :
-                        chartFilter === 'year' ? 'text-purple-600' : 'text-emerald-600'
-                      }`}>
+                    {/* Value Labels */}
+                    <div className="mb-1 text-center space-y-0.5">
+                      <div className="text-[8px] sm:text-[10px] font-bold text-emerald-600">
                         {item.value >= 1000 ? `${(item.value/1000).toFixed(1)}k` : item.value > 0 ? item.value.toFixed(0) : ''}
-                      </span>
+                      </div>
+                      {(item.expense || 0) > 0 && (
+                        <div className="text-[8px] sm:text-[10px] font-bold text-red-500">
+                          {(item.expense || 0) >= 1000 ? `${((item.expense || 0)/1000).toFixed(1)}k` : (item.expense || 0).toFixed(0)}
+                        </div>
+                      )}
                     </div>
                     
-                    {/* Bar Container */}
-                    <div className="flex-1 w-full flex items-end justify-center">
+                    {/* Stacked Bars Container */}
+                    <div className="flex-1 w-full flex items-end justify-center gap-0.5">
+                      {/* Revenue Bar (Green) */}
                       <div
-                        className={`w-full max-w-8 sm:max-w-12 rounded-t-lg transition-all duration-500 ${barColor} ${
+                        className={`w-1/2 max-w-5 sm:max-w-6 rounded-t transition-all duration-500 bg-gradient-to-t from-emerald-600 to-emerald-400 ${
                           item.value === 0 ? 'bg-gray-200' : ''
                         }`}
                         style={{
-                          height: `${Math.max(heightPercent, item.value > 0 ? 5 : 2)}%`,
-                          minHeight: item.value > 0 ? '8px' : '2px'
+                          height: `${Math.max(revenueHeight, item.value > 0 ? 5 : 2)}%`,
+                          minHeight: item.value > 0 ? '4px' : '2px'
+                        }}
+                      />
+                      {/* Expense Bar (Red) */}
+                      <div
+                        className={`w-1/2 max-w-5 sm:max-w-6 rounded-t transition-all duration-500 bg-gradient-to-t from-red-500 to-red-300 ${
+                          (item.expense || 0) === 0 ? 'bg-gray-100' : ''
+                        }`}
+                        style={{
+                          height: `${Math.max(expenseHeight, (item.expense || 0) > 0 ? 5 : 2)}%`,
+                          minHeight: (item.expense || 0) > 0 ? '4px' : '2px'
                         }}
                       />
                     </div>
                     
                     {/* X-Axis Label */}
                     <div className="mt-2 h-8 flex items-center justify-center">
-                      <span className="text-[9px] sm:text-xs text-gray-500 font-medium text-center leading-tight">
+                      <span className="text-[8px] sm:text-[10px] text-gray-500 font-medium text-center leading-tight">
                         {item.label}
                       </span>
                     </div>
@@ -796,17 +838,21 @@ function Finance() {
           </div>
           
           {/* Total Summary Bar */}
-          <div className={`p-4 text-center ${
-            chartFilter === 'week' ? 'bg-blue-50' :
-            chartFilter === 'year' ? 'bg-purple-50' : 'bg-emerald-50'
-          }`}>
-            <span className="text-sm text-gray-600">إجمالي الفترة: </span>
-            <span className={`text-lg font-black ${
-              chartFilter === 'week' ? 'text-blue-700' :
-              chartFilter === 'year' ? 'text-purple-700' : 'text-emerald-700'
-            }`}>
-              {chartData.reduce((sum, d) => sum + d.value, 0).toFixed(2)} دينار
-            </span>
+          <div className="p-4 bg-gray-50 border-t">
+            <div className="flex justify-center gap-6">
+              <div className="text-center">
+                <span className="text-xs text-gray-500">إجمالي الإيرادات</span>
+                <p className="text-lg font-bold text-emerald-600">
+                  {chartData.reduce((sum, d) => sum + d.value, 0).toFixed(2)} د.ت
+                </p>
+              </div>
+              <div className="text-center">
+                <span className="text-xs text-gray-500">إجمالي المصروفات</span>
+                <p className="text-lg font-bold text-red-500">
+                  {chartData.reduce((sum, d) => sum + (d.expense || 0), 0).toFixed(2)} د.ت
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 

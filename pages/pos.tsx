@@ -1113,33 +1113,33 @@ function POS() {
                 </div>
               ) : (
                 /* Show category boxes */
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
                   {Object.entries(productsByCategory).map(([categoryName, categoryProducts]) => (
                     <div
                       key={categoryName}
                       onClick={() => setCategoryViewSelected(categoryName)}
-                      className="group bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-2xl p-4 sm:p-6 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                      className="group bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-2xl p-5 sm:p-8 cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl min-h-[140px] sm:min-h-[180px]"
                     >
                       {/* Category Icon */}
-                      <div className="bg-white/20 rounded-xl p-3 w-fit mb-3">
-                        <svg className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="bg-white/20 rounded-xl p-3 sm:p-4 w-fit mb-4">
+                        <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
                       </div>
                       
                       {/* Category Name */}
-                      <h3 className="font-bold text-white text-base sm:text-lg mb-1 truncate">
+                      <h3 className="font-bold text-white text-lg sm:text-xl mb-2 truncate">
                         {categoryName}
                       </h3>
                       
                       {/* Product Count */}
-                      <p className="text-blue-100 text-sm">
+                      <p className="text-blue-100 text-sm sm:text-base">
                         {categoryProducts.length} منتج
                       </p>
                       
                       {/* Arrow Icon */}
-                      <div className="flex justify-end mt-2">
-                        <svg className="w-5 h-5 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="flex justify-end mt-3">
+                        <svg className="w-6 h-6 text-white/60 group-hover:text-white group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </div>
