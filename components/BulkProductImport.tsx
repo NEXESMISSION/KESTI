@@ -1,5 +1,6 @@
 import { useState, useRef, ChangeEvent } from 'react'
 import { supabase, Product } from '@/lib/supabase'
+import * as XLSX from 'xlsx'
 
 type BulkProductImportProps = {
   isOpen: boolean
@@ -58,23 +59,24 @@ export default function BulkProductImport({ isOpen, onClose, onImportComplete }:
   const parseFile = async (file: File): Promise<ProductRow[]> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader()
+      const fileExtension = file.name.split('.').pop()?.toLowerCase()
 
       reader.onload = async (e) => {
         try {
-          const text = e.target?.result as string
-          const fileExtension = file.name.split('.').pop()?.toLowerCase()
-
           let products: ProductRow[] = []
 
           if (fileExtension === 'csv') {
+            const text = e.target?.result as string
             products = parseCSV(text)
+          } else if (fileExtension === 'xlsx' || fileExtension === 'xls') {
+            const data = e.target?.result
+            products = parseExcel(data as ArrayBuffer)
           } else {
-            // For Excel files, we need a library. For now, ask user to convert to CSV
-            throw new Error('Please convert Excel file to CSV format. Excel support coming soon!')
+            throw new Error('نوع ملف غير مدعوم. الرجاء استخدام CSV أو Excel')
           }
 
           if (products.length === 0) {
-            throw new Error('No valid products found in file')
+            throw new Error('لم يتم العثور على منتجات صالحة في الملف')
           }
 
           resolve(products)
@@ -83,26 +85,144 @@ export default function BulkProductImport({ isOpen, onClose, onImportComplete }:
         }
       }
 
-      reader.onerror = () => reject(new Error('Failed to read file'))
-      reader.readAsText(file)
+      reader.onerror = () => reject(new Error('فشل في قراءة الملف'))
+      
+      if (fileExtension === 'csv') {
+        reader.readAsText(file)
+      } else {
+        reader.readAsArrayBuffer(file)
+      }
     })
+  }
+
+  const parseExcel = (data: ArrayBuffer): ProductRow[] => {
+    const workbook = XLSX.read(data, { type: 'array' })
+    const sheetName = workbook.SheetNames[0]
+    const worksheet = workbook.Sheets[sheetName]
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][]
+
+    if (jsonData.length < 2) {
+      throw new Error('يجب أن يحتوي الملف على صف رأس وصف بيانات واحد على الأقل')
+    }
+
+    // Map Arabic and English headers
+    const headerMappings: { [key: string]: string } = {
+      'اسم المنتج': 'name',
+      'name': 'name',
+      'سعر البيع': 'selling_price',
+      'selling_price': 'selling_price',
+      'سعر الشراء': 'cost_price',
+      'cost_price': 'cost_price',
+      'الوحدة': 'unit_type',
+      'unit_type': 'unit_type',
+      'الفئة': 'category_name',
+      'category_name': 'category_name',
+      'الكمية': 'stock_quantity',
+      'stock_quantity': 'stock_quantity',
+      'حد التنبيه': 'low_stock_threshold',
+      'low_stock_threshold': 'low_stock_threshold'
+    }
+
+    const rawHeaders = jsonData[0].map((h: any) => String(h).trim())
+    const headers = rawHeaders.map((h: string) => headerMappings[h] || h.toLowerCase())
+
+    // Validate required headers
+    const requiredHeaders = ['name', 'selling_price', 'unit_type']
+    const missingHeaders = requiredHeaders.filter(h => !headers.includes(h))
+    if (missingHeaders.length > 0) {
+      throw new Error(`أعمدة مفقودة: ${missingHeaders.join(', ')}`)
+    }
+
+    const products: ProductRow[] = []
+
+    for (let i = 1; i < jsonData.length; i++) {
+      const row = jsonData[i]
+      if (!row || row.length < 3) continue
+
+      try {
+        const name = String(row[headers.indexOf('name')] || '').trim()
+        const selling_price = parseFloat(row[headers.indexOf('selling_price')])
+        const costPriceIdx = headers.indexOf('cost_price')
+        const cost_price = costPriceIdx !== -1 && row[costPriceIdx] ? parseFloat(row[costPriceIdx]) : 0
+        const unit_type = String(row[headers.indexOf('unit_type')] || '').trim() as 'item' | 'kg' | 'g' | 'l' | 'ml'
+
+        if (!name || isNaN(selling_price)) {
+          continue // Skip invalid rows
+        }
+
+        // Validate unit_type
+        if (!['item', 'kg', 'g', 'l', 'ml'].includes(unit_type)) {
+          throw new Error(`نوع وحدة غير صالح في الصف ${i + 1}: ${unit_type}. يجب أن يكون: item, kg, g, l, ml`)
+        }
+
+        const product: ProductRow = {
+          name,
+          selling_price,
+          cost_price,
+          unit_type,
+          row_number: i + 1,
+        }
+
+        // Optional fields
+        const categoryIdx = headers.indexOf('category_name')
+        if (categoryIdx !== -1 && row[categoryIdx]) {
+          product.category_name = String(row[categoryIdx]).trim()
+        }
+
+        const stockQtyIdx = headers.indexOf('stock_quantity')
+        if (stockQtyIdx !== -1 && row[stockQtyIdx]) {
+          const qty = parseFloat(row[stockQtyIdx])
+          if (!isNaN(qty)) product.stock_quantity = qty
+        }
+
+        const lowStockIdx = headers.indexOf('low_stock_threshold')
+        if (lowStockIdx !== -1 && row[lowStockIdx]) {
+          const threshold = parseFloat(row[lowStockIdx])
+          if (!isNaN(threshold)) product.low_stock_threshold = threshold
+        }
+
+        products.push(product)
+      } catch (err: any) {
+        throw new Error(err.message || `خطأ في الصف ${i + 1}`)
+      }
+    }
+
+    return products
   }
 
   const parseCSV = (text: string): ProductRow[] => {
     const lines = text.split('\n').filter(line => line.trim())
     if (lines.length < 2) {
-      throw new Error('CSV file must have a header row and at least one data row')
+      throw new Error('يجب أن يحتوي ملف CSV على صف رأس وصف بيانات واحد على الأقل')
     }
 
-    // Expected columns: name, selling_price, cost_price, unit_type, category_name, stock_quantity, low_stock_threshold
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
+    // Map Arabic and English headers
+    const headerMappings: { [key: string]: string } = {
+      'اسم المنتج': 'name',
+      'name': 'name',
+      'سعر البيع': 'selling_price',
+      'selling_price': 'selling_price',
+      'سعر الشراء': 'cost_price',
+      'cost_price': 'cost_price',
+      'الوحدة': 'unit_type',
+      'unit_type': 'unit_type',
+      'الفئة': 'category_name',
+      'category_name': 'category_name',
+      'الكمية': 'stock_quantity',
+      'stock_quantity': 'stock_quantity',
+      'حد التنبيه': 'low_stock_threshold',
+      'low_stock_threshold': 'low_stock_threshold'
+    }
+
+    const rawHeaders = lines[0].split(',').map(h => h.trim())
+    const headers = rawHeaders.map(h => headerMappings[h] || h.toLowerCase())
     const products: ProductRow[] = []
 
     // Validate required headers
     const requiredHeaders = ['name', 'selling_price', 'unit_type']
     const missingHeaders = requiredHeaders.filter(h => !headers.includes(h))
     if (missingHeaders.length > 0) {
-      throw new Error(`Missing required columns: ${missingHeaders.join(', ')}`)
+      throw new Error(`أعمدة مفقودة: ${missingHeaders.join(', ')}`)
     }
 
     // Parse data rows
@@ -118,14 +238,14 @@ export default function BulkProductImport({ isOpen, onClose, onImportComplete }:
         const cost_price = costPriceIdx !== -1 && values[costPriceIdx] ? parseFloat(values[costPriceIdx]) : 0
         const unit_type = values[headers.indexOf('unit_type')] as 'item' | 'kg' | 'g' | 'l' | 'ml'
 
-        // Validate unit_type
-        if (!['item', 'kg', 'g', 'l', 'ml'].includes(unit_type)) {
-          throw new Error(`Invalid unit_type at row ${i + 1}: ${unit_type}. Must be one of: item, kg, g, l, ml`)
-        }
-
         // Validate required fields
         if (!name || isNaN(selling_price)) {
-          throw new Error(`Invalid data at row ${i + 1}. Name and selling_price are required.`)
+          continue // Skip invalid rows
+        }
+
+        // Validate unit_type
+        if (!['item', 'kg', 'g', 'l', 'ml'].includes(unit_type)) {
+          throw new Error(`نوع وحدة غير صالح في الصف ${i + 1}: ${unit_type}. يجب أن يكون: item, kg, g, l, ml`)
         }
 
         const product: ProductRow = {
@@ -156,7 +276,7 @@ export default function BulkProductImport({ isOpen, onClose, onImportComplete }:
 
         products.push(product)
       } catch (err: any) {
-        throw new Error(err.message || `Error parsing row ${i + 1}`)
+        throw new Error(err.message || `خطأ في الصف ${i + 1}`)
       }
     }
 
@@ -266,18 +386,31 @@ export default function BulkProductImport({ isOpen, onClose, onImportComplete }:
   }
 
   const downloadTemplate = () => {
-    const template = `name,selling_price,cost_price,unit_type,category_name,stock_quantity,low_stock_threshold
-Product 1,15.50,10.00,item,Electronics,100,10
-Product 2,25.75,18.50,kg,Food,50,5
-Product 3,8.00,5.50,l,Beverages,200,20`
-
-    const blob = new Blob([template], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'product_import_template.csv'
-    a.click()
-    window.URL.revokeObjectURL(url)
+    // Create workbook with Arabic headers
+    const wb = XLSX.utils.book_new()
+    
+    const data = [
+      ['اسم المنتج', 'سعر البيع', 'سعر الشراء', 'الوحدة', 'الفئة', 'الكمية', 'حد التنبيه'],
+      ['منتج 1', 15.50, 10.00, 'item', 'إلكترونيات', 100, 10],
+      ['منتج 2', 25.75, 18.50, 'kg', 'مواد غذائية', 50, 5],
+      ['منتج 3', 8.00, 5.50, 'l', 'مشروبات', 200, 20]
+    ]
+    
+    const ws = XLSX.utils.aoa_to_sheet(data)
+    
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 20 }, // اسم المنتج
+      { wch: 12 }, // سعر البيع
+      { wch: 12 }, // سعر الشراء
+      { wch: 10 }, // الوحدة
+      { wch: 15 }, // الفئة
+      { wch: 10 }, // الكمية
+      { wch: 12 }  // حد التنبيه
+    ]
+    
+    XLSX.utils.book_append_sheet(wb, ws, 'المنتجات')
+    XLSX.writeFile(wb, 'نموذج_استيراد_المنتجات.xlsx')
   }
 
   if (!isOpen) return null
@@ -328,7 +461,7 @@ Product 3,8.00,5.50,l,Beverages,200,20`
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                تنزيل نموذج CSV
+                تنزيل نموذج Excel
               </button>
             </div>
           </div>
@@ -339,16 +472,16 @@ Product 3,8.00,5.50,l,Beverages,200,20`
             <div className="text-sm text-gray-700 space-y-2">
               <p><strong>الأعمدة المطلوبة:</strong></p>
               <ul className="list-disc list-inside ml-4 space-y-1">
-                <li><code className="bg-gray-200 px-1 rounded">name</code> - اسم المنتج</li>
-                <li><code className="bg-gray-200 px-1 rounded">selling_price</code> - سعر البيع (رقم)</li>
-                <li><code className="bg-gray-200 px-1 rounded">cost_price</code> - سعر التكلفة (رقم)</li>
-                <li><code className="bg-gray-200 px-1 rounded">unit_type</code> - نوع الوحدة (item, kg, g, l, ml)</li>
+                <li><code className="bg-gray-200 px-1 rounded">اسم المنتج</code> - اسم المنتج</li>
+                <li><code className="bg-gray-200 px-1 rounded">سعر البيع</code> - سعر البيع (رقم)</li>
+                <li><code className="bg-gray-200 px-1 rounded">سعر الشراء</code> - سعر الشراء (رقم)</li>
+                <li><code className="bg-gray-200 px-1 rounded">الوحدة</code> - نوع الوحدة (item, kg, g, l, ml)</li>
               </ul>
               <p className="mt-2"><strong>الأعمدة الاختيارية:</strong></p>
               <ul className="list-disc list-inside ml-4 space-y-1">
-                <li><code className="bg-gray-200 px-1 rounded">category_name</code> - اسم الفئة</li>
-                <li><code className="bg-gray-200 px-1 rounded">stock_quantity</code> - كمية المخزون (رقم)</li>
-                <li><code className="bg-gray-200 px-1 rounded">low_stock_threshold</code> - حد التنبيه (رقم)</li>
+                <li><code className="bg-gray-200 px-1 rounded">الفئة</code> - اسم الفئة</li>
+                <li><code className="bg-gray-200 px-1 rounded">الكمية</code> - كمية المخزون (رقم)</li>
+                <li><code className="bg-gray-200 px-1 rounded">حد التنبيه</code> - حد التنبيه للمخزون المنخفض (رقم)</li>
               </ul>
             </div>
           </div>
@@ -356,7 +489,7 @@ Product 3,8.00,5.50,l,Beverages,200,20`
           {/* File Upload */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              اختر ملف CSV
+              اختر ملف Excel أو CSV
             </label>
             <input
               ref={fileInputRef}
@@ -365,6 +498,7 @@ Product 3,8.00,5.50,l,Beverages,200,20`
               onChange={handleFileChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
             />
+            <p className="text-xs text-gray-500 mt-1">يمكنك استخدام ملفات Excel (.xlsx, .xls) أو CSV</p>
           </div>
 
           {/* Preview */}

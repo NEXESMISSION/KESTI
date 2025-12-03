@@ -104,20 +104,55 @@ export default function Signup() {
         <meta name="description" content="أنشئ حسابك واحصل على 15 يوم مجاناً" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex" dir="rtl">
-        {/* Left Side - Form */}
-        <div className="flex-1 flex items-center justify-center p-6 md:p-12">
-          <div className="w-full max-w-md">
-            {/* Logo */}
-            <Link href="/" className="flex justify-center mb-8">
-              <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-12" />
-            </Link>
-
-            {/* Header */}
-            <div className="text-center mb-8">
-              <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">إنشاء حساب جديد</h1>
-              <p className="text-gray-500 text-lg">احصل على 15 يوم تجريبي مجاناً</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100" dir="rtl">
+        {/* Header Navigation */}
+        <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-9 w-auto" />
+              </Link>
+              
+              <div className="flex items-center gap-4">
+                <Link 
+                  href="/" 
+                  className="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  العودة للرئيسية
+                </Link>
+                <Link 
+                  href="/login" 
+                  className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-5 py-2 rounded-lg font-semibold text-sm hover:shadow-lg hover:scale-105 transition-all duration-300"
+                >
+                  تسجيل الدخول
+                </Link>
+              </div>
             </div>
+          </div>
+        </header>
+
+        <div className="flex pt-16">
+          {/* Left Side - Form */}
+          <div className="flex-1 flex items-center justify-center p-6 md:p-12">
+            <div className="w-full max-w-md">
+              {/* Welcome Badge */}
+              <div className="flex justify-center mb-6">
+                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 text-green-700 px-4 py-2 rounded-full text-sm font-medium">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  15 يوم تجريبي مجانً
+                </div>
+              </div>
+
+              {/* Header */}
+              <div className="text-center mb-8">
+                <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">إنشاء حساب جديد</h1>
+                <p className="text-gray-600 text-base">انضم لمئات التجار الأذكياء</p>
+              </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -262,15 +297,36 @@ export default function Signup() {
               </button>
             </form>
 
-            {/* Login Link */}
-            <p className="text-center text-gray-500 mt-6">
-              لديك حساب؟{' '}
-              <Link href="/login" className="text-gray-900 font-semibold hover:underline">
-                تسجيل الدخول
-              </Link>
-            </p>
+              {/* Error/Success Messages */}
+              {error && (
+                <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-center">
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="mt-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-center flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  تم إنشاء الحساب بنجاح! جاري التحويل...
+                </div>
+              )}
+
+              {/* Login Link */}
+              <div className="mt-8 text-center">
+                <p className="text-gray-600 mb-3">لديك حساب؟</p>
+                <Link 
+                  href="/login" 
+                  className="inline-flex items-center gap-2 text-gray-900 font-bold hover:gap-3 transition-all duration-300"
+                >
+                  تسجيل الدخول
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
           </div>
-        </div>
 
         {/* Right Side - Features (Hidden on Mobile) */}
         <div className="hidden lg:flex flex-1 bg-gray-900 items-center justify-center p-12">
@@ -321,6 +377,7 @@ export default function Signup() {
               </div>
             </div>
           </div>
+        </div>
         </div>
 
         {/* Success Modal */}

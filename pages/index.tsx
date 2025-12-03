@@ -110,34 +110,101 @@ export default function Home() {
 
       <div className="min-h-screen bg-white" dir="rtl">
         {/* Navigation */}
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between h-16">
-              <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-8 w-auto" />
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-20">
+              {/* Logo with improved styling */}
+              <div className="flex items-center gap-3">
+                <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-10 w-auto" />
+                <div className="hidden sm:block w-px h-6 bg-gray-300"></div>
+                <span className="hidden sm:block text-sm font-medium text-gray-600">نظام نقاط البيع الأول في تونس</span>
+              </div>
               
-              <div className="hidden md:flex items-center gap-6">
-                <a href="#features" className="text-gray-600 hover:text-gray-900 font-medium">المميزات</a>
-                <a href="#pricing" className="text-gray-600 hover:text-gray-900 font-medium">الأسعار</a>
-                <Link href="/login" className="bg-gray-100 hover:bg-gray-200 text-gray-900 px-5 py-2.5 rounded-lg font-semibold transition">تسجيل الدخول</Link>
-                <Link href="/signup" className="bg-gray-900 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-800 transition">
-                  ابدأ مجاناً
+              {/* Desktop Menu */}
+              <div className="hidden md:flex items-center gap-8">
+                <a href="#features" className="text-gray-700 hover:text-gray-900 font-medium text-[15px] transition-colors relative group">
+                  المميزات
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 group-hover:w-full transition-all duration-300"></span>
+                </a>
+                <a href="#pricing" className="text-gray-700 hover:text-gray-900 font-medium text-[15px] transition-colors relative group">
+                  الأسعار
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 group-hover:w-full transition-all duration-300"></span>
+                </a>
+                <a href="#contact" className="text-gray-700 hover:text-gray-900 font-medium text-[15px] transition-colors relative group">
+                  تواصل معنا
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 group-hover:w-full transition-all duration-300"></span>
+                </a>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="hidden md:flex items-center gap-3">
+                <Link href="/login" className="text-gray-700 hover:text-gray-900 px-5 py-2.5 rounded-xl font-semibold text-[15px] transition-all hover:bg-gray-100">
+                  تسجيل الدخول
+                </Link>
+                <Link href="/signup" className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-6 py-2.5 rounded-xl font-bold text-[15px] hover:shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2">
+                  <span>ابدأ مجاناً</span>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
                 </Link>
               </div>
 
-              <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden p-2">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {mobileMenuOpen ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> 
-                  : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />}
+              {/* Mobile Menu Button */}
+              <button 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                aria-label="Toggle menu"
+              >
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {mobileMenuOpen ? 
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /> 
+                    : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  }
                 </svg>
               </button>
             </div>
 
+            {/* Mobile Menu */}
             {mobileMenuOpen && (
-              <div className="md:hidden py-4 border-t space-y-3">
-                <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-gray-600">المميزات</a>
-                <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-gray-600">الأسعار</a>
-                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block bg-gray-100 hover:bg-gray-200 text-gray-900 px-5 py-3 rounded-lg font-semibold text-center">تسجيل الدخول</Link>
-                <Link href="/signup" className="block bg-gray-900 text-white px-5 py-3 rounded-lg font-semibold text-center">ابدأ مجاناً</Link>
+              <div className="md:hidden py-4 border-t border-gray-200 animate-fadeIn">
+                <div className="space-y-2">
+                  <a 
+                    href="#features" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors"
+                  >
+                    المميزات
+                  </a>
+                  <a 
+                    href="#pricing" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors"
+                  >
+                    الأسعار
+                  </a>
+                  <a 
+                    href="#contact" 
+                    onClick={() => setMobileMenuOpen(false)} 
+                    className="block py-3 px-4 text-gray-700 hover:bg-gray-50 rounded-lg font-medium transition-colors"
+                  >
+                    تواصل معنا
+                  </a>
+                  <div className="pt-3 space-y-2">
+                    <Link 
+                      href="/login" 
+                      onClick={() => setMobileMenuOpen(false)} 
+                      className="block bg-gray-100 hover:bg-gray-200 text-gray-900 px-5 py-3 rounded-xl font-semibold text-center transition-colors"
+                    >
+                      تسجيل الدخول
+                    </Link>
+                    <Link 
+                      href="/signup" 
+                      className="block bg-gradient-to-r from-gray-900 to-gray-700 text-white px-5 py-3 rounded-xl font-bold text-center shadow-lg"
+                    >
+                      ابدأ مجاناً - 15 يوم
+                    </Link>
+                  </div>
+                </div>
               </div>
             )}
           </div>

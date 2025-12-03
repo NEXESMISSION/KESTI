@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import { supabase, CreditSale } from '@/lib/supabase'
+import { supabase, CreditSale, Profile } from '@/lib/supabase'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
+import { getSubscriptionDaysLeft } from '@/lib/auth'
+import * as XLSX from 'xlsx'
 
 interface SaleItem {
   id: number
@@ -47,6 +49,10 @@ function History() {
   const [loading, setLoading] = useState(true)
   const [expandedSale, setExpandedSale] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'all' | 'sales' | 'expenses' | 'credits'>('all')
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState<{name: string, price: string, period: string} | null>(null)
   
   // Filter states
   const [timeFilter, setTimeFilter] = useState<'today' | 'week' | 'month' | 'all'>('all')
@@ -71,6 +77,17 @@ function History() {
       if (!session) {
         router.push('/login')
         return
+      }
+
+      // Get profile data
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+      
+      if (profileData) {
+        setProfile(profileData)
       }
 
       await Promise.all([
@@ -330,73 +347,141 @@ function History() {
         .eq('id', session.user.id)
         .single()
 
-      // Get all products
-      const { data: products } = await supabase
-        .from('products')
-        .select('*')
-        .eq('owner_id', session.user.id)
+      // Create workbook
+      const wb = XLSX.utils.book_new()
 
-      // Prepare CSV content
-      let csvContent = "data:text/csv;charset=utf-8,"
+      // === معلومات الحساب ===
+      const accountData = [
+        ['معلومات الحساب'],
+        [''],
+        ['اسم العمل', profile?.full_name || 'غير متوفر'],
+        ['البريد الإلكتروني', profile?.email || 'غير متوفر'],
+        ['تاريخ انتهاء الاشتراك', profile?.subscription_ends_at ? new Date(profile.subscription_ends_at).toLocaleDateString('ar-TN') : 'غير متوفر'],
+        ['تاريخ إنشاء الحساب', profile?.created_at ? new Date(profile.created_at).toLocaleDateString('ar-TN') : 'غير متوفر'],
+      ]
+
+      // === سجل المبيعات ===
+      const salesData = [
+        [''],
+        ['سجل المبيعات'],
+        [''],
+        ['التاريخ', 'الوقت', 'المبلغ الإجمالي', 'طريقة الدفع']
+      ]
       
-      // Account Info Section
-      csvContent += "=== ACCOUNT INFORMATION ===\n"
-      csvContent += `Business Name,${profile?.full_name || 'N/A'}\n`
-      csvContent += `Email,${profile?.email || 'N/A'}\n`
-      csvContent += `Subscription Ends,${profile?.subscription_ends_at ? new Date(profile.subscription_ends_at).toLocaleDateString() : 'N/A'}\n`
-      csvContent += `Account Created,${profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : 'N/A'}\n`
-      csvContent += "\n"
-
-      // Sales Section
-      csvContent += "=== SALES HISTORY ===\n"
-      csvContent += "Date,Time,Total Amount,Payment Method,Items,Quantities\n"
       filteredSales.forEach(sale => {
         const date = new Date(sale.created_at)
-        const items = sale.sale_items.map(item => item.product_name).join('; ')
-        const quantities = sale.sale_items.map(item => `${item.quantity}`).join('; ')
-        csvContent += `${date.toLocaleDateString()},${date.toLocaleTimeString()},${sale.total_amount},${sale.payment_method},"${items}","${quantities}"\n`
+        salesData.push([
+          date.toLocaleDateString('ar-TN'),
+          date.toLocaleTimeString('ar-TN', { hour: '2-digit', minute: '2-digit' }),
+          sale.total_amount + ' د.ت',
+          sale.payment_method === 'cash' ? 'نقدي' : sale.payment_method === 'card' ? 'بطاقة' : 'آجل'
+        ])
       })
-      csvContent += `\nTotal Revenue,${totalRevenue}\n`
-      csvContent += "\n"
+      salesData.push([''])
+      salesData.push(['إجمالي الإيرادات', '', totalRevenue.toFixed(2) + ' د.ت', ''])
 
-      // Expenses Section
-      csvContent += "=== EXPENSES HISTORY ===\n"
-      csvContent += "Date,Time,Description,Category,Amount,Type\n"
+      // === سجل المصروفات ===
+      const expensesData = [
+        [''],
+        ['سجل المصروفات'],
+        [''],
+        ['التاريخ', 'الوقت', 'الوصف', 'الفئة', 'المبلغ']
+      ]
+      
       filteredExpenses.forEach(expense => {
         const date = new Date(expense.created_at)
-        csvContent += `${date.toLocaleDateString()},${date.toLocaleTimeString()},"${expense.description}",${expense.category || 'N/A'},${expense.amount},${expense.expense_type}\n`
+        expensesData.push([
+          date.toLocaleDateString('ar-TN'),
+          date.toLocaleTimeString('ar-TN', { hour: '2-digit', minute: '2-digit' }),
+          expense.description,
+          expense.category || 'غير محدد',
+          expense.amount + ' د.ت'
+        ])
       })
-      csvContent += `\nTotal Expenses,${totalExpenses}\n`
-      csvContent += "\n"
+      expensesData.push([''])
+      expensesData.push(['إجمالي المصروفات', '', '', '', totalExpenses.toFixed(2) + ' د.ت'])
 
-      // Products Section
-      csvContent += "=== PRODUCTS ===\n"
-      csvContent += "Name,Selling Price,Cost Price,Unit Type,Stock Quantity\n"
-      products?.forEach(product => {
-        csvContent += `"${product.name}",${product.selling_price},${product.cost_price},${product.unit_type},${product.stock_quantity || 'N/A'}\n`
+      // === الملخص المالي ===
+      const summaryData = [
+        [''],
+        ['الملخص المالي'],
+        [''],
+        ['عدد المبيعات', filteredSales.length],
+        ['إجمالي الإيرادات', totalRevenue.toFixed(2) + ' د.ت'],
+        ['إجمالي المصروفات', totalExpenses.toFixed(2) + ' د.ت'],
+        ['صافي الربح', netAmount.toFixed(2) + ' د.ت'],
+      ]
+
+      // Combine all data
+      const allData = [...accountData, ...salesData, ...expensesData, ...summaryData]
+
+      // Create worksheet
+      const ws = XLSX.utils.aoa_to_sheet(allData)
+
+      // Set column widths
+      ws['!cols'] = [
+        { wch: 25 },
+        { wch: 20 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 15 }
+      ]
+
+      // Style header rows (RTL support)
+      const range = XLSX.utils.decode_range(ws['!ref'] || 'A1')
+      for (let R = range.s.r; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const cellAddress = XLSX.utils.encode_cell({ r: R, c: C })
+          if (!ws[cellAddress]) continue
+          
+          // Style headers
+          if (R === 0 || R === 7 || R === 7 + salesData.length || R === 7 + salesData.length + expensesData.length) {
+            ws[cellAddress].s = {
+              font: { bold: true, sz: 14 },
+              alignment: { horizontal: 'right', vertical: 'center' },
+              fill: { fgColor: { rgb: 'D3D3D3' } }
+            }
+          }
+        }
+      }
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'تقرير KESTI')
+
+      // Generate file and download
+      XLSX.writeFile(wb, `KESTI_تقرير_${new Date().toISOString().split('T')[0]}.xlsx`, {
+        bookType: 'xlsx',
+        type: 'binary'
       })
-      csvContent += "\n"
-
-      // Summary Section
-      csvContent += "=== FINANCIAL SUMMARY ===\n"
-      csvContent += `Total Sales,${filteredSales.length}\n`
-      csvContent += `Total Revenue,${totalRevenue.toFixed(2)}\n`
-      csvContent += `Total Expenses,${totalExpenses.toFixed(2)}\n`
-      csvContent += `Net Profit,${netAmount.toFixed(2)}\n`
-      csvContent += `Total Products,${products?.length || 0}\n`
-
-      // Create download link
-      const encodedUri = encodeURI(csvContent)
-      const link = document.createElement("a")
-      link.setAttribute("href", encodedUri)
-      link.setAttribute("download", `KESTI_Data_${new Date().toISOString().split('T')[0]}.csv`)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
     } catch (error) {
       console.error('Error downloading data:', error)
-      alert('Failed to download data')
+      alert('فشل تحميل البيانات')
     }
+  }
+
+  const paymentInfo = {
+    rib: '24031168005251110132',
+    bankName: 'BTE Bank',
+    d17: '58415520',
+    flouci: '58415520',
+    phone: '+21653518337',
+    email: 'support@kestipro.com',
+    whatsapp: '21653518337',
+    instagram: 'https://www.instagram.com/kesti_tn',
+    d17Logo: 'https://play-lh.googleusercontent.com/lOgvUGpz6YUSXJG48kbzGrTEohIC8FDr_WkP6rwgaELR0g5o6OQu5-VPGexKoB8F0C-_',
+    flouciLogo: 'https://play-lh.googleusercontent.com/CK9-8mnJO0rlqQf8-D44yX_J1iEXqZ7RqpXJnTkIlrpqBgiBIT5TQXtORU55vDG-vXU'
+  }
+
+  const openPaymentModal = (planName: string, price: string, period: string) => {
+    setSelectedPlan({ name: planName, price, period })
+    setShowPaymentModal(true)
+    // Scroll to payment methods after a short delay
+    setTimeout(() => {
+      const paymentSection = document.getElementById('payment-methods')
+      if (paymentSection) {
+        paymentSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 300)
   }
 
   // Filter by search term (product name in items or expense description)
@@ -427,17 +512,21 @@ function History() {
             <Image src="/logo/KESTi.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* Download Data */}
-              <button
-                onClick={downloadData}
-                className="bg-green-600 hover:bg-green-700 text-white p-2 sm:p-2.5 rounded-lg transition flex items-center gap-1 sm:gap-2"
-                title="Download All Data"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                <span className="hidden sm:inline text-sm">Download</span>
-              </button>
+              {/* Subscription Days Left (Business Admin Only) */}
+              {profile && profile.role === 'business_user' && (
+                <button
+                  onClick={() => setShowSubscriptionModal(true)}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg transition flex items-center gap-2"
+                  title="الاشتراك"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm font-semibold">
+                    {getSubscriptionDaysLeft(profile)} يوم متبقي
+                  </span>
+                </button>
+              )}
               
               {/* Back to POS */}
               <button
@@ -809,6 +898,162 @@ function History() {
           )}
         </div>
       </main>
+
+      {/* Subscription Modal */}
+      {showSubscriptionModal && profile && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowSubscriptionModal(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden" onClick={e => e.stopPropagation()} dir="rtl">
+            <button 
+              onClick={() => setShowSubscriptionModal(false)} 
+              className="absolute top-3 left-3 z-10 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <div className="bg-gradient-to-br from-indigo-600 to-purple-600 text-white p-6 text-center">
+              <h3 className="text-2xl font-bold mb-2">معلومات الاشتراك</h3>
+              <div className="text-5xl font-black my-4">{getSubscriptionDaysLeft(profile)}</div>
+              <p className="text-indigo-100 text-lg">يوم متبقي في اشتراكك</p>
+              {profile.subscription_ends_at && (
+                <p className="text-indigo-200 text-sm mt-2">
+                  ينتهي في: {new Date(profile.subscription_ends_at).toLocaleDateString('ar-TN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+              )}
+            </div>
+            
+            <div className="p-6">
+              <button
+                onClick={() => {
+                  setShowSubscriptionModal(false)
+                  setShowPaymentModal(true)
+                }}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg hover:from-indigo-700 hover:to-purple-700 transition"
+              >
+                تجديد الاشتراك
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowPaymentModal(false)}>
+          <div className="bg-white rounded-2xl w-full max-w-4xl overflow-hidden max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()} dir="rtl">
+            <button 
+              onClick={() => setShowPaymentModal(false)} 
+              className="absolute top-3 left-3 z-10 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center transition"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            {/* Pricing Plans */}
+            <div className="p-6">
+              <h2 className="text-3xl font-bold text-center mb-2">اختر خطتك</h2>
+              <p className="text-center text-gray-600 mb-6">جميع الباقات تشمل كل المميزات</p>
+              
+              <div className="grid md:grid-cols-3 gap-4 mb-6">
+                {/* Monthly */}
+                <div className={`bg-white border-2 rounded-2xl p-6 hover:border-indigo-500 hover:shadow-lg transition cursor-pointer ${selectedPlan?.name === 'شهري' ? 'border-indigo-600 shadow-lg' : 'border-gray-200'}`} onClick={() => openPaymentModal('شهري', '19', 'شهر')}>
+                  <h3 className="text-xl font-bold mb-1">شهري</h3>
+                  <p className="text-gray-500 text-sm mb-4">مرونة كاملة</p>
+                  <div className="mb-4">
+                    <span className="text-4xl font-black">19</span>
+                    <span className="text-gray-500 mr-1">د.ت/شهر</span>
+                  </div>
+                  <button className="w-full bg-gray-100 text-gray-900 py-3 rounded-xl font-bold hover:bg-gray-200 transition">
+                    اشترك الآن
+                  </button>
+                </div>
+
+                {/* 3 Months - Popular */}
+                <div className={`bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-2xl p-6 relative hover:scale-105 transition shadow-xl ${selectedPlan?.name === '3 أشهر' ? 'ring-4 ring-indigo-400' : ''}`} onClick={() => openPaymentModal('3 أشهر', '51', '3 أشهر')}>
+                  <div className="absolute -top-3 right-4 bg-red-500 text-white text-xs px-4 py-1 rounded-full font-bold">الأكثر طلبا</div>
+                  <h3 className="text-xl font-bold mb-1">3 أشهر</h3>
+                  <p className="text-gray-400 text-sm mb-4">وفر 10%</p>
+                  <div className="mb-4">
+                    <span className="text-4xl font-black">17</span>
+                    <span className="text-gray-400 mr-1">د.ت/شهر</span>
+                    <p className="text-sm text-gray-400 mt-1">51 د.ت اجمالي</p>
+                  </div>
+                  <button className="w-full bg-white text-gray-900 py-3 rounded-xl font-bold hover:bg-gray-100 transition">
+                    اشترك الآن
+                  </button>
+                </div>
+
+                {/* Yearly */}
+                <div className={`bg-white border-2 rounded-2xl p-6 hover:border-indigo-500 hover:shadow-lg transition cursor-pointer ${selectedPlan?.name === 'سنوي' ? 'border-indigo-600 shadow-lg' : 'border-gray-200'}`} onClick={() => openPaymentModal('سنوي', '180', 'سنة')}>
+                  <h3 className="text-xl font-bold mb-1">سنوي</h3>
+                  <p className="text-gray-500 text-sm mb-4">وفر 21%</p>
+                  <div className="mb-4">
+                    <span className="text-4xl font-black">15</span>
+                    <span className="text-gray-500 mr-1">د.ت/شهر</span>
+                    <p className="text-sm text-gray-500 mt-1">180 د.ت اجمالي</p>
+                  </div>
+                  <button className="w-full bg-gray-100 text-gray-900 py-3 rounded-xl font-bold hover:bg-gray-200 transition">
+                    اشترك الآن
+                  </button>
+                </div>
+              </div>
+
+              {/* Payment Methods */}
+              {selectedPlan && (
+                <div className="border-t pt-6" id="payment-methods">
+                  <h3 className="text-xl font-bold text-center mb-4">طرق الدفع</h3>
+                  <div className="bg-gray-900 text-white p-4 rounded-xl mb-4 text-center">
+                    <p className="text-gray-400 text-sm mb-1">باقة {selectedPlan.name}</p>
+                    <div className="text-3xl font-bold">{selectedPlan.price} <span className="text-lg">د.ت</span></div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
+                      <img src={paymentInfo.d17Logo} alt="D17" className="w-10 h-10 rounded-lg" />
+                      <span className="font-medium flex-1">D17</span>
+                      <span className="font-mono font-bold bg-gray-200 px-3 py-1 rounded-lg">{paymentInfo.d17}</span>
+                    </div>
+
+                    <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
+                      <img src={paymentInfo.flouciLogo} alt="Flouci" className="w-10 h-10 rounded-lg" />
+                      <span className="font-medium flex-1">Flouci</span>
+                      <span className="font-mono font-bold bg-gray-200 px-3 py-1 rounded-lg">{paymentInfo.flouci}</span>
+                    </div>
+
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-gray-900 rounded-lg flex items-center justify-center">
+                          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        </div>
+                        <span className="font-medium">{paymentInfo.bankName}</span>
+                      </div>
+                      <div className="bg-white rounded-lg p-2 border">
+                        <p className="font-mono text-sm text-center">{paymentInfo.rib}</p>
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-4 mt-4">
+                      <p className="text-sm font-medium text-center mb-3">بعد الدفع، أرسل صورة الوصل مع إيميل حسابك:</p>
+                      <div className="flex gap-3 justify-center">
+                        <a href={`https://wa.me/${paymentInfo.whatsapp}?text=اشتراك%20باقة%20${selectedPlan.name}%20بمبلغ%20${selectedPlan.price}%20دينار`} target="_blank" className="flex items-center gap-2 bg-[#25D366] text-white py-2.5 px-4 rounded-lg font-medium">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                          واتساب
+                        </a>
+                        <a href={paymentInfo.instagram} target="_blank" className="flex items-center gap-2 bg-gray-900 text-white py-2.5 px-4 rounded-lg font-medium">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                          انستغرام
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

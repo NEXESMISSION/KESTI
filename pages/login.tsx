@@ -174,9 +174,39 @@ export default function Login() {
         <meta name="description" content="سجل دخولك إلى Kesti Pro" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex" dir="rtl">
-        {/* Left Side - Features (Hidden on Mobile) */}
-        <div className="hidden lg:flex flex-1 bg-gray-900 items-center justify-center p-12">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100" dir="rtl">
+        {/* Header Navigation */}
+        <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-9 w-auto" />
+              </Link>
+              
+              <div className="flex items-center gap-4">
+                <Link 
+                  href="/" 
+                  className="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  العودة للرئيسية
+                </Link>
+                <Link 
+                  href="/signup" 
+                  className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-5 py-2 rounded-lg font-semibold text-sm hover:shadow-lg hover:scale-105 transition-all duration-300"
+                >
+                  إنشاء حساب
+                </Link>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex pt-16">
+          {/* Left Side - Features (Hidden on Mobile) */}
+          <div className="hidden lg:flex flex-1 bg-gray-900 items-center justify-center p-12">
           <div className="max-w-md text-center">
             <div className="mb-8">
               <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
@@ -226,21 +256,26 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Right Side - Form */}
-        <div className="flex-1 flex items-center justify-center p-6 md:p-12">
-          <div className="w-full max-w-md">
-            {/* Logo */}
-            <Link href="/" className="flex justify-center mb-8">
-              <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-12" />
-            </Link>
+          {/* Right Side - Form */}
+          <div className="flex-1 flex items-center justify-center p-6 md:p-12">
+            <div className="w-full max-w-md">
+              {/* Welcome Badge */}
+              <div className="flex justify-center mb-6">
+                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                  مرحباً بك مجدداً
+                </div>
+              </div>
 
-            {/* Header */}
-            <div className="text-center mb-8">
-              <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">تسجيل الدخول</h1>
-              <p className="text-gray-500 text-lg">أدخل بياناتك للمتابعة</p>
-            </div>
+              {/* Header */}
+              <div className="text-center mb-8">
+                <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">تسجيل الدخول</h1>
+                <p className="text-gray-600 text-base">أدخل بياناتك للوصول إلى حسابك</p>
+              </div>
 
-            {/* Error Message */}
+              {/* Error Message */}
             {error && (
               <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-center flex items-center justify-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -357,6 +392,7 @@ export default function Login() {
               </Link>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </>
