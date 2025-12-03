@@ -99,7 +99,7 @@ export default function BulkProductImport({ isOpen, onClose, onImportComplete }:
     const products: ProductRow[] = []
 
     // Validate required headers
-    const requiredHeaders = ['name', 'selling_price', 'cost_price', 'unit_type']
+    const requiredHeaders = ['name', 'selling_price', 'unit_type']
     const missingHeaders = requiredHeaders.filter(h => !headers.includes(h))
     if (missingHeaders.length > 0) {
       throw new Error(`Missing required columns: ${missingHeaders.join(', ')}`)
@@ -109,12 +109,13 @@ export default function BulkProductImport({ isOpen, onClose, onImportComplete }:
     for (let i = 1; i < lines.length; i++) {
       const values = lines[i].split(',').map(v => v.trim())
       
-      if (values.length < 4) continue // Skip invalid rows
+      if (values.length < 3) continue // Skip invalid rows
 
       try {
         const name = values[headers.indexOf('name')]
         const selling_price = parseFloat(values[headers.indexOf('selling_price')])
-        const cost_price = parseFloat(values[headers.indexOf('cost_price')])
+        const costPriceIdx = headers.indexOf('cost_price')
+        const cost_price = costPriceIdx !== -1 && values[costPriceIdx] ? parseFloat(values[costPriceIdx]) : 0
         const unit_type = values[headers.indexOf('unit_type')] as 'item' | 'kg' | 'g' | 'l' | 'ml'
 
         // Validate unit_type
@@ -123,8 +124,8 @@ export default function BulkProductImport({ isOpen, onClose, onImportComplete }:
         }
 
         // Validate required fields
-        if (!name || isNaN(selling_price) || isNaN(cost_price)) {
-          throw new Error(`Invalid data at row ${i + 1}. Name, selling_price, and cost_price are required.`)
+        if (!name || isNaN(selling_price)) {
+          throw new Error(`Invalid data at row ${i + 1}. Name and selling_price are required.`)
         }
 
         const product: ProductRow = {

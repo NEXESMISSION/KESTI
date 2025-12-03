@@ -418,7 +418,7 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  سعر التكلفة *
+                  سعر التكلفة
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 text-sm pointer-events-none">TND</span>
@@ -430,7 +430,6 @@ export default function ProductForm({ isOpen, onClose, product, onProductSaved }
                     placeholder="0.00"
                     step="0.01"
                     min="0"
-                    required
                   />
                 </div>
               </div>
