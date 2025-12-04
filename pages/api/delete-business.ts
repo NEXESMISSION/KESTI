@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { verifySuperAdmin, isValidUUID, safeErrorResponse, checkRateLimit, getClientIp } from '@/lib/api-security'
+import { createClient } from '@supabase/supabase-js'
 
 export default async function handler(
   req: NextApiRequest,
@@ -42,7 +43,25 @@ export default async function handler(
       return safeErrorResponse(res, 500, 'Server configuration error')
     }
 
-    // Delete user from Supabase Auth
+    // Create Supabase admin client
+    const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_KEY, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    })
+
+    // First, delete from profiles table to avoid foreign key constraints
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', userId)
+
+    if (profileError) {
+      return safeErrorResponse(res, 500, 'Failed to delete user profile')
+    }
+
+    // Then delete user from Supabase Auth
     const response = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${userId}`, {
       method: 'DELETE',
       headers: {
@@ -53,7 +72,7 @@ export default async function handler(
     })
 
     if (!response.ok) {
-      return safeErrorResponse(res, 500, 'Failed to delete user')
+      return safeErrorResponse(res, 500, 'Failed to delete user from authentication')
     }
 
     return res.status(200).json({
