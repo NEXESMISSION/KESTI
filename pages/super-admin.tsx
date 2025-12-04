@@ -282,15 +282,24 @@ function SuperAdmin() {
     setSuccess(null)
     showLoading('جاري إنشاء الحساب...')
     try {
+      // Get the current session for auth token
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session) {
+        throw new Error('Not authenticated')
+      }
+
       // Create the user account using Supabase admin functions
-      // Note: In production, this should be done through an Edge Function for security
       const subscriptionEndsAt = new Date()
       subscriptionEndsAt.setDate(subscriptionEndsAt.getDate() + newBusiness.subscriptionDays)
 
-      // Use our consolidated API endpoint that properly handles environment variables
+      // Use our consolidated API endpoint with auth token
       const response = await fetch('/api/create-business-consolidated', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({
           email: newBusiness.email,
           password: newBusiness.password,

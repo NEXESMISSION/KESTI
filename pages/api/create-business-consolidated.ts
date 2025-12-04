@@ -54,7 +54,12 @@ export default async function handler(
     })
 
     if (authError || !authData.user) {
-      return safeErrorResponse(res, 400, 'Failed to create user')
+      // Return more specific error message
+      const errorMsg = authError?.message || 'Failed to create user'
+      return res.status(400).json({
+        success: false,
+        error: errorMsg
+      })
     }
 
     // Create the profile
@@ -72,8 +77,13 @@ export default async function handler(
       })
 
     if (profileError) {
+      // Rollback: delete the auth user
       await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
-      return safeErrorResponse(res, 400, 'Failed to create profile')
+      const errorMsg = profileError?.message || 'Failed to create profile'
+      return res.status(400).json({
+        success: false,
+        error: errorMsg
+      })
     }
 
     return res.status(200).json({ 

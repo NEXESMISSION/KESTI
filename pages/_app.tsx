@@ -1,4 +1,5 @@
 import '@/styles/globals.css'
+import '@/lib/disable-console' // Disable console logs in production
 import type { AppProps } from 'next/app'
 import { CartProvider } from '@/contexts/CartContext'
 import { SuspensionProvider } from '@/contexts/SuspensionContext'
