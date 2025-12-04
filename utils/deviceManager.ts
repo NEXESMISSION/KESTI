@@ -72,6 +72,20 @@ export function getLocalDeviceId(): string {
 }
 
 /**
+ * Fetch the client's IP address from our API
+ */
+async function getClientIpAddress(): Promise<string | null> {
+  try {
+    const response = await fetch('/api/get-client-ip')
+    const data = await response.json()
+    return data.ip || null
+  } catch (error) {
+    console.warn('Unable to fetch IP address:', error)
+    return null
+  }
+}
+
+/**
  * Get device information for better tracking
  */
 export function getDeviceInfo() {
@@ -159,13 +173,16 @@ export async function registerCurrentDevice(): Promise<{
 
     const deviceId = getLocalDeviceId()
     const deviceInfo = getDeviceInfo()
+    
+    // Fetch the client's IP address
+    const ipAddress = await getClientIpAddress()
 
     // Call the RPC function to register the device
     const { data, error } = await supabase.rpc('register_device_session', {
       p_device_identifier: deviceId,
       p_device_name: deviceInfo.name,
       p_user_agent: deviceInfo.userAgent,
-      p_ip_address: null, // IP detection would need a backend service
+      p_ip_address: ipAddress,
     })
 
     if (error) {
