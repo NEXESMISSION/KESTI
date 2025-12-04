@@ -186,26 +186,23 @@ export default function Login() {
 
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100" dir="rtl">
         {/* Header Navigation */}
-        <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200/50 shadow-sm">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-9 w-auto" />
+              <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+                <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-8 w-auto" />
               </Link>
               
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
                 <Link 
                   href="/" 
-                  className="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2"
+                  className="text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                  </svg>
                   العودة للرئيسية
                 </Link>
                 <Link 
                   href="/signup" 
-                  className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-5 py-2 rounded-lg font-semibold text-sm hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all"
                 >
                   إنشاء حساب
                 </Link>
