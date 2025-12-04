@@ -28,8 +28,6 @@ function SuperAdmin() {
   const [showSuspendModal, setShowSuspendModal] = useState(false)
   const [suspendingUserId, setSuspendingUserId] = useState<string | null>(null)
   const [suspensionMessage, setSuspensionMessage] = useState('')
-  const [confirmClearHistory, setConfirmClearHistory] = useState<string | null>(null)
-  const [clearingHistory, setClearingHistory] = useState(false)
   
   // Device management state
   const [showDevicesModal, setShowDevicesModal] = useState(false)
@@ -61,7 +59,7 @@ function SuperAdmin() {
 
     // Refresh businesses every 30 seconds to update countdown and check auto-clear
     const refreshInterval = setInterval(() => {
-      console.log('🔄 Auto-refreshing businesses for countdown update...')
+      // Auto-refreshing businesses for countdown update
       fetchBusinesses()
     }, 30000) // 30 seconds
 
@@ -75,7 +73,7 @@ function SuperAdmin() {
     if (businesses.length === 0) return
 
     const checkAndClear = async () => {
-      console.log('🔍 Checking auto-clear for', businesses.length, 'businesses...')
+      // Checking auto-clear
       
       // Check all businesses and auto-clear if needed
       for (const business of businesses) {
@@ -83,7 +81,7 @@ function SuperAdmin() {
         const useDays = business.history_auto_clear_days && business.history_auto_clear_days > 0
         
         if (!useMinutes && !useDays) {
-          console.log(`⏭️ Skipping ${business.full_name} - no auto-clear configured`)
+          // Skipping - no auto-clear configured
           continue
         }
         
@@ -98,16 +96,16 @@ function SuperAdmin() {
           nextClear = new Date(lastClear.getTime() + business.history_auto_clear_minutes * 60 * 1000)
           timeLeft = Math.ceil((nextClear.getTime() - now.getTime()) / (1000 * 60))
           shouldClear = timeLeft <= 0
-          console.log(`⏰ ${business.full_name}: ${timeLeft} minutes left (clear every ${business.history_auto_clear_minutes}min)`)
+          // Auto-clear check
         } else if (business.history_auto_clear_days) {
           nextClear = new Date(lastClear.getTime() + business.history_auto_clear_days * 24 * 60 * 60 * 1000)
           timeLeft = Math.ceil((nextClear.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
           shouldClear = timeLeft <= 0
-          console.log(`⏰ ${business.full_name}: ${timeLeft} days left (clear every ${business.history_auto_clear_days}d)`)
+          // Auto-clear check
         }
         
         if (shouldClear) {
-          console.log(`🗑️ AUTO-CLEARING history for ${business.full_name}`)
+          // Auto-clearing history
           try {
             const response = await fetch('/api/clear-history', {
               method: 'POST',
@@ -122,13 +120,13 @@ function SuperAdmin() {
                 .update({ last_history_clear: new Date().toISOString() })
                 .eq('id', business.id)
               
-              console.log(`✅ Auto-cleared successfully for ${business.full_name}`)
+              // Auto-cleared successfully
               fetchBusinesses() // Refresh to show updated countdown
             } else {
-              console.error(`❌ Auto-clear failed for ${business.full_name}:`, response.statusText)
+              // Auto-clear failed
             }
           } catch (error) {
-            console.error(`❌ Auto-clear error for ${business.full_name}:`, error)
+            // Auto-clear error
           }
         }
       }
@@ -173,7 +171,7 @@ function SuperAdmin() {
         fetchDeviceData(data.map(b => b.id))
       }
     } catch (err: any) {
-      console.error('Error fetching businesses:', err)
+      // Error fetching businesses
       setError('Failed to load businesses')
     } finally {
       setLoading(false)
@@ -210,7 +208,7 @@ function SuperAdmin() {
         setDeviceLimits(limits)
       }
     } catch (err) {
-      console.error('Error fetching device data:', err)
+      // Error fetching device data
     }
   }
 
@@ -224,7 +222,7 @@ function SuperAdmin() {
       if (error) throw error
       setUserDevices(data || [])
     } catch (err: any) {
-      console.error('Error fetching user devices:', err)
+      // Error fetching user devices
       setError('Failed to load devices')
     } finally {
       setLoadingDevices(false)
@@ -252,7 +250,7 @@ function SuperAdmin() {
         fetchDeviceData([viewingDevicesFor.id])
       }
     } catch (err: any) {
-      console.error('Error revoking device:', err)
+      // Error revoking device
       setError('Failed to revoke device')
     } finally {
       hideLoading()
@@ -272,7 +270,7 @@ function SuperAdmin() {
       setSuccess(`Device limit updated to ${newLimit}`)
       fetchDeviceData([userId])
     } catch (err: any) {
-      console.error('Error updating device limit:', err)
+      // Error updating device limit
       setError('Failed to update device limit')
     } finally {
       hideLoading()
@@ -306,7 +304,7 @@ function SuperAdmin() {
       const result = await response.json()
 
       if (!response.ok) {
-        console.error('API Error Response:', result)
+        // API Error Response
         // Show detailed error message
         const errorMessage = result.message || result.error || 'Failed to create business'
         const errorHint = result.hint ? ` (${result.hint})` : ''
@@ -325,8 +323,7 @@ function SuperAdmin() {
       })
       fetchBusinesses()
     } catch (err: any) {
-      console.error('Error creating business:', err)
-      console.error('Error details:', err.message)
+      // Error creating business
       setError(err.message || 'Failed to create business account')
     } finally {
       hideLoading()
@@ -350,7 +347,7 @@ function SuperAdmin() {
       setSuccess('Subscription extended by 30 days!')
       fetchBusinesses()
     } catch (error: any) {
-      console.error('Error extending subscription:', error)
+      // Error extending subscription
       setError('Failed to extend subscription')
     } finally {
       hideLoading()
@@ -384,7 +381,7 @@ function SuperAdmin() {
       setSuspensionMessage('')
       fetchBusinesses()
     } catch (error: any) {
-      console.error('Error suspending user:', error)
+      // Error suspending user
       setError('Failed to suspend user')
     } finally {
       hideLoading()
@@ -407,7 +404,7 @@ function SuperAdmin() {
       setSuccess('User unsuspended successfully!')
       fetchBusinesses()
     } catch (error: any) {
-      console.error('Error unsuspending user:', error)
+      // Error unsuspending user
       setError('Failed to unsuspend user')
     } finally {
       hideLoading()
@@ -440,7 +437,7 @@ function SuperAdmin() {
       setAlertUserId(null)
       setAlertMessage('')
     } catch (err: any) {
-      console.error('Error sending alert:', err)
+      // Error sending alert
       setError('Failed to send alert')
     } finally {
       hideLoading()
@@ -497,7 +494,7 @@ function SuperAdmin() {
       setNewPassword('')
       fetchBusinesses()
     } catch (err: any) {
-      console.error('Error updating business:', err)
+      // Error updating business
       setError(err.message || 'Failed to update business account')
     } finally {
       hideLoading()
@@ -507,77 +504,40 @@ function SuperAdmin() {
   const handleDeleteBusiness = async (businessId: string, businessEmail: string) => {
     showLoading('جاري حذف الحساب...')
     try {
-      // First, delete from profiles table
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', businessId)
-
-      if (profileError) throw profileError
-
-      // Then delete from Supabase Auth
-      // Note: This requires admin API access
-      const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+      // Get the current session for auth token
       const { data: { session } } = await supabase.auth.getSession()
       
-      if (session) {
-        // Call the delete user API endpoint
-        const response = await fetch('/api/delete-business', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: businessId })
-        })
-
-        if (!response.ok) {
-          console.warn('Failed to delete from auth, but profile deleted')
-        }
+      if (!session) {
+        throw new Error('Not authenticated')
       }
 
-      setSuccess(`Business account deleted successfully!`)
-      setConfirmDelete(null)
-      fetchBusinesses()
-    } catch (err: any) {
-      console.error('Error deleting business:', err)
-      setError('Failed to delete business account')
-    } finally {
-      hideLoading()
-    }
-  }
-
-  const handleClearHistory = async (businessId: string) => {
-    setClearingHistory(true)
-    showLoading('جاري مسح السجل...')
-    try {
-      const response = await fetch('/api/clear-history', {
+      // Call the delete user API endpoint with auth token
+      const response = await fetch('/api/delete-business', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({ userId: businessId })
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to clear history')
+        throw new Error(data.error || 'Failed to delete business')
       }
 
-      // Update last_history_clear timestamp
-      await supabase
-        .from('profiles')
-        .update({ last_history_clear: new Date().toISOString() })
-        .eq('id', businessId)
-
-      setSuccess('History cleared successfully! Products and saved expense templates retained.')
-      setClearingHistory(false)
-      setConfirmClearHistory(null)
-      fetchBusinesses() // Refresh to show updated countdown
+      setSuccess(`Business account deleted successfully!`)
+      setConfirmDelete(null)
+      fetchBusinesses()
     } catch (err: any) {
-      console.error('Error clearing history:', err)
-      setError(err.message || 'Failed to clear history')
+      setError(err.message || 'Failed to delete business account')
     } finally {
-      setClearingHistory(false)
       hideLoading()
     }
   }
+
+  // Clear history function removed
 
   const handleLogout = async () => {
     try {
@@ -848,13 +808,6 @@ function SuperAdmin() {
                           </div>
                           <div className="flex space-x-2">
                             <button
-                              onClick={() => setConfirmClearHistory(business.id)}
-                              className="text-orange-600 hover:text-orange-900 text-xs"
-                              title="Clear sales history (keeps products & expenses)"
-                            >
-                              🧹 Clear
-                            </button>
-                            <button
                               onClick={() => setConfirmDelete(business.id)}
                               className="text-red-600 hover:text-red-900 text-xs"
                             >
@@ -997,17 +950,10 @@ function SuperAdmin() {
                         📢 Alert
                       </button>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => setConfirmClearHistory(business.id)}
-                        className="text-xs bg-orange-50 text-orange-600 hover:bg-orange-100 px-3 py-2 rounded-lg font-medium transition"
-                        title="Clear sales history"
-                      >
-                        🧹 Clear
-                      </button>
+                    <div>
                       <button
                         onClick={() => setConfirmDelete(business.id)}
-                        className="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg font-medium transition"
+                        className="w-full text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg font-medium transition"
                       >
                         🗑️ Delete
                       </button>
@@ -1350,42 +1296,6 @@ function SuperAdmin() {
         </div>
       )}
 
-      {/* Clear History Confirmation Modal */}
-      {confirmClearHistory && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
-          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full">
-            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-orange-600">Clear History</h2>
-            <p className="text-gray-700 mb-4">
-              Are you sure you want to clear all transaction history for this business?
-            </p>
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-3 mb-4">
-              <p className="text-sm text-blue-700">
-                <strong>What will be deleted:</strong> All sales and expenses from the database.
-              </p>
-              <p className="text-sm text-blue-700 mt-2">
-                <strong>What will be kept:</strong> Products, saved expense templates (localStorage), categories, and account settings.
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => handleClearHistory(confirmClearHistory)}
-                disabled={clearingHistory}
-                className="flex-1 bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg transition disabled:opacity-50"
-              >
-                {clearingHistory ? 'Clearing...' : 'Yes, Clear History'}
-              </button>
-              <button
-                onClick={() => setConfirmClearHistory(null)}
-                disabled={clearingHistory}
-                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded-lg transition disabled:opacity-50"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Device Management Modal */}
       {showDevicesModal && viewingDevicesFor && (
