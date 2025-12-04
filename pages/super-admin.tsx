@@ -660,7 +660,7 @@ function SuperAdmin() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <img src="/logo/logo no bg low qulity.png" alt="KESTI" className="h-8 w-auto" />
+              <img src="/logo/KESTI.png" alt="KESTI" className="h-8 w-auto" />
               <div className="hidden sm:block">
                 <h1 className="text-lg font-bold text-gray-900">Super Admin</h1>
                 <p className="text-xs text-gray-500">Manage business accounts</p>

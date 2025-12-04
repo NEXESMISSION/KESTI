@@ -138,7 +138,7 @@ export default function ResetPassword() {
         <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative z-10">
           <div className="text-center">
             <div className="flex justify-center mb-6">
-              <Image src="/logo/logo no bg low qulity.png" alt="KESTI" width={200} height={80} className="h-16 w-auto" priority />
+              <Image src="/logo/KESTI.png" alt="KESTI" width={200} height={80} className="h-16 w-auto" priority />
             </div>
             
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">

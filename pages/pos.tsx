@@ -688,7 +688,7 @@ function POS() {
         <div className="max-w-7xl mx-auto py-3 sm:py-4 px-3 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             {/* Left: Brand */}
-            <Image src="/logo/logo no bg low qulity.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
+            <Image src="/logo/KESTI.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
             
             {/* Right: Icons */}
             <div className="flex items-center gap-2 sm:gap-3">

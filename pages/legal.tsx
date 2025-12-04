@@ -15,7 +15,7 @@ export default function Legal() {
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <Link href="/">
-                <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-8" />
+                <img src="/logo/KESTI.png" alt="Kesti Pro" className="h-8" />
               </Link>
               <Link href="/" className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition text-sm">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

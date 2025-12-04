@@ -326,7 +326,7 @@ function Products() {
       {/* Header */}
       <header className="bg-white shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto py-3 px-4 flex justify-between items-center">
-          <Image src="/logo/logo no bg low qulity.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
+          <Image src="/logo/KESTI.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
           
           <div className="flex items-center gap-2 sm:gap-3">
             <SubscriptionBadge profile={profile} onClick={() => setShowSubscriptionModal(true)} />
@@ -580,8 +580,8 @@ function Products() {
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-2xl text-gray-300">📦</div>
                         )}
-                        {/* + Icon Overlay */}
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        {/* + Icon Overlay - Always visible */}
+                        <div className="absolute inset-0 bg-black/50 opacity-100 transition-opacity flex items-center justify-center">
                           <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
                           </svg>

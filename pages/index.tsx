@@ -345,39 +345,41 @@ export default function Home() {
             <div className="max-w-4xl mx-auto">
               <div 
                 onClick={() => setShowVideo(true)}
-                className="relative aspect-video bg-gray-900 rounded-2xl overflow-hidden cursor-pointer group shadow-2xl hover:shadow-3xl transition-all duration-500"
+                className="relative aspect-video bg-gradient-to-br from-gray-800 via-gray-900 to-black rounded-2xl overflow-hidden cursor-pointer group shadow-2xl hover:shadow-3xl transition-all duration-500"
               >
-                {/* Video Thumbnail - Using YouTube thumbnail */}
-                <img 
-                  src="https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg"
-                  alt="شاهد الفيديو التوضيحي"
-                  className="w-full h-full object-cover opacity-80 group-hover:opacity-60 group-hover:scale-105 transition-all duration-500"
-                />
+                {/* "Working on it" Text Overlay */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-[32px] md:text-[48px] lg:text-[56px] font-bold text-white mb-2">
+                      🚧
+                    </div>
+                    <h3 className="text-[24px] md:text-[32px] lg:text-[40px] font-bold text-white mb-2">
+                      قيد الإنجاز
+                    </h3>
+                    <p className="text-[16px] md:text-[20px] text-gray-300">
+                      Working on it...
+                    </p>
+                  </div>
+                </div>
                 
                 {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                 
-                {/* Play Button */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-20 h-20 md:w-24 md:h-24 bg-white/95 rounded-full flex items-center justify-center group-hover:scale-110 group-hover:bg-white transition-all duration-300 shadow-2xl">
-                    <svg className="w-8 h-8 md:w-10 md:h-10 text-red-600 mr-[-4px]" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
-                  </div>
-                </div>
+                {/* Animated border effect */}
+                <div className="absolute inset-0 border-4 border-dashed border-yellow-500/30 rounded-2xl animate-pulse"></div>
 
                 {/* Video Label */}
                 <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6">
-                  <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2">
-                    <span className="text-red-600 font-bold text-[14px] md:text-[16px]">▶</span>
-                    <span className="text-gray-900 font-semibold text-[14px] md:text-[16px]">شاهد الفيديو</span>
+                  <div className="bg-yellow-500/90 backdrop-blur-sm px-4 py-2 rounded-lg flex items-center gap-2">
+                    <span className="text-gray-900 font-bold text-[14px] md:text-[16px]">⚠</span>
+                    <span className="text-gray-900 font-semibold text-[14px] md:text-[16px]">قريباً</span>
                   </div>
                 </div>
 
-                {/* Duration Badge */}
+                {/* Status Badge */}
                 <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6">
                   <div className="bg-black/70 text-white px-3 py-1 rounded-lg text-[13px] md:text-[14px]">
-                    2:30
+                    Coming Soon
                   </div>
                 </div>
               </div>
@@ -571,7 +573,7 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center">
-                <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-8 brightness-0 invert" />
+                <img src="/logo/KESTI.png" alt="Kesti Pro" className="h-8 brightness-0 invert" />
               </div>
               
               <div className="flex items-center gap-6 text-sm text-gray-300">

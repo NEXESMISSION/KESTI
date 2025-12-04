@@ -119,7 +119,7 @@ export default function Signup() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-                <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-8 w-auto" />
+                <img src="/logo/KESTI.png" alt="Kesti Pro" className="h-8 w-auto" />
               </Link>
               
               <div className="flex items-center gap-3">

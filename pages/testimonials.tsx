@@ -182,7 +182,7 @@ export default function Testimonials() {
             <div className="flex items-center justify-between h-14 md:h-16">
               {/* Logo */}
               <Link href="/" className="flex items-center">
-                <img src="/logo/logo no bg low qulity.png" alt="Kesti Pro" className="h-7 md:h-9 w-auto" />
+                <img src="/logo/KESTI.png" alt="Kesti Pro" className="h-7 md:h-9 w-auto" />
               </Link>
               
               {/* Desktop Menu */}
@@ -455,7 +455,7 @@ export default function Testimonials() {
               {/* Top Section - Logo & Description */}
               <div className="text-center mb-10">
                 <div className="inline-flex items-center gap-3 mb-4">
-                  <Image src="/logo/logo no bg low qulity.png" alt="Kesti Pro" width={60} height={60} className="rounded-xl" />
+                  <Image src="/logo/KESTI.png" alt="Kesti Pro" width={60} height={60} className="rounded-xl" />
                   <div className="text-right">
                     <h3 className="text-2xl font-black bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Kesti Pro</h3>
                     <p className="text-sm text-gray-400">نظام احترافي لإدارة المبيعات</p>
