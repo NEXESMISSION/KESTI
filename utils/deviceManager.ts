@@ -398,9 +398,11 @@ export async function getUserDevices() {
       return { data: null, error: 'Not authenticated' }
     }
 
-    const { data, error } = await supabase.rpc('get_user_devices', {
-      p_user_id: user.id,
-    })
+    const { data, error } = await supabase
+      .from('active_devices')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('last_active_at', { ascending: false })
 
     return { data, error }
   } catch (error: any) {
@@ -413,16 +415,17 @@ export async function getUserDevices() {
  */
 export async function removeDevice(deviceId: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase.rpc('remove_device', {
-      p_device_id: deviceId,
-    })
+    const { error } = await supabase
+      .from('active_devices')
+      .delete()
+      .eq('id', deviceId)
 
     if (error) {
       console.error('Error removing device:', error)
       return false
     }
 
-    return data || false
+    return true
   } catch (error) {
     console.error('Error in removeDevice:', error)
     return false

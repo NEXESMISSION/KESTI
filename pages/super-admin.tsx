@@ -215,9 +215,11 @@ function SuperAdmin() {
   const fetchUserDevices = async (userId: string) => {
     setLoadingDevices(true)
     try {
-      const { data, error } = await supabase.rpc('get_user_devices', {
-        p_user_id: userId,
-      })
+      const { data, error } = await supabase
+        .from('active_devices')
+        .select('*')
+        .eq('user_id', userId)
+        .order('last_active_at', { ascending: false })
 
       if (error) throw error
       setUserDevices(data || [])
@@ -238,9 +240,10 @@ function SuperAdmin() {
   const handleRevokeDevice = async (deviceId: string) => {
     showLoading('جاري إلغاء الجهاز...')
     try {
-      const { data, error } = await supabase.rpc('revoke_device', {
-        p_device_id: deviceId,
-      })
+      const { error } = await supabase
+        .from('active_devices')
+        .delete()
+        .eq('id', deviceId)
 
       if (error) throw error
 
@@ -260,10 +263,15 @@ function SuperAdmin() {
   const handleUpdateDeviceLimit = async (userId: string, newLimit: number) => {
     showLoading('جاري تحديث حد الأجهزة...')
     try {
-      const { error } = await supabase.rpc('update_user_device_limit', {
-        p_user_id: userId,
-        p_max_devices: newLimit,
-      })
+      const { error } = await supabase
+        .from('user_limits')
+        .upsert({
+          user_id: userId,
+          max_devices: newLimit,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
+        })
 
       if (error) throw error
 
