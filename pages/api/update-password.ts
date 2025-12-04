@@ -1,5 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { verifySuperAdmin, isValidUUID, safeErrorResponse, checkRateLimit, getClientIp } from '@/lib/api-security'
+import { validatePassword } from '@/lib/password-validator'
+import { logSecurityEvent } from '@/lib/security-logger'
 
 export default async function handler(
   req: NextApiRequest,
@@ -35,8 +37,14 @@ export default async function handler(
       return safeErrorResponse(res, 400, 'Password is required')
     }
 
-    if (newPassword.length < 6) {
-      return safeErrorResponse(res, 400, 'Password must be at least 6 characters')
+    // Enhanced password validation
+    const passwordValidation = validatePassword(newPassword)
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        error: 'Weak password',
+        details: passwordValidation.errors
+      })
     }
 
     if (newPassword.length > 72) {
@@ -66,6 +74,16 @@ export default async function handler(
     if (!response.ok) {
       return safeErrorResponse(res, 500, 'Failed to update password')
     }
+
+    // Log security event
+    await logSecurityEvent('PASSWORD_CHANGE', {
+      userId,
+      ipAddress: getClientIp(req),
+      details: { 
+        changedBy: auth.userId 
+      },
+      severity: 'medium'
+    })
 
     return res.status(200).json({
       success: true,

@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import { verifySuperAdmin, safeErrorResponse, sanitizeInput, checkRateLimit, getClientIp } from '@/lib/api-security'
+import { validatePassword } from '@/lib/password-validator'
+import { logSecurityEvent } from '@/lib/security-logger'
 
 export default async function handler(
   req: NextApiRequest,
@@ -29,6 +31,16 @@ export default async function handler(
     // Validate inputs
     if (!email || !password || !fullName || !phoneNumber || !pin) {
       return safeErrorResponse(res, 400, 'Missing required fields')
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePassword(password)
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        error: 'Weak password',
+        details: passwordValidation.errors
+      })
     }
 
     // Sanitize inputs
@@ -85,6 +97,17 @@ export default async function handler(
         error: errorMsg
       })
     }
+
+    // Log security event
+    await logSecurityEvent('ACCOUNT_CREATED', {
+      userId: authData.user.id,
+      ipAddress: getClientIp(req),
+      details: { 
+        email: cleanEmail,
+        createdBy: auth.userId 
+      },
+      severity: 'low'
+    })
 
     return res.status(200).json({ 
       success: true, 

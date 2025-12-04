@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { verifySuperAdmin, isValidUUID, safeErrorResponse, checkRateLimit, getClientIp } from '@/lib/api-security'
 import { createClient } from '@supabase/supabase-js'
+import { logSecurityEvent } from '@/lib/security-logger'
 
 export default async function handler(
   req: NextApiRequest,
@@ -74,6 +75,16 @@ export default async function handler(
     if (!response.ok) {
       return safeErrorResponse(res, 500, 'Failed to delete user from authentication')
     }
+
+    // Log security event
+    await logSecurityEvent('ACCOUNT_DELETED', {
+      userId,
+      ipAddress: getClientIp(req),
+      details: { 
+        deletedBy: auth.userId 
+      },
+      severity: 'high'
+    })
 
     return res.status(200).json({
       success: true,
