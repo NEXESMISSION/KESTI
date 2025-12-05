@@ -251,11 +251,14 @@ export async function registerCurrentDevice(): Promise<{
  */
 export async function isDeviceAuthorized(): Promise<boolean> {
   try {
+    const deviceId = getLocalDeviceId()
+    console.log(' [DeviceAuth] Checking authorization for device:', deviceId.substring(0, 8) + '...')
+    
     // Check if this is an admin see-through session
     if (typeof window !== 'undefined') {
       const isSeeThroughSession = localStorage.getItem('admin_see_through') === 'true'
       if (isSeeThroughSession) {
-        console.log('👁️ Admin see-through session - bypassing device authorization check')
+        console.log(' [DeviceAuth] Admin see-through session - always authorized')
         return true
       }
     }
@@ -264,44 +267,50 @@ export async function isDeviceAuthorized(): Promise<boolean> {
     const { data: { session } } = await supabase.auth.getSession()
     
     if (!session) {
-      return true // Not logged in, nothing to check
+      console.log(' [DeviceAuth] No session found - not checking device')
+      return true // Not logged in, no device to check
     }
 
-    // Check if user is a super admin
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, email, full_name')
       .eq('id', session.user.id)
       .maybeSingle()
 
+    console.log(' [DeviceAuth] User:', profile?.email, '| Role:', profile?.role)
+
     // Super admins bypass device limits
     if (profile && profile.role === 'super_admin') {
-      console.log('🔑 Super admin detected - bypassing device limit check')
+      console.log(' [DeviceAuth] Super admin - bypassing device limit check')
       return true
     }
-
-    const deviceId = getLocalDeviceId()
     
     // Check if this device exists in the database
     const { data, error } = await supabase
       .from('active_devices')
-      .select('id')
+      .select('id, device_name, last_active_at')
       .eq('device_identifier', deviceId)
       .maybeSingle()
 
     if (error) {
-      console.error('Error checking device authorization:', error)
+      console.error(' [DeviceAuth] Error checking device authorization:', error)
       return true // Don't kick out on error
     }
 
-    // If data is null, device was removed (kicked out)
-    return data !== null
+    const isAuthorized = data !== null
+    
+    if (isAuthorized) {
+      console.log(' [DeviceAuth] Device IS authorized:', data.device_name)
+    } else {
+      console.warn(' [DeviceAuth] Device NOT FOUND in database - WILL BE KICKED OUT!')
+    }
+
+    return isAuthorized
   } catch (error) {
     console.error('Error in isDeviceAuthorized:', error)
     return true // Don't kick out on error
   }
 }
-
 /**
  * Update the last active timestamp for this device
  * Call this periodically to keep the device "fresh"

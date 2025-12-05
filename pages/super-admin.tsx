@@ -10,6 +10,7 @@ function SuperAdmin() {
   const { showLoading, hideLoading } = useLoading()
   const [businesses, setBusinesses] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null) // null = checking, true = authorized, false = not authorized
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingBusiness, setEditingBusiness] = useState<Profile | null>(null)
@@ -56,6 +57,12 @@ function SuperAdmin() {
 
   useEffect(() => {
     checkAuth()
+  }, [])
+
+  useEffect(() => {
+    // Only fetch businesses and set up subscriptions if authorized
+    if (isAuthorized !== true) return
+
     fetchBusinesses()
     
     // Set up real-time subscription for profile changes
@@ -79,7 +86,7 @@ function SuperAdmin() {
       subscription.unsubscribe()
       clearInterval(refreshInterval)
     }
-  }, [])
+  }, [isAuthorized])
 
   useEffect(() => {
     if (businesses.length === 0) return
@@ -151,7 +158,8 @@ function SuperAdmin() {
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
-      router.push('/login')
+      setIsAuthorized(false)
+      router.replace('/login')
       return
     }
 
@@ -162,7 +170,10 @@ function SuperAdmin() {
       .single()
 
     if (profile?.role !== 'super_admin') {
-      router.push('/pos')
+      setIsAuthorized(false)
+      router.replace('/pos')
+    } else {
+      setIsAuthorized(true)
     }
   }
 
@@ -759,6 +770,23 @@ Check browser console for full details.`)
         return { text: `Clear in ${timeLeft}${unit}`, color: 'text-blue-600', shouldClear: false }
       }
     }
+  }
+
+  // Show loading screen while checking authorization
+  if (isAuthorized === null) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Verifying access...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Don't render anything if not authorized (already redirecting)
+  if (isAuthorized === false) {
+    return null
   }
 
   return (
@@ -2282,6 +2310,373 @@ Check browser console for full details.`)
               >
                 Cancel
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Details Modal - Enhanced */}
+      {selectedUser && detailedUserAnalytics && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-7xl w-full max-h-[95vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl">
+                    {detailedUserAnalytics?.user_info?.full_name?.charAt(0) || '👤'}
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold">{detailedUserAnalytics?.user_info?.full_name}</h2>
+                    <p className="text-purple-100">{detailedUserAnalytics?.user_info?.email}</p>
+                    <div className="flex gap-3 mt-2 text-sm">
+                      <span className="bg-white/20 px-3 py-1 rounded-full">📅 Joined {new Date(detailedUserAnalytics?.user_info?.created_at).toLocaleDateString()}</span>
+                      <span className="bg-white/20 px-3 py-1 rounded-full">📱 {detailedUserAnalytics?.devices?.length || 0} Devices</span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedUser(null)
+                    setDetailedUserAnalytics(null)
+                  }}
+                  className="text-white hover:bg-white/20 rounded-full p-3 transition"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Stats Overview Bar */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div className="bg-white rounded-xl p-3 shadow-sm text-center">
+                  <p className="text-3xl font-black text-green-600">{detailedUserAnalytics?.sales_summary?.total_sales?.toFixed(0)} DT</p>
+                  <p className="text-xs text-gray-600 mt-1">💰 Total Sales</p>
+                </div>
+                <div className="bg-white rounded-xl p-3 shadow-sm text-center">
+                  <p className="text-3xl font-black text-blue-600">{detailedUserAnalytics?.sales_summary?.total_transactions}</p>
+                  <p className="text-xs text-gray-600 mt-1">🛒 Transactions</p>
+                </div>
+                <div className="bg-white rounded-xl p-3 shadow-sm text-center">
+                  <p className="text-3xl font-black text-purple-600">{detailedUserAnalytics?.products?.total_products}</p>
+                  <p className="text-xs text-gray-600 mt-1">📦 Products</p>
+                </div>
+                <div className="bg-white rounded-xl p-3 shadow-sm text-center">
+                  <p className="text-3xl font-black text-orange-600">{detailedUserAnalytics?.customers?.total_customers}</p>
+                  <p className="text-xs text-gray-600 mt-1">👥 Customers</p>
+                </div>
+                <div className="bg-white rounded-xl p-3 shadow-sm text-center">
+                  <p className="text-3xl font-black text-red-600">{detailedUserAnalytics?.sales_summary?.outstanding_credit?.toFixed(0)} DT</p>
+                  <p className="text-xs text-gray-600 mt-1">⚠️ Unpaid</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Financial Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-xl p-5 border-2 border-green-200">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-green-700">Revenue</p>
+                      <p className="text-3xl font-black text-green-600 mt-1">{detailedUserAnalytics?.sales_summary?.total_sales?.toFixed(2)} DT</p>
+                    </div>
+                    <div className="text-4xl">💵</div>
+                  </div>
+                </div>
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-blue-700">Avg Transaction</p>
+                      <p className="text-3xl font-black text-blue-600 mt-1">{detailedUserAnalytics?.sales_summary?.avg_transaction?.toFixed(2)} DT</p>
+                    </div>
+                    <div className="text-4xl">📊</div>
+                  </div>
+                </div>
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-5 border-2 border-purple-200">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-sm font-medium text-purple-700">Gross Profit</p>
+                      <p className="text-3xl font-black text-purple-600 mt-1">{detailedUserAnalytics?.sales_summary?.gross_profit?.toFixed(2)} DT</p>
+                    </div>
+                    <div className="text-4xl">📈</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Transactions */}
+              <div className="bg-white rounded-xl p-6 border border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <span className="text-2xl">📋</span> Recent Transactions (Last 20)
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Debt</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {detailedUserAnalytics?.recent_transactions?.map((tx: any, idx: number) => (
+                        <tr key={idx} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 text-xs text-gray-500">#{idx + 1}</td>
+                          <td className="px-4 py-2 text-sm text-gray-900 font-medium">{tx.customer_name || 'Walk-in Customer'}</td>
+                          <td className="px-4 py-2 text-sm font-bold text-green-600">{tx.total_amount?.toFixed(2)} DT</td>
+                          <td className="px-4 py-2 text-sm">
+                            {tx.is_paid ? (
+                              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">✓ Paid</span>
+                            ) : (
+                              <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">⚠ Unpaid</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-2 text-sm">
+                            {!tx.is_paid && tx.remaining_amount > 0 ? (
+                              <span className="text-red-600 font-semibold">{tx.remaining_amount?.toFixed(2)} DT</span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-2 text-sm text-gray-500">
+                            {new Date(tx.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                        </tr>
+                      ))}
+                      {(!detailedUserAnalytics?.recent_transactions || detailedUserAnalytics?.recent_transactions?.length === 0) && (
+                        <tr>
+                          <td colSpan={6} className="px-4 py-8 text-center text-gray-500">No transactions found</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Products & Customers Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Products */}
+                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200 shadow-lg">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-black text-blue-900 flex items-center gap-2">
+                      <span className="text-3xl">📦</span> Inventory
+                    </h3>
+                    <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                      {detailedUserAnalytics?.products?.total_products} Items
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                      <p className="text-xs text-gray-500">Stock Value</p>
+                      <p className="text-lg font-black text-blue-600">{detailedUserAnalytics?.products?.total_stock_value?.toFixed(0)} DT</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                      <p className="text-xs text-gray-500">Low Stock</p>
+                      <p className="text-lg font-black text-red-600">{detailedUserAnalytics?.products?.low_stock_count} Items</p>
+                    </div>
+                  </div>
+                  <div className="max-h-72 overflow-y-auto space-y-2">
+                    {detailedUserAnalytics?.products?.products_list?.slice(0, 20)?.map((product: any, idx: number) => (
+                      <div key={idx} className="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition border border-gray-100">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <p className="font-bold text-sm text-gray-900">{product.name}</p>
+                          </div>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            product.stock_quantity <= 5 ? 'bg-red-100 text-red-700' :
+                            product.stock_quantity <= 10 ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-green-100 text-green-700'
+                          }`}>
+                            Stock: {product.stock_quantity || 0}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div className="bg-green-50 rounded p-2">
+                            <p className="text-gray-600">Selling</p>
+                            <p className="font-black text-green-700">{product.selling_price} DT</p>
+                          </div>
+                          <div className="bg-orange-50 rounded p-2">
+                            <p className="text-gray-600">Cost</p>
+                            <p className="font-black text-orange-700">{product.cost_price || 0} DT</p>
+                          </div>
+                          <div className="bg-purple-50 rounded p-2">
+                            <p className="text-gray-600">Profit</p>
+                            <p className="font-black text-purple-700">{(product.selling_price - (product.cost_price || 0)).toFixed(1)} DT</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {(!detailedUserAnalytics?.products?.products_list || detailedUserAnalytics?.products?.products_list?.length === 0) && (
+                      <p className="text-center text-gray-500 py-8">No products found</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Customers */}
+                <div className="bg-purple-50 rounded-xl p-6 border border-purple-200">
+                  <h3 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
+                    <span className="text-2xl">👥</span> Customers ({detailedUserAnalytics?.customers?.total_customers})
+                  </h3>
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">With Debt:</span>
+                      <span className="font-bold text-orange-600">{detailedUserAnalytics?.customers?.customers_with_debt}</span>
+                    </div>
+                  </div>
+                  <div className="max-h-60 overflow-y-auto space-y-2">
+                    {detailedUserAnalytics?.customers?.customers_list?.slice(0, 10)?.map((customer: any, idx: number) => (
+                      <div key={idx} className="bg-white rounded-lg p-3 shadow-sm">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="font-semibold text-sm text-gray-900">{customer.name}</p>
+                            <p className="text-xs text-gray-500">{customer.phone || 'No phone'}</p>
+                          </div>
+                          {customer.total_debt > 0 && (
+                            <div className="text-right">
+                              <p className="text-sm font-bold text-red-600">{customer.total_debt?.toFixed(2)} DT</p>
+                              <p className="text-xs text-red-500">debt</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Sale History */}
+              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 border-2 border-yellow-200 shadow-lg">
+                <h3 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+                  <span className="text-3xl">📜</span> Sales History (Last 100 items)
+                </h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead className="bg-yellow-100 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-bold text-gray-700">#</th>
+                        <th className="px-4 py-2 text-left text-xs font-bold text-gray-700">Product</th>
+                        <th className="px-4 py-2 text-right text-xs font-bold text-gray-700">Qty</th>
+                        <th className="px-4 py-2 text-right text-xs font-bold text-gray-700">Price</th>
+                        <th className="px-4 py-2 text-right text-xs font-bold text-gray-700">Cost</th>
+                        <th className="px-4 py-2 text-right text-xs font-bold text-gray-700">Profit</th>
+                        <th className="px-4 py-2 text-left text-xs font-bold text-gray-700">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-yellow-100">
+                      {detailedUserAnalytics?.sale_history?.slice(0, 50)?.map((item: any, idx: number) => (
+                        <tr key={idx} className="hover:bg-yellow-50">
+                          <td className="px-4 py-2 text-xs text-gray-500">{idx + 1}</td>
+                          <td className="px-4 py-2">
+                            <p className="text-sm font-semibold text-gray-900">{item.product_name}</p>
+                          </td>
+                          <td className="px-4 py-2 text-right">
+                            <span className="text-sm font-bold text-blue-600">{item.quantity}x</span>
+                          </td>
+                          <td className="px-4 py-2 text-right">
+                            <span className="text-sm text-gray-900">{item.price_at_sale} DT</span>
+                          </td>
+                          <td className="px-4 py-2 text-right">
+                            <span className="text-sm text-gray-600">{item.cost_price_at_sale} DT</span>
+                          </td>
+                          <td className="px-4 py-2 text-right">
+                            <span className={`text-sm font-bold ${item.profit > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {item.profit?.toFixed(2)} DT
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 text-xs text-gray-500">
+                            {new Date(item.created_at).toLocaleDateString('en-US', { 
+                              month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                            })}
+                          </td>
+                        </tr>
+                      ))}
+                      {(!detailedUserAnalytics?.sale_history || detailedUserAnalytics?.sale_history?.length === 0) && (
+                        <tr>
+                          <td colSpan={7} className="px-4 py-8 text-center text-gray-500">No sales history found</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Activity Log & Devices */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Activity Log */}
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <span className="text-2xl">📊</span> Recent Activity
+                  </h3>
+                  <div className="max-h-60 overflow-y-auto space-y-2">
+                    {detailedUserAnalytics?.activity_log?.map((activity: any, idx: number) => (
+                      <div key={idx} className="bg-white rounded-lg p-3 shadow-sm border-l-4 border-blue-500">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-semibold text-sm text-gray-900">{activity.activity_type}</p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(activity.created_at).toLocaleDateString('en-US', { 
+                                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {(!detailedUserAnalytics?.activity_log || detailedUserAnalytics?.activity_log?.length === 0) && (
+                      <p className="text-center text-gray-500 py-4">No activity logged yet</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Devices */}
+                <div className="bg-green-50 rounded-xl p-6 border border-green-200">
+                  <h3 className="text-lg font-bold text-green-900 mb-4 flex items-center gap-2">
+                    <span className="text-2xl">📱</span> Active Devices
+                  </h3>
+                  <div className="max-h-60 overflow-y-auto space-y-2">
+                    {detailedUserAnalytics?.devices?.map((device: any, idx: number) => (
+                      <div key={idx} className="bg-white rounded-lg p-3 shadow-sm">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="font-semibold text-sm text-gray-900">{device.device_name || 'Unknown Device'}</p>
+                            <p className="text-xs text-gray-500">{device.ip_address || 'No IP'}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs text-gray-500">
+                              {device.last_active_at ? new Date(device.last_active_at).toLocaleDateString('en-US', { 
+                                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                              }) : 'Never'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {(!detailedUserAnalytics?.devices || detailedUserAnalytics?.devices?.length === 0) && (
+                      <p className="text-center text-gray-500 py-4">No devices registered</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setSelectedUser(null)
+                    setDetailedUserAnalytics(null)
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>

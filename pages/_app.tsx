@@ -78,9 +78,10 @@ export default function App({ Component, pageProps }: AppProps) {
       checkAuth()
     }
 
-    // Periodic device limit check (every 30 seconds)
+    // Periodic device limit check (every 10 seconds for aggressive enforcement)
     const deviceCheckInterval = setInterval(() => {
       if (!isPublicPage(router.pathname)) {
+        console.log('🔍 [App] Running periodic device authorization check...')
         try {
           enforceDeviceLimit().catch(err => {
             console.warn('Periodic device check failed:', err)
@@ -89,7 +90,7 @@ export default function App({ Component, pageProps }: AppProps) {
           console.warn('Periodic device check error:', err)
         }
       }
-    }, 30000) // 30 seconds
+    }, 10000) // 10 seconds - more aggressive checking
 
     return () => {
       // Clean up event listeners

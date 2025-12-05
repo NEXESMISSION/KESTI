@@ -3,6 +3,8 @@
  * Tracks user interactions, conversions, and marketing campaign performance
  */
 
+import { supabase } from './supabase'
+
 export interface AnalyticsEvent {
   event_name: string
   user_id?: string
@@ -222,10 +224,23 @@ export function trackLoginAttempt(method: 'email' | 'google'): void {
 /**
  * Track successful login
  */
-export function trackLoginSuccess(method: 'email' | 'google', userId: string): void {
+export async function trackLoginSuccess(method: 'email' | 'google', userId: string): Promise<void> {
   trackEvent('login_success', {
     method,
   }, userId)
+  
+  // Also log to database for super-admin analytics
+  try {
+    await supabase.rpc('log_user_activity', {
+      p_user_id: userId,
+      p_activity_type: 'login',
+      p_activity_data: { method },
+      p_ip_address: null,
+      p_user_agent: typeof window !== 'undefined' ? window.navigator.userAgent : null
+    })
+  } catch (error) {
+    console.warn('Failed to log login activity to database:', error)
+  }
 }
 
 /**
