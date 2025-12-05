@@ -635,11 +635,25 @@ function SuperAdmin() {
       if (error) {
         console.error('User analytics error:', error)
         
+        // Show detailed error message
+        const errorMsg = error.message || 'Unknown error'
+        const errorCode = error.code || 'N/A'
+        const errorDetails = error.details || 'No details'
+        
+        console.log('Error Code:', errorCode)
+        console.log('Error Message:', errorMsg)
+        console.log('Error Details:', errorDetails)
+        
         // Check if it's a missing function/column error
         if (error.code === '42703' || error.code === '42883') {
-          setError('⚠️ User Analytics not set up yet. Please run ENHANCED_ANALYTICS.sql in Supabase SQL Editor.')
+          setError(`⚠️ Database Function Missing! Run FIX_ANALYTICS_NOW.sql
+          
+Error: ${errorMsg}
+Code: ${errorCode}`)
         } else {
-          setError('Failed to load user analytics data')
+          setError(`Analytics Error: ${errorMsg} (Code: ${errorCode})
+          
+Check browser console for full details.`)
         }
         return
       }

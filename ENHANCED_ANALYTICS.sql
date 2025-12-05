@@ -79,7 +79,7 @@ BEGIN
                     'last_sale_date', MAX(created_at)
                 )
                 FROM credit_sales
-                WHERE user_id = p_user_id
+                WHERE owner_id = p_user_id
                 AND created_at >= NOW() - (p_days || ' days')::INTERVAL
             ),
             'product_metrics', (
@@ -91,16 +91,21 @@ BEGIN
                     'active_categories', COUNT(DISTINCT category)
                 )
                 FROM products
-                WHERE user_id = p_user_id
+                WHERE owner_id = p_user_id
             ),
-            'customer_metrics', (
-                SELECT json_build_object(
-                    'total_customers', COUNT(*),
-                    'customers_with_debt', COUNT(*) FILTER (WHERE total_debt > 0),
-                    'total_outstanding_debt', COALESCE(SUM(total_debt), 0)
+            'customer_metrics', json_build_object(
+                'total_customers', COALESCE(
+                    (SELECT COUNT(*) FROM credit_customers WHERE owner_id = p_user_id),
+                    0
+                ),
+                'customers_with_debt', COALESCE(
+                    (SELECT COUNT(DISTINCT customer_id) FROM credit_sales WHERE owner_id = p_user_id AND is_paid = false),
+                    0
+                ),
+                'total_outstanding_debt', COALESCE(
+                    (SELECT SUM(remaining_amount) FROM credit_sales WHERE owner_id = p_user_id AND is_paid = false),
+                    0
                 )
-                FROM credit_customers
-                WHERE user_id = p_user_id
             ),
             'activity_metrics', (
                 SELECT json_build_object(
@@ -143,30 +148,32 @@ AS $$
 DECLARE
     v_result JSON;
 BEGIN
-    SELECT json_agg(
-        json_build_object(
+    SELECT json_agg(user_data ORDER BY user_data->>'created_at' DESC)
+    INTO v_result
+    FROM (
+        SELECT json_build_object(
             'user_id', p.id,
             'email', p.email,
             'full_name', p.full_name,
             'role', p.role,
             'total_sales', COALESCE(
-                (SELECT SUM(total_amount) FROM credit_sales WHERE user_id = p.id AND created_at >= NOW() - (p_days || ' days')::INTERVAL), 
+                (SELECT SUM(total_amount) FROM credit_sales WHERE owner_id = p.id AND created_at >= NOW() - (p_days || ' days')::INTERVAL), 
                 0
             ),
             'total_transactions', COALESCE(
-                (SELECT COUNT(*) FROM credit_sales WHERE user_id = p.id AND created_at >= NOW() - (p_days || ' days')::INTERVAL),
+                (SELECT COUNT(*) FROM credit_sales WHERE owner_id = p.id AND created_at >= NOW() - (p_days || ' days')::INTERVAL),
                 0
             ),
             'total_products', COALESCE(
-                (SELECT COUNT(*) FROM products WHERE user_id = p.id),
+                (SELECT COUNT(*) FROM products WHERE owner_id = p.id),
                 0
             ),
             'total_customers', COALESCE(
-                (SELECT COUNT(*) FROM credit_customers WHERE user_id = p.id),
+                (SELECT COUNT(*) FROM credit_customers WHERE owner_id = p.id),
                 0
             ),
             'outstanding_credit', COALESCE(
-                (SELECT SUM(total_debt) FROM credit_customers WHERE user_id = p.id),
+                (SELECT SUM(remaining_amount) FROM credit_sales WHERE owner_id = p.id AND is_paid = false),
                 0
             ),
             'total_logins', COALESCE(
@@ -188,12 +195,10 @@ BEGIN
             END,
             'is_suspended', p.is_suspended,
             'created_at', p.created_at
-        )
-    )
-    INTO v_result
-    FROM profiles p
-    WHERE p.role = 'business_user'
-    ORDER BY p.created_at DESC;
+        ) AS user_data
+        FROM profiles p
+        WHERE p.role = 'business_user'
+    ) sub;
 
     RETURN COALESCE(v_result, '[]'::JSON);
 END;
