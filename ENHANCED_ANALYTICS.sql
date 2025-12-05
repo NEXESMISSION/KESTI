@@ -59,12 +59,10 @@ BEGIN
                     'user_id', p.id,
                     'email', p.email,
                     'full_name', p.full_name,
-                    'phone', p.phone_number,
                     'role', p.role,
                     'created_at', p.created_at,
                     'subscription_ends_at', p.subscription_ends_at,
-                    'is_suspended', p.is_suspended,
-                    'profile_completed', p.profile_completed
+                    'is_suspended', p.is_suspended
                 )
                 FROM profiles p
                 WHERE p.id = p_user_id
@@ -85,10 +83,10 @@ BEGIN
             'product_metrics', (
                 SELECT json_build_object(
                     'total_products', COUNT(*),
-                    'total_stock_value', COALESCE(SUM(cost_price * stock_quantity), 0),
-                    'low_stock_items', COUNT(*) FILTER (WHERE stock_quantity <= 10),
+                    'total_stock_value', COALESCE(SUM(cost_price * COALESCE(stock_quantity, 0)), 0),
+                    'low_stock_items', COUNT(*) FILTER (WHERE stock_quantity <= COALESCE(low_stock_threshold, 10)),
                     'out_of_stock_items', COUNT(*) FILTER (WHERE stock_quantity = 0),
-                    'active_categories', COUNT(DISTINCT category)
+                    'active_categories', COUNT(DISTINCT category_id)
                 )
                 FROM products
                 WHERE owner_id = p_user_id
@@ -262,8 +260,8 @@ SELECT
     COALESCE(uss.total_logins, 0) as total_logins,
     uss.last_login_at,
     uss.last_sale_at,
-    (SELECT COUNT(*) FROM products WHERE user_id = p.id) as total_products,
-    (SELECT COUNT(*) FROM credit_customers WHERE user_id = p.id) as total_customers,
+    (SELECT COUNT(*) FROM products WHERE owner_id = p.id) as total_products,
+    (SELECT COUNT(*) FROM credit_customers WHERE owner_id = p.id) as total_customers,
     (SELECT COUNT(*) FROM active_devices WHERE user_id = p.id AND is_active = true) as active_devices,
     CASE
         WHEN p.subscription_ends_at IS NULL THEN 'no_subscription'

@@ -120,7 +120,6 @@ BEGIN
             'email', p.email,
             'full_name', p.full_name,
             'role', p.role,
-            'phone_number', p.phone_number,
             'created_at', p.created_at,
             'subscription_ends_at', p.subscription_ends_at,
             'is_suspended', p.is_suspended
@@ -141,8 +140,8 @@ BEGIN
         'product_metrics', (
             SELECT json_build_object(
                 'total_products', COUNT(*),
-                'total_stock_value', COALESCE(SUM(stock * prix_de_vente), 0),
-                'low_stock_items', COUNT(*) FILTER (WHERE stock <= stock_alert_threshold)
+                'total_stock_value', COALESCE(SUM(COALESCE(stock_quantity, 0) * selling_price), 0),
+                'low_stock_items', COUNT(*) FILTER (WHERE stock_quantity <= COALESCE(low_stock_threshold, 10))
             )
             FROM products
             WHERE owner_id = p_user_id
