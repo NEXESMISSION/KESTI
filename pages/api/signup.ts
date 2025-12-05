@@ -346,8 +346,10 @@ export default async function handler(
         phone_number: phoneNumber.trim(),
         role: 'business_user',
         pin_code: pin,
+        subscription_status: 'trial',
         subscription_ends_at: subscriptionEndDate,
         is_suspended: false,
+        profile_completed: true,
         created_at: new Date().toISOString()
       })
 

@@ -133,17 +133,19 @@ export function getDeviceInfo() {
  */
 export async function registerCurrentDevice(): Promise<{
   success: boolean
-  message?: string
   error?: string
+  message?: string
   kicked?: boolean
   kickedDevice?: string
 }> {
   try {
+    console.log('🔷 [DeviceManager] Starting device registration...')
+    
     // Check if this is an admin see-through session
     if (typeof window !== 'undefined') {
       const isSeeThroughSession = localStorage.getItem('admin_see_through') === 'true'
       if (isSeeThroughSession) {
-        console.log('👁️ Admin see-through session - skipping device registration')
+        console.log('👁️ [DeviceManager] Admin see-through session - skipping device registration')
         return {
           success: true,
           message: 'Admin see-through - no device limits',
@@ -154,16 +156,28 @@ export async function registerCurrentDevice(): Promise<{
     // Check if user is a super admin
     const { data: { session } } = await supabase.auth.getSession()
     
-    if (session) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', session.user.id)
-        .maybeSingle()
+    if (!session) {
+      console.warn('⚠️ [DeviceManager] No session found - cannot register device')
+      return {
+        success: false,
+        error: 'No session found',
+      }
+    }
+    
+    console.log(`✓ [DeviceManager] Session found for user: ${session.user.id}`)
+    
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, email, full_name')
+      .eq('id', session.user.id)
+      .maybeSingle()
 
+    if (profile) {
+      console.log(`✓ [DeviceManager] Profile found: ${profile.email} (${profile.role})`)
+      
       // Super admins don't need device registration
-      if (profile && profile.role === 'super_admin') {
-        console.log('🔑 Super admin - skipping device registration')
+      if (profile.role === 'super_admin') {
+        console.log('🔑 [DeviceManager] Super admin - skipping device registration')
         return {
           success: true,
           message: 'Super admin - no device limits',
@@ -174,10 +188,15 @@ export async function registerCurrentDevice(): Promise<{
     const deviceId = getLocalDeviceId()
     const deviceInfo = getDeviceInfo()
     
+    console.log(`📱 [DeviceManager] Device ID: ${deviceId}`)
+    console.log(`📱 [DeviceManager] Device Name: ${deviceInfo.name}`)
+    
     // Fetch the client's IP address
     const ipAddress = await getClientIpAddress()
+    console.log(`🌐 [DeviceManager] IP Address: ${ipAddress || 'unknown'}`)
 
     // Call the RPC function to register the device
+    console.log('📡 [DeviceManager] Calling register_device_session RPC...')
     const { data, error } = await supabase.rpc('register_device_session', {
       p_device_identifier: deviceId,
       p_device_name: deviceInfo.name,
@@ -186,14 +205,29 @@ export async function registerCurrentDevice(): Promise<{
     })
 
     if (error) {
-      console.error('Error registering device:', error)
+      console.error('❌ [DeviceManager] Error registering device:', error)
+      console.error('❌ [DeviceManager] Error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      })
       return {
         success: false,
         error: error.message,
       }
     }
 
-    console.log('Device registration response:', data)
+    console.log('✅ [DeviceManager] Device registration response:', data)
+    
+    if (data?.success) {
+      console.log(`✅ [DeviceManager] Device registered successfully! Action: ${data.action}`)
+      if (data.action === 'kicked_and_registered') {
+        console.log(`⚠️ [DeviceManager] Kicked device: ${data.kicked_device}`)
+      }
+    } else {
+      console.warn('⚠️ [DeviceManager] Registration returned success=false:', data)
+    }
     
     return {
       success: data?.success || true,
@@ -202,7 +236,7 @@ export async function registerCurrentDevice(): Promise<{
       kickedDevice: data?.kicked_device,
     }
   } catch (error: any) {
-    console.error('Error in registerCurrentDevice:', error)
+    console.error('❌ [DeviceManager] Exception in registerCurrentDevice:', error)
     return {
       success: false,
       error: error.message,

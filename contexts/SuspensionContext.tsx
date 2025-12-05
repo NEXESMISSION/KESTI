@@ -26,7 +26,8 @@ const PUBLIC_PATHS = [
   '/login-force-redirect',
   '/force-login',
   '/suspended',
-  '/subscription-expired'
+  '/subscription-expired',
+  '/super-admin' // Super admins don't need these checks
 ]
 
 export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -58,7 +59,7 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
       // Get user profile to check suspension status and subscription
       const { data, error } = await supabase
         .from('profiles')
-        .select('is_suspended, suspension_message, subscription_ends_at')
+        .select('is_suspended, suspension_message, subscription_ends_at, role')
         .eq('id', session.user.id)
         .single()
 
@@ -71,6 +72,14 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
       
       // Reset error count on success
       setErrorCount(0)
+
+      // SUPER ADMINS BYPASS ALL CHECKS
+      if (data.role === 'super_admin') {
+        setIsSuspended(false)
+        setIsSubscriptionExpired(false)
+        setSuspensionMessage(null)
+        return { suspended: false, subscriptionExpired: false }
+      }
 
       // Check if suspended
       const suspended = !!data.is_suspended
@@ -102,8 +111,10 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
     // Wait for router to be ready
     if (!router.isReady) return
 
-    // Don't check on public paths
-    if (PUBLIC_PATHS.some(path => router.pathname.startsWith(path))) {
+    // CRITICAL: Don't check on public paths (including super-admin) - EARLY EXIT
+    const isPublicPath = PUBLIC_PATHS.some(path => router.pathname.startsWith(path))
+    if (isPublicPath) {
+      console.log(`[SuspensionContext] Skipping checks for public path: ${router.pathname}`)
       return
     }
 
@@ -113,6 +124,12 @@ export const SuspensionProvider: React.FC<{ children: ReactNode }> = ({ children
 
     // Check suspension and subscription status
     const handleStatusCheck = async () => {
+      // Double-check: Don't run on public paths
+      if (PUBLIC_PATHS.some(path => router.pathname.startsWith(path))) {
+        console.log(`[SuspensionContext] Interval skipped for: ${router.pathname}`)
+        return
+      }
+      
       // Prevent duplicate navigation attempts
       if (isNavigating) return
       

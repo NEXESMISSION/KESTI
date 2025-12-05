@@ -47,10 +47,10 @@ export function withSuspensionCheck<P extends object>(
             return
           }
           
-          // Check user status (suspension and subscription)
+          // Check user status (suspension, subscription, and profile completion)
           const { data, error } = await supabase
             .from('profiles')
-            .select('is_suspended, subscription_ends_at')
+            .select('is_suspended, subscription_ends_at, role, profile_completed')
             .eq('id', session.user.id)
             .single()
             
@@ -63,6 +63,20 @@ export function withSuspensionCheck<P extends object>(
           
           // Reset error count on success
           errorCountRef.current = 0
+          
+          // CRITICAL: Super admins bypass all checks
+          if (data?.role === 'super_admin') {
+            console.log('[withSuspensionCheck] Super admin detected - bypassing all checks')
+            setLoading(false)
+            return
+          }
+          
+          // Check if profile is completed
+          if (data.profile_completed === false) {
+            console.log('[withSuspensionCheck] Profile not completed - redirecting')
+            window.location.href = '/complete-profile'
+            return
+          }
           
           // Check suspension status
           if (data?.is_suspended === true) {

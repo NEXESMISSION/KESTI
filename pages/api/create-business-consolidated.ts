@@ -86,6 +86,7 @@ export default async function handler(
         subscription_ends_at: subscriptionEndsAt,
         is_suspended: false,
         pin_code: cleanPin,
+        profile_completed: true, // Mark as completed since all fields are filled
       })
 
     if (profileError) {

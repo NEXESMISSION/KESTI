@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { supabase, Product, ProductCategory, CreditCustomer } from '@/lib/supabase'
@@ -160,6 +160,20 @@ function POS() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         router.push('/login')
+        return
+      }
+
+      // Check if profile is complete
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('profile_completed, role')
+        .eq('id', session.user.id)
+        .single()
+
+      // If profile not completed, redirect to complete profile page
+      if (profile && !profile.profile_completed) {
+        console.log('[POS] Profile not completed - redirecting to complete-profile')
+        window.location.href = '/complete-profile'
         return
       }
 

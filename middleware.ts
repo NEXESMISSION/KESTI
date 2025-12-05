@@ -74,8 +74,12 @@ export async function middleware(request: NextRequest) {
           .eq('id', user.id)
           .single()
 
-        // Super admins bypass all checks
+        // Super admins bypass all checks AND should never be on suspended/expired pages
         if (data?.role === 'super_admin') {
+          // If super admin is on suspended or expired page, redirect to super-admin
+          if (pathname === '/suspended' || pathname === '/subscription-expired') {
+            return NextResponse.redirect(new URL('/super-admin', request.url))
+          }
           return NextResponse.next()
         }
 

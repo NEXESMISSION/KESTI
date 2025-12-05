@@ -70,6 +70,13 @@ export default function SubscriptionExpired() {
 
         console.log('Checking subscription status:', data.subscription_ends_at)
         
+        // Super admins should never be here - redirect to super admin page IMMEDIATELY
+        if (data.role === 'super_admin') {
+          console.log('Super admin detected - forcing redirect to super-admin page')
+          window.location.href = '/super-admin'
+          return
+        }
+        
         // If suspended, redirect to suspended page
         if (data.is_suspended === true) {
           console.log('User is suspended - redirecting to suspended page')

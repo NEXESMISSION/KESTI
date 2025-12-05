@@ -37,6 +37,13 @@ export default function Suspended() {
 
         console.log('Checking suspension status:', data.is_suspended)
         
+        // Super admins should never be here - redirect to super admin page IMMEDIATELY
+        if (data.role === 'super_admin') {
+          console.log('Super admin detected - forcing redirect to super-admin page')
+          window.location.href = '/super-admin'
+          return
+        }
+        
         // If not suspended, redirect to appropriate page
         if (data.is_suspended !== true) {
           console.log('User is not suspended - redirecting')

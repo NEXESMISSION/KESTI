@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import Image from 'next/image'
 import { supabase, Profile } from '@/lib/supabase'
 import { useLoading } from '@/contexts/LoadingContext'
-import SubscriptionBadge from '@/components/SubscriptionBadge'
+import PageHeader from '@/components/PageHeader'
 import SubscriptionModal from '@/components/SubscriptionModal'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
 import AutoClearWarning from '@/components/AutoClearWarning'
@@ -468,28 +468,7 @@ function Finance() {
       {/* Auto-Clear Warning Alert */}
       <AutoClearWarning />
       
-      <header className="bg-white shadow-md sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto py-3 sm:py-4 px-3 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <Image src="/logo/logo no bg low qulity.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
-            
-            <div className="flex items-center gap-2 sm:gap-3">
-              <SubscriptionBadge profile={profile} onClick={() => setShowSubscriptionModal(true)} />
-              
-              {/* Back to POS */}
-              <button
-                onClick={() => window.location.href = '/pos'}
-                className="bg-gray-600 hover:bg-gray-700 text-white p-2 sm:p-2.5 rounded-lg transition"
-                title="العودة إلى نقطة البيع"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PageHeader />
 
       {/* Page Navigation */}
       <div className="bg-white border-b border-gray-200">

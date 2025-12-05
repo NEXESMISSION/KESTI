@@ -14,15 +14,6 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
   },
-  // ⚠️ API LIMITS REMOVED FOR BUSINESS OPERATIONS
-  // Allows unlimited request body sizes and execution time for POS system
-  api: {
-    bodyParser: {
-      sizeLimit: '50mb', // Increased from default 1mb to 50mb for large transactions
-    },
-    responseLimit: '50mb', // Increased response size limit
-    externalResolver: true, // Prevent timeout warnings
-  },
   images: {
     remotePatterns: [
       {

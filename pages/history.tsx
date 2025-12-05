@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { supabase, CreditSale, Profile } from '@/lib/supabase'
 import { useLoading } from '@/contexts/LoadingContext'
 import withSuspensionCheck from '@/components/withSuspensionCheck'
+import PageHeader from '@/components/PageHeader'
 import { getSubscriptionDaysLeft } from '@/lib/auth'
 import * as XLSX from 'xlsx'
 
@@ -511,42 +512,7 @@ function History() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-md sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto py-3 sm:py-4 px-3 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <Image src="/logo/KESTI.png" alt="KESTI" width={120} height={40} className="h-8 sm:h-10 w-auto" priority />
-            
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Subscription Days Left (Business Admin Only) */}
-              {profile && profile.role === 'business_user' && (
-                <button
-                  onClick={() => setShowSubscriptionModal(true)}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg transition flex items-center gap-2"
-                  title="الاشتراك"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="text-sm font-semibold">
-                    {getSubscriptionDaysLeft(profile)} يوم متبقي
-                  </span>
-                </button>
-              )}
-              
-              {/* Back to POS */}
-              <button
-                onClick={() => window.location.href = '/pos'}
-                className="bg-gray-600 hover:bg-gray-700 text-white p-2 sm:p-2.5 rounded-lg transition"
-                title="العودة إلى نقطة البيع"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <PageHeader />
 
       {/* Page Navigation */}
       <div className="bg-white border-b border-gray-200">

@@ -41,6 +41,18 @@ function SuperAdmin() {
   const [showAlertModal, setShowAlertModal] = useState(false)
   const [alertUserId, setAlertUserId] = useState<string | null>(null)
   const [alertMessage, setAlertMessage] = useState('')
+  
+  // Analytics state
+  const [activeTab, setActiveTab] = useState<'businesses' | 'analytics' | 'user-analytics'>('businesses')
+  const [analyticsData, setAnalyticsData] = useState<any>(null)
+  const [analyticsLoading, setAnalyticsLoading] = useState(false)
+  const [analyticsDays, setAnalyticsDays] = useState(30)
+  
+  // Enhanced user analytics state
+  const [userAnalytics, setUserAnalytics] = useState<any[]>([])
+  const [userAnalyticsLoading, setUserAnalyticsLoading] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<string | null>(null)
+  const [detailedUserAnalytics, setDetailedUserAnalytics] = useState<any>(null)
 
   useEffect(() => {
     checkAuth()
@@ -348,6 +360,13 @@ function SuperAdmin() {
   }
 
   const extendSubscription = async (userId: string, currentEndsAt: string | null) => {
+    // Check if trying to extend subscription for a super admin
+    const targetUser = businesses.find(b => b.id === userId)
+    if (targetUser && targetUser.role === 'super_admin') {
+      setError('Super admin accounts do not have subscription limits')
+      return
+    }
+    
     showLoading('جاري تمديد الاشتراك...')
     try {
       const currentDate = currentEndsAt ? new Date(currentEndsAt) : new Date()
@@ -358,6 +377,7 @@ function SuperAdmin() {
         .from('profiles')
         .update({ subscription_ends_at: newDate.toISOString() })
         .eq('id', userId)
+        .neq('role', 'super_admin') // Extra safety: Don't update super admins
 
       if (error) throw error
 
@@ -380,6 +400,15 @@ function SuperAdmin() {
   const suspendUser = async () => {
     if (!suspendingUserId) return
     
+    // Check if trying to suspend a super admin
+    const targetUser = businesses.find(b => b.id === suspendingUserId)
+    if (targetUser && targetUser.role === 'super_admin') {
+      setError('Cannot suspend super admin accounts')
+      setShowSuspendModal(false)
+      setSuspendingUserId(null)
+      return
+    }
+    
     showLoading('جاري تعليق الحساب...')
     try {
       const { error } = await supabase
@@ -389,6 +418,7 @@ function SuperAdmin() {
           suspension_message: suspensionMessage.trim() || 'Your account has been suspended.'
         })
         .eq('id', suspendingUserId)
+        .neq('role', 'super_admin') // Extra safety: Don't update super admins
 
       if (error) throw error
 
@@ -406,6 +436,13 @@ function SuperAdmin() {
   }
 
   const unsuspendUser = async (userId: string) => {
+    // Check if trying to unsuspend a super admin
+    const targetUser = businesses.find(b => b.id === userId)
+    if (targetUser && targetUser.role === 'super_admin') {
+      setError('Super admin accounts cannot be suspended')
+      return
+    }
+    
     showLoading('جاري إلغاء التعليق...')
     try {
       const { error } = await supabase
@@ -415,6 +452,7 @@ function SuperAdmin() {
           suspension_message: null
         })
         .eq('id', userId)
+        .neq('role', 'super_admin') // Extra safety: Don't update super admins
 
       if (error) throw error
 
@@ -556,6 +594,85 @@ function SuperAdmin() {
 
   // Clear history function removed
 
+  const fetchAnalytics = async () => {
+    setAnalyticsLoading(true)
+    try {
+      const { data, error } = await supabase.rpc('get_analytics_dashboard', {
+        days_back: analyticsDays
+      })
+
+      if (error) {
+        console.error('Analytics error:', error)
+        setError('Failed to load analytics data')
+        return
+      }
+
+      setAnalyticsData(data)
+    } catch (err) {
+      console.error('Analytics fetch error:', err)
+      setError('Failed to load analytics')
+    } finally {
+      setAnalyticsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (activeTab === 'analytics') {
+      fetchAnalytics()
+    } else if (activeTab === 'user-analytics') {
+      fetchUserAnalytics()
+    }
+  }, [activeTab, analyticsDays])
+
+  // Fetch enhanced user analytics
+  const fetchUserAnalytics = async () => {
+    setUserAnalyticsLoading(true)
+    try {
+      const { data, error } = await supabase.rpc('get_all_users_analytics', {
+        p_days: analyticsDays
+      })
+
+      if (error) {
+        console.error('User analytics error:', error)
+        
+        // Check if it's a missing function/column error
+        if (error.code === '42703' || error.code === '42883') {
+          setError('⚠️ User Analytics not set up yet. Please run ENHANCED_ANALYTICS.sql in Supabase SQL Editor.')
+        } else {
+          setError('Failed to load user analytics data')
+        }
+        return
+      }
+
+      setUserAnalytics(data || [])
+    } catch (err) {
+      console.error('User analytics fetch error:', err)
+      setError('Failed to load user analytics')
+    } finally {
+      setUserAnalyticsLoading(false)
+    }
+  }
+
+  // Fetch detailed analytics for a specific user
+  const fetchDetailedUserAnalytics = async (userId: string) => {
+    try {
+      const { data, error } = await supabase.rpc('get_user_analytics', {
+        p_user_id: userId,
+        p_days: analyticsDays
+      })
+
+      if (error) {
+        console.error('Detailed user analytics error:', error)
+        return
+      }
+
+      setDetailedUserAnalytics(data)
+      setSelectedUser(userId)
+    } catch (err) {
+      console.error('Detailed user analytics fetch error:', err)
+    }
+  }
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut({ scope: 'local' })
@@ -669,17 +786,56 @@ function SuperAdmin() {
           </div>
         )}
 
-        {/* Create Button */}
-        <div className="mb-4 sm:mb-6">
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="w-full sm:w-auto bg-primary hover:bg-blue-700 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition text-sm sm:text-base"
-          >
-            + Create New Business Account
-          </button>
+        {/* Tabs */}
+        <div className="mb-6 border-b border-gray-200">
+          <nav className="flex gap-4">
+            <button
+              onClick={() => setActiveTab('businesses')}
+              className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'businesses'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              👥 Business Accounts ({businesses.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('analytics')}
+              className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'analytics'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              📊 Analytics & Conversions
+            </button>
+            <button
+              onClick={() => setActiveTab('user-analytics')}
+              className={`pb-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'user-analytics'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              👤 User Performance
+            </button>
+          </nav>
         </div>
 
-        {/* Businesses Table - Hidden on Mobile */}
+        {/* Businesses Tab Content */}
+        {activeTab === 'businesses' && (
+          <>
+            {/* Create Button */}
+            <div className="mb-4 sm:mb-6">
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="w-full sm:w-auto bg-primary hover:bg-blue-700 text-white font-semibold px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition text-sm sm:text-base"
+              >
+                + Create New Business Account
+              </button>
+            </div>
+
+            {/* Businesses Table - Hidden on Mobile */}
         <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -789,49 +945,55 @@ function SuperAdmin() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex flex-col space-y-1">
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => extendSubscription(business.id, business.subscription_ends_at)}
-                              className="text-green-600 hover:text-green-900 text-xs"
-                            >
-                              +30 Days
-                            </button>
-                            <button
-                              onClick={() => business.is_suspended ? unsuspendUser(business.id) : openSuspendModal(business.id)}
-                              className={`text-xs ${
-                                business.is_suspended
-                                  ? 'text-blue-600 hover:text-blue-900'
-                                  : 'text-red-600 hover:text-red-900'
-                              }`}
-                            >
-                              {business.is_suspended ? 'Unsuspend' : 'Suspend'}
-                            </button>
+                        {business.role === 'super_admin' ? (
+                          <div className="text-xs text-gray-500 italic">
+                            Super Admin - No Actions
                           </div>
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => handleEditBusiness(business)}
-                              className="text-blue-600 hover:text-blue-900 text-xs"
-                            >
-                              ✏️ Edit
-                            </button>
-                            <button
-                              onClick={() => openAlertModal(business.id)}
-                              className="text-purple-600 hover:text-purple-900 text-xs"
-                              title="Send alert message"
-                            >
-                              📢 Alert
-                            </button>
+                        ) : (
+                          <div className="flex flex-col space-y-1">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => extendSubscription(business.id, business.subscription_ends_at)}
+                                className="text-green-600 hover:text-green-900 text-xs"
+                              >
+                                +30 Days
+                              </button>
+                              <button
+                                onClick={() => business.is_suspended ? unsuspendUser(business.id) : openSuspendModal(business.id)}
+                                className={`text-xs ${
+                                  business.is_suspended
+                                    ? 'text-blue-600 hover:text-blue-900'
+                                    : 'text-red-600 hover:text-red-900'
+                                }`}
+                              >
+                                {business.is_suspended ? 'Unsuspend' : 'Suspend'}
+                              </button>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => handleEditBusiness(business)}
+                                className="text-blue-600 hover:text-blue-900 text-xs"
+                              >
+                                ✏️ Edit
+                              </button>
+                              <button
+                                onClick={() => openAlertModal(business.id)}
+                                className="text-purple-600 hover:text-purple-900 text-xs"
+                                title="Send alert message"
+                              >
+                                📢 Alert
+                              </button>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => setConfirmDelete(business.id)}
+                                className="text-red-600 hover:text-red-900 text-xs"
+                              >
+                                🗑️ Delete
+                              </button>
+                            </div>
                           </div>
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => setConfirmDelete(business.id)}
-                              className="text-red-600 hover:text-red-900 text-xs"
-                            >
-                              🗑️ Delete
-                            </button>
-                          </div>
-                        </div>
+                        )}
                       </td>
                     </tr>
                   )
@@ -934,53 +1096,549 @@ function SuperAdmin() {
 
                   {/* Actions */}
                   <div className="border-t border-gray-200 pt-3 space-y-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => extendSubscription(business.id, business.subscription_ends_at)}
-                        className="text-xs bg-green-50 text-green-600 hover:bg-green-100 px-3 py-2 rounded-lg font-medium transition"
-                      >
-                        +30 Days
-                      </button>
-                      <button
-                        onClick={() => business.is_suspended ? unsuspendUser(business.id) : openSuspendModal(business.id)}
-                        className={`text-xs px-3 py-2 rounded-lg font-medium transition ${
-                          business.is_suspended
-                            ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                            : 'bg-red-50 text-red-600 hover:bg-red-100'
-                        }`}
-                      >
-                        {business.is_suspended ? 'Unsuspend' : 'Suspend'}
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => handleEditBusiness(business)}
-                        className="text-xs bg-gray-50 text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg font-medium transition"
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={() => openAlertModal(business.id)}
-                        className="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-3 py-2 rounded-lg font-medium transition"
-                        title="Send alert message"
-                      >
-                        📢 Alert
-                      </button>
-                    </div>
-                    <div>
-                      <button
-                        onClick={() => setConfirmDelete(business.id)}
-                        className="w-full text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg font-medium transition"
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
+                    {business.role === 'super_admin' ? (
+                      <div className="text-center text-xs text-gray-500 italic py-2">
+                        Super Admin - No Actions Available
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => extendSubscription(business.id, business.subscription_ends_at)}
+                            className="text-xs bg-green-50 text-green-600 hover:bg-green-100 px-3 py-2 rounded-lg font-medium transition"
+                          >
+                            +30 Days
+                          </button>
+                          <button
+                            onClick={() => business.is_suspended ? unsuspendUser(business.id) : openSuspendModal(business.id)}
+                            className={`text-xs px-3 py-2 rounded-lg font-medium transition ${
+                              business.is_suspended
+                                ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                                : 'bg-red-50 text-red-600 hover:bg-red-100'
+                            }`}
+                          >
+                            {business.is_suspended ? 'Unsuspend' : 'Suspend'}
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => handleEditBusiness(business)}
+                            className="text-xs bg-gray-50 text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-lg font-medium transition"
+                          >
+                            ✏️ Edit
+                          </button>
+                          <button
+                            onClick={() => openAlertModal(business.id)}
+                            className="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 px-3 py-2 rounded-lg font-medium transition"
+                            title="Send alert message"
+                          >
+                            📢 Alert
+                          </button>
+                        </div>
+                        <div>
+                          <button
+                            onClick={() => setConfirmDelete(business.id)}
+                            className="w-full text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg font-medium transition"
+                          >
+                            🗑️ Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )
             })
           )}
         </div>
+          </>
+        )}
+
+        {/* Analytics Tab Content */}
+        {activeTab === 'analytics' && (
+          <div className="space-y-6">
+            {/* Time Range Selector */}
+            <div className="bg-white rounded-lg shadow p-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">📊 Analytics Dashboard</h2>
+              <select
+                value={analyticsDays}
+                onChange={(e) => setAnalyticsDays(Number(e.target.value))}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              >
+                <option value={7}>Last 7 Days</option>
+                <option value={30}>Last 30 Days</option>
+                <option value={90}>Last 90 Days</option>
+              </select>
+            </div>
+
+            {analyticsLoading ? (
+              <div className="bg-white rounded-lg shadow p-12 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading analytics data...</p>
+              </div>
+            ) : !analyticsData ? (
+              <div className="bg-white rounded-lg shadow p-12 text-center">
+                <div className="text-6xl mb-4">📊</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">No Analytics Data Yet</h3>
+                <p className="text-gray-600 mb-4">
+                  Analytics data will appear here once users start interacting with your landing page.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Make sure you've run the SQL setup from <code className="bg-gray-100 px-2 py-1 rounded">ANALYTICS_SETUP.sql</code>
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Key Metrics Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-blue-100">Total Sessions</span>
+                      <span className="text-3xl">👥</span>
+                    </div>
+                    <div className="text-3xl font-bold">{analyticsData.total_sessions || 0}</div>
+                    <div className="text-blue-100 text-sm mt-2">Unique visitors</div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-green-100">Page Views</span>
+                      <span className="text-3xl">📄</span>
+                    </div>
+                    <div className="text-3xl font-bold">{analyticsData.total_page_views || 0}</div>
+                    <div className="text-green-100 text-sm mt-2">Total page views</div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-purple-100">Signup Attempts</span>
+                      <span className="text-3xl">✍️</span>
+                    </div>
+                    <div className="text-3xl font-bold">{analyticsData.signup_attempts || 0}</div>
+                    <div className="text-purple-100 text-sm mt-2">Started signup process</div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-orange-100">Conversions</span>
+                      <span className="text-3xl">🎯</span>
+                    </div>
+                    <div className="text-3xl font-bold">{analyticsData.signups_completed || 0}</div>
+                    <div className="text-orange-100 text-sm mt-2">Completed signups</div>
+                  </div>
+                </div>
+
+                {/* Conversion Rate Card */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">📈 Conversion Rate</h3>
+                  <div className="flex items-center justify-center">
+                    <div className="relative w-40 h-40">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle
+                          cx="80"
+                          cy="80"
+                          r="70"
+                          stroke="#e5e7eb"
+                          strokeWidth="12"
+                          fill="none"
+                        />
+                        <circle
+                          cx="80"
+                          cy="80"
+                          r="70"
+                          stroke="#10b981"
+                          strokeWidth="12"
+                          fill="none"
+                          strokeDasharray={`${2 * Math.PI * 70}`}
+                          strokeDashoffset={`${2 * Math.PI * 70 * (1 - (analyticsData.conversion_rate || 0) / 100)}`}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center flex-col">
+                        <span className="text-4xl font-bold text-gray-900">
+                          {analyticsData.conversion_rate || 0}%
+                        </span>
+                        <span className="text-sm text-gray-500">conversion</span>
+                      </div>
+                    </div>
+                    <div className="ml-8 flex-1">
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex items-center justify-between text-sm mb-1">
+                            <span className="text-gray-600">Sessions</span>
+                            <span className="font-bold">{analyticsData.total_sessions || 0}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div className="bg-blue-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-between text-sm mb-1">
+                            <span className="text-gray-600">Signup Attempts</span>
+                            <span className="font-bold">{analyticsData.signup_attempts || 0}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-purple-500 h-2 rounded-full" 
+                              style={{ 
+                                width: `${analyticsData.total_sessions > 0 ? (analyticsData.signup_attempts / analyticsData.total_sessions * 100) : 0}%` 
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-between text-sm mb-1">
+                            <span className="text-gray-600">Completed</span>
+                            <span className="font-bold text-green-600">{analyticsData.signups_completed || 0}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-green-500 h-2 rounded-full" 
+                              style={{ 
+                                width: `${analyticsData.conversion_rate || 0}%` 
+                              }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Top UTM Sources */}
+                {analyticsData.top_utm_sources && analyticsData.top_utm_sources.length > 0 && (
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">🎯 Top Traffic Sources (Facebook Ads)</h3>
+                    <div className="space-y-3">
+                      {analyticsData.top_utm_sources.map((source: any, idx: number) => (
+                        <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-xl">
+                              {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '📍'}
+                            </div>
+                            <div>
+                              <div className="font-bold text-gray-900">{source.utm_source || 'Direct'}</div>
+                              <div className="text-sm text-gray-500">{source.sessions} sessions</div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold text-blue-600">{source.sessions}</div>
+                            <div className="text-xs text-gray-500">visitors</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Device Breakdown */}
+                {analyticsData.device_breakdown && analyticsData.device_breakdown.length > 0 && (
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">📱 Device Breakdown</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {analyticsData.device_breakdown.map((device: any, idx: number) => (
+                        <div key={idx} className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                          <div className="text-center mb-2">
+                            <span className="text-4xl">
+                              {device.device_type === 'mobile' ? '📱' : device.device_type === 'tablet' ? '📋' : '💻'}
+                            </span>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-2xl font-bold text-gray-900">{device.sessions}</div>
+                            <div className="text-sm text-gray-600 capitalize">{device.device_type}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Daily Trend */}
+                {analyticsData.daily_trend && analyticsData.daily_trend.length > 0 && (
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">📅 Daily Trend</h3>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full">
+                        <thead>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-2 px-3 text-sm font-medium text-gray-600">Date</th>
+                            <th className="text-right py-2 px-3 text-sm font-medium text-gray-600">Sessions</th>
+                            <th className="text-right py-2 px-3 text-sm font-medium text-gray-600">Conversions</th>
+                            <th className="text-right py-2 px-3 text-sm font-medium text-gray-600">Rate</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {analyticsData.daily_trend.slice(0, 10).map((day: any, idx: number) => (
+                            <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                              <td className="py-3 px-3 text-sm text-gray-900">
+                                {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </td>
+                              <td className="py-3 px-3 text-sm text-right font-medium">{day.sessions}</td>
+                              <td className="py-3 px-3 text-sm text-right font-medium text-green-600">{day.conversions}</td>
+                              <td className="py-3 px-3 text-sm text-right">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  {day.sessions > 0 ? ((day.conversions / day.sessions) * 100).toFixed(1) : 0}%
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Refresh Button */}
+                <div className="text-center">
+                  <button
+                    onClick={fetchAnalytics}
+                    className="bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition"
+                  >
+                    🔄 Refresh Data
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* User Performance Analytics Tab */}
+        {activeTab === 'user-analytics' && (
+          <div className="space-y-6">
+            {/* Header */}
+            <div className="bg-white rounded-lg shadow p-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">👤 User Performance Analytics</h2>
+              <select
+                value={analyticsDays}
+                onChange={(e) => setAnalyticsDays(Number(e.target.value))}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              >
+                <option value={7}>Last 7 Days</option>
+                <option value={30}>Last 30 Days</option>
+                <option value={90}>Last 90 Days</option>
+                <option value={365}>Last Year</option>
+              </select>
+            </div>
+
+            {userAnalyticsLoading ? (
+              <div className="bg-white rounded-lg shadow p-12 text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading user analytics...</p>
+              </div>
+            ) : userAnalytics.length === 0 ? (
+              <div className="bg-white rounded-lg shadow p-12 text-center">
+                <div className="text-6xl mb-4">👤</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">No User Data Available</h3>
+                <p className="text-gray-600 mb-4">User performance data will appear here once users start using the system.</p>
+                <p className="text-sm text-gray-500">
+                  Make sure you've run <code className="bg-gray-100 px-2 py-1 rounded">ENHANCED_ANALYTICS.sql</code>
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Summary Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white">
+                    <div className="text-blue-100 text-sm mb-2">Total Users</div>
+                    <div className="text-3xl font-bold">{userAnalytics.length}</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white">
+                    <div className="text-green-100 text-sm mb-2">Total Sales</div>
+                    <div className="text-3xl font-bold">
+                      {userAnalytics.reduce((sum, u) => sum + (u.total_sales || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} DT
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+                    <div className="text-purple-100 text-sm mb-2">Total Transactions</div>
+                    <div className="text-3xl font-bold">
+                      {userAnalytics.reduce((sum, u) => sum + (u.total_transactions || 0), 0).toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg shadow-lg p-6 text-white">
+                    <div className="text-orange-100 text-sm mb-2">Active Users</div>
+                    <div className="text-3xl font-bold">
+                      {userAnalytics.filter(u => (u.total_logins || 0) > 0).length}
+                    </div>
+                  </div>
+                </div>
+
+                {/* User Performance Table */}
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <h3 className="text-lg font-bold text-gray-900">📊 Detailed User Metrics</h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sales</th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Transactions</th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Customers</th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Logins</th>
+                          <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Devices</th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {userAnalytics.sort((a, b) => (b.total_sales || 0) - (a.total_sales || 0)).map((user) => (
+                          <tr key={user.user_id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4">
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">{user.full_name || 'N/A'}</div>
+                                <div className="text-xs text-gray-500">{user.email}</div>
+                                {user.last_login && (
+                                  <div className="text-xs text-gray-400 mt-1">
+                                    Last login: {new Date(user.last_login).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <div className="text-sm font-bold text-green-600">
+                                {(user.total_sales || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} DT
+                              </div>
+                              {user.outstanding_credit > 0 && (
+                                <div className="text-xs text-orange-600">
+                                  {(user.outstanding_credit || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} DT credit
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <span className="text-sm font-medium text-gray-900">{user.total_transactions || 0}</span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <span className="text-sm text-gray-700">{user.total_products || 0}</span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <span className="text-sm text-gray-700">{user.total_customers || 0}</span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <span className="text-sm text-blue-600 font-medium">{user.total_logins || 0}</span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <span className="text-sm text-purple-600">📱 {user.active_devices || 0}/3</span>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                user.subscription_status === 'active' ? 'bg-green-100 text-green-800' :
+                                user.subscription_status === 'expiring_soon' ? 'bg-yellow-100 text-yellow-800' :
+                                user.subscription_status === 'expired' ? 'bg-red-100 text-red-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {user.subscription_status === 'active' ? '✓ Active' :
+                                 user.subscription_status === 'expiring_soon' ? '⚠️ Expiring' :
+                                 user.subscription_status === 'expired' ? '✗ Expired' :
+                                 'No Sub'}
+                              </span>
+                              {user.is_suspended && (
+                                <div className="mt-1">
+                                  <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">Suspended</span>
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <button
+                                onClick={() => fetchDetailedUserAnalytics(user.user_id)}
+                                className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                              >
+                                View Details
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Top Performers */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">🥇 Top by Sales</h3>
+                    <div className="space-y-3">
+                      {userAnalytics
+                        .sort((a, b) => (b.total_sales || 0) - (a.total_sales || 0))
+                        .slice(0, 5)
+                        .map((user, idx) => (
+                          <div key={user.user_id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '👤'}</span>
+                              <div>
+                                <div className="text-sm font-medium">{user.full_name || 'N/A'}</div>
+                                <div className="text-xs text-gray-500">{user.total_transactions || 0} transactions</div>
+                              </div>
+                            </div>
+                            <div className="text-sm font-bold text-green-600">
+                              {(user.total_sales || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })} DT
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">🔥 Most Active</h3>
+                    <div className="space-y-3">
+                      {userAnalytics
+                        .sort((a, b) => (b.total_logins || 0) - (a.total_logins || 0))
+                        .slice(0, 5)
+                        .map((user, idx) => (
+                          <div key={user.user_id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '👤'}</span>
+                              <div>
+                                <div className="text-sm font-medium">{user.full_name || 'N/A'}</div>
+                                <div className="text-xs text-gray-500">{user.email}</div>
+                              </div>
+                            </div>
+                            <div className="text-sm font-bold text-blue-600">
+                              {user.total_logins || 0} logins
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">📦 Most Products</h3>
+                    <div className="space-y-3">
+                      {userAnalytics
+                        .sort((a, b) => (b.total_products || 0) - (a.total_products || 0))
+                        .slice(0, 5)
+                        .map((user, idx) => (
+                          <div key={user.user_id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '👤'}</span>
+                              <div>
+                                <div className="text-sm font-medium">{user.full_name || 'N/A'}</div>
+                                <div className="text-xs text-gray-500">{user.total_customers || 0} customers</div>
+                              </div>
+                            </div>
+                            <div className="text-sm font-bold text-purple-600">
+                              {user.total_products || 0} items
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Refresh Button */}
+                <div className="text-center">
+                  <button
+                    onClick={fetchUserAnalytics}
+                    className="bg-primary hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition"
+                  >
+                    🔄 Refresh Data
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </main>
 
       {/* Create Business Modal */}

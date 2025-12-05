@@ -49,12 +49,18 @@ export async function isBusinessUser() {
 
 /**
  * Checks if the account is suspended or subscription expired
+ * Super admins always return true (bypass all checks)
  */
 export async function isAccountActive() {
   const profile = await getUserProfile()
   
   if (!profile) {
     return false
+  }
+  
+  // Super admins are always active (bypass suspension and expiration)
+  if (profile.role === 'super_admin') {
+    return true
   }
   
   // Check if manually suspended

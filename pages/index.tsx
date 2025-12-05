@@ -7,6 +7,14 @@ import { useRouter } from 'next/router'
 import SEO from '@/components/SEO'
 import ContactForm from '@/components/ContactForm'
 import { supabase } from '@/lib/supabase'
+import { 
+  trackPageView, 
+  trackCTAClick, 
+  trackButtonClick, 
+  saveUTMParameters, 
+  setupScrollTracking, 
+  trackTimeOnPage 
+} from '@/lib/analytics'
 
 export default function Home() {
   const router = useRouter()
@@ -82,6 +90,23 @@ export default function Home() {
     checkAuth()
   }, [])
 
+  // Analytics tracking
+  useEffect(() => {
+    // Save UTM parameters from URL
+    saveUTMParameters()
+    
+    // Track page view
+    trackPageView('Landing Page')
+    
+    // Setup scroll depth tracking
+    setupScrollTracking()
+    
+    // Setup time on page tracking
+    const cleanup = trackTimeOnPage()
+    
+    return cleanup
+  }, [])
+
   const contactInfo = {
     phone: '+21653518337',
     email: 'support@kestipro.com',
@@ -151,10 +176,10 @@ export default function Home() {
                   </Link>
                 ) : (
                   <>
-                    <Link href="/login" className="text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors">
+                    <Link href="/login" onClick={() => trackCTAClick('Login Header', 'header')} className="text-gray-600 hover:text-gray-900 font-medium text-sm transition-colors">
                       تسجيل الدخول
                     </Link>
-                    <Link href="/signup" className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all">
+                    <Link href="/signup" onClick={() => trackCTAClick('Signup Header', 'header')} className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium text-sm transition-all">
                       ابدأ مجاناً
                     </Link>
                   </>
@@ -279,7 +304,7 @@ export default function Home() {
                       </Link>
                     ) : (
                       <>
-                        <Link href="/signup" className="bg-gray-900 text-white px-8 py-4 rounded-xl font-bold text-[17px] sm:text-[19px] hover:bg-gray-800 hover:scale-105 transition-all duration-300 shadow-lg">
+                        <Link href="/signup" onClick={() => trackCTAClick('Free Trial Hero', 'hero')} className="bg-gray-900 text-white px-8 py-4 rounded-xl font-bold text-[17px] sm:text-[19px] hover:bg-gray-800 hover:scale-105 transition-all duration-300 shadow-lg">
                           جرب 15 يوم مجانا
                         </Link>
                         <a href="https://wa.me/21653518337?text=اريد%20تجربة%20Kesti%20Pro" target="_blank" className="border-2 border-green-500 text-green-600 px-8 py-4 rounded-xl font-bold text-[17px] sm:text-[19px] hover:bg-green-50 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
@@ -475,7 +500,7 @@ export default function Home() {
             
             <div className="text-center mt-10">
               <p className="text-[16px] sm:text-[18px] text-gray-400 mb-4">Kesti Pro يحل كل هذه المشاكل</p>
-              <Link href="/signup" className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-[16px] sm:text-[18px] hover:bg-red-700 hover:gap-3 transition-all duration-300">
+              <Link href="/signup" onClick={() => trackCTAClick('Start Now Problems', 'problems-section')} className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-xl font-bold text-[16px] sm:text-[18px] hover:bg-red-700 hover:gap-3 transition-all duration-300">
                 ابدا الان
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
               </Link>
@@ -567,7 +592,7 @@ export default function Home() {
             </div>
 
             <div className="text-center mt-10">
-              <Link href="/signup" className="inline-block bg-gray-900 text-white px-10 py-4 rounded-xl font-bold text-[17px] md:text-[19px] hover:bg-gray-800 hover:scale-105 transition-all duration-300 shadow-lg">
+              <Link href="/signup" onClick={() => trackCTAClick('Free Trial Features', 'features-section')} className="inline-block bg-gray-900 text-white px-10 py-4 rounded-xl font-bold text-[17px] md:text-[19px] hover:bg-gray-800 hover:scale-105 transition-all duration-300 shadow-lg">
                 ابدا تجربتك المجانية - 15 يوم
               </Link>
               <p className="text-[14px] sm:text-[16px] text-gray-500 mt-4 leading-[1.6]">بدون بطاقة بنكية • الغاء في أي وقت</p>
@@ -603,7 +628,7 @@ export default function Home() {
           <div className="container mx-auto px-4 text-center relative z-10">
             <h2 className="text-[28px] sm:text-[36px] md:text-[48px] lg:text-[56px] font-black mb-6 leading-[1.2] animate-fadeIn">جاهز لتطوير تجارتك؟</h2>
             <p className="text-gray-300 text-[18px] sm:text-[20px] md:text-[22px] lg:text-[24px] mb-10 max-w-2xl mx-auto leading-[1.7]">انضم لمئات التجار الذين يديرون أعمالهم بذكاء مع Kesti Pro</p>
-            <Link href="/signup" className="inline-block bg-white text-gray-900 px-12 py-5 rounded-2xl font-black text-[18px] md:text-[20px] lg:text-[22px] hover:bg-gray-100 hover:scale-110 transition-all duration-500 shadow-2xl hover:shadow-white/20">
+            <Link href="/signup" onClick={() => trackCTAClick('Start Free Final CTA', 'final-cta')} className="inline-block bg-white text-gray-900 px-12 py-5 rounded-2xl font-black text-[18px] md:text-[20px] lg:text-[22px] hover:bg-gray-100 hover:scale-110 transition-all duration-500 shadow-2xl hover:shadow-white/20">
               ابدا مجانا الآن
             </Link>
           </div>
